@@ -30,7 +30,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
-	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 )
 
 const (
@@ -103,8 +102,6 @@ type PresentationHandlers interface {
 
 	SendToMany() http.HandlerFunc
 
-	SendMarketingSMS() http.HandlerFunc
-
 	GetAITSMSDeliveryCallback() http.HandlerFunc
 
 	GetNotificationHandler() http.HandlerFunc
@@ -125,15 +122,7 @@ type PresentationHandlers interface {
 
 	SendNotificationHandler() http.HandlerFunc
 
-	GetContactLists() http.HandlerFunc
-	GetContactListByID() http.HandlerFunc
-	GetContactsInAList() http.HandlerFunc
-	CollectEmailAddress() http.HandlerFunc
-	SetBewellAware() http.HandlerFunc
-
 	UpdateMailgunDeliveryStatus() http.HandlerFunc
-
-	HubSpotFirestoreSync() http.HandlerFunc
 
 	DataDeletionRequestCallback() http.HandlerFunc
 
@@ -144,16 +133,14 @@ type PresentationHandlers interface {
 
 // PresentationHandlersImpl represents the usecase implementation object
 type PresentationHandlersImpl struct {
-	interactor      *interactor.Interactor
-	hubspotHandlers hubspotHandlers.Handlers
+	interactor *interactor.Interactor
 }
 
 // NewPresentationHandlers initializes a new rest handlers usecase
 func NewPresentationHandlers(
 	i *interactor.Interactor,
-	hubspotHandlers hubspotHandlers.Handlers,
 ) PresentationHandlers {
-	return &PresentationHandlersImpl{i, hubspotHandlers}
+	return &PresentationHandlersImpl{i}
 }
 
 //GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
@@ -407,20 +394,6 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			)
 			return
 		}
-	case helpers.AddPubSubNamespace(common.EngagementCreateTopic):
-		engagement, err := p.interactor.Notification.HandleEngagementCreate(
-			ctx,
-			m,
-		)
-		if err != nil {
-			serverutils.WriteJSONResponse(
-				w,
-				errorcode.ErrorMap(err),
-				http.StatusBadRequest,
-			)
-			return
-		}
-		log.Print(engagement)
 	default:
 		// the topic should be anticipated/handled here
 		errMsg := fmt.Sprintf(
@@ -1386,60 +1359,6 @@ func (p PresentationHandlersImpl) SendToMany() http.HandlerFunc {
 	}
 }
 
-// SendMarketingSMS sends a data message to the specified recipient
-func (p PresentationHandlersImpl) SendMarketingSMS() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		payload := &dto.SendSMSPayload{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		if len(payload.To) == 0 {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("expected atleast one phone number"),
-			)
-			return
-		}
-
-		if payload.Message == "" {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("can't send sms, expected a message"),
-			)
-			return
-		}
-
-		resp, err := p.interactor.SMS.SendMarketingSMS(
-			ctx,
-			payload.To,
-			payload.Message,
-			payload.Sender,
-			*payload.Segment,
-		)
-		if err != nil {
-			badRequest := strings.Contains(
-				err.Error(),
-				"http error status: 400",
-			)
-			if badRequest {
-				respondWithError(w, http.StatusBadRequest, err)
-				return
-			}
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		marshalled, err := json.Marshal(resp)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
 // GetAITSMSDeliveryCallback generates an SMS Delivery Report by saving the callback data for future analysis.
 func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -1812,110 +1731,6 @@ func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 	}
 }
 
-// GetContactLists fetches all the Contact Lists on hubspot
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) GetContactLists() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		contactLists, err := p.interactor.CRM.GetContactLists()
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		serverutils.WriteJSONResponse(w, contactLists, http.StatusOK)
-	}
-}
-
-// GetContactListByID fetches a specific Contact List given its listId
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) GetContactListByID() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.ListID{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contactList, err := p.interactor.CRM.GetContactListByID(payload.ListID)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
-	}
-}
-
-// GetContactsInAList fetches all the contacts segmented in a Contact List
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.ListID{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contactList, err := p.interactor.CRM.GetContactsInAList(payload.ListID)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
-	}
-}
-
-//SetBewellAware the user identified by the provided email as bewell-aware
-func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		payload := &dto.SetBewellAwareInput{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contact, err := p.interactor.CrmExt.BeWellAware(
-			ctx,
-			payload.EmailAddress,
-		)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		marshalled, err := json.Marshal(contact)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
-// CollectEmailAddress updates a user CRM contact with the supplied email
-func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		payload := &dto.PrimaryEmailAddressPayload{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		if payload.PhoneNumber == "" || payload.EmailAddress == "" {
-			err := fmt.Errorf(
-				"expected either a phone number or an email to be defined",
-			)
-			serverutils.WriteJSONResponse(w, errorcode.CustomError{
-				Err:     err,
-				Message: err.Error(),
-			}, http.StatusBadRequest)
-			return
-		}
-
-		contact, err := p.interactor.CrmExt.CollectEmails(
-			ctx,
-			payload.EmailAddress,
-			payload.PhoneNumber,
-		)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		marshalled, err := json.Marshal(contact)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
 // UpdateMailgunDeliveryStatus gets the status of the sent emails and logs them in the database
 func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
@@ -1940,13 +1755,6 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 			return
 		}
 		respondWithJSON(rw, http.StatusOK, marshalled)
-	}
-}
-
-// HubSpotFirestoreSync syncs hubspot contacts and our firestore records
-func (p PresentationHandlersImpl) HubSpotFirestoreSync() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		p.hubspotHandlers.HubspotFireStoreSync(w, r)
 	}
 }
 

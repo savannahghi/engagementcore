@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/authorization"
@@ -16,8 +15,6 @@ import (
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
@@ -192,11 +189,6 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		m *pubsubtools.PubSubPayload,
 	) error
-
-	HandleEngagementCreate(
-		ctx context.Context,
-		m *pubsubtools.PubSubPayload,
-	) (*domain.EngagementData, error)
 }
 
 // HandlePubsubPayload defines the signature of a function that handles
@@ -210,7 +202,6 @@ type NotificationImpl struct {
 	onboarding onboarding.ProfileService
 	fcm        fcm.ServiceFCM
 	mail       mail.ServiceMail
-	crm        hubspot.ServiceHubSpotInterface
 }
 
 // NewNotification initializes a notification usecase
@@ -220,7 +211,6 @@ func NewNotification(
 	onboarding onboarding.ProfileService,
 	fcm fcm.ServiceFCM,
 	mail mail.ServiceMail,
-	crm hubspot.ServiceHubSpotInterface,
 ) *NotificationImpl {
 	return &NotificationImpl{
 		repository: repository,
@@ -228,7 +218,6 @@ func NewNotification(
 		onboarding: onboarding,
 		fcm:        fcm,
 		mail:       mail,
-		crm:        crm,
 	}
 }
 
@@ -1396,61 +1385,4 @@ func (n NotificationImpl) SendEmail(
 		return fmt.Errorf("unable to send email: %v", err)
 	}
 	return nil
-}
-
-// HandleEngagementCreate creates a Hubspot crm engagement
-func (n NotificationImpl) HandleEngagementCreate(
-	ctx context.Context,
-	m *pubsubtools.PubSubPayload,
-) (*domain.EngagementData, error) {
-	ctx, span := tracer.Start(ctx, "HandleEngagementCreate")
-	defer span.End()
-
-	var engagement dto.EngagementPubSubMessage
-	err := json.Unmarshal(m.Message.Data, &engagement)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf(
-			"can't unmarshal notification envelope from pubsub data: %w",
-			err,
-		)
-	}
-
-	sms, err := n.repository.GetMarketingSMSByID(ctx, engagement.MessageID)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to get message with message id %s",
-			engagement.MessageID,
-		)
-	}
-	sms.Engagement = engagement.Engagement
-	updatedSms, err := n.repository.UpdateMarketingMessage(ctx, sms)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to update message with engagement report: %v",
-			err,
-		)
-	}
-
-	engagementData, err := n.crm.CreateEngagementByPhone(
-		engagement.PhoneNumber,
-		engagement.Engagement,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create hubspot engagement: %v", err)
-	}
-
-	updatedSms.IsSynced = true
-	now := time.Now()
-	updatedSms.TimeSynced = &now
-
-	_, err = n.repository.UpdateMarketingMessage(ctx, updatedSms)
-	if err != nil {
-		return engagementData, fmt.Errorf(
-			"failed to update message with engagement sync status: %v",
-			err,
-		)
-	}
-
-	return engagementData, nil
 }

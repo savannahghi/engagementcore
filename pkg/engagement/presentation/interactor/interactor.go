@@ -3,7 +3,6 @@
 package interactor
 
 import (
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
@@ -15,7 +14,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/uploads"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/engagement/pkg/engagement/usecases"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 )
 
 // Interactor represents an assemble of all use cases into a single object that can be instantiated anywhere
@@ -31,8 +29,6 @@ type Interactor struct {
 	Twilio        twilio.ServiceTwilio
 	FCM           fcm.ServiceFCM
 	Surveys       surveys.ServiceSurveys
-	CRM           hubspot.ServiceHubSpotInterface
-	CrmExt        crm.ServiceCrm
 	OnboardingSvc onboarding.ProfileService
 }
 
@@ -49,8 +45,6 @@ func NewEngagementInteractor(
 	twilio twilio.ServiceTwilio,
 	fcm fcm.ServiceFCM,
 	surveys surveys.ServiceSurveys,
-	CRM hubspot.ServiceHubSpotInterface,
-	crmExt crm.ServiceCrm,
 	onboarding onboarding.ProfileService,
 ) (*Interactor, error) {
 	return &Interactor{
@@ -65,8 +59,6 @@ func NewEngagementInteractor(
 		Twilio:        twilio,
 		FCM:           fcm,
 		Surveys:       surveys,
-		CRM:           CRM,
-		CrmExt:        crmExt,
 		OnboardingSvc: onboarding,
 	}, nil
 }

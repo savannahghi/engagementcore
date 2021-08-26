@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
@@ -17,9 +16,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/pubsubtools"
-	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -44,9 +40,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
-	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 )
 
 const (
@@ -106,14 +100,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 	fcm := fcm.NewService(fr, onboarding)
 	mail := mail.NewService(fr)
-	edi := edi.NewEdiService(edi.NewEDIClient())
-
-	hubspotService := hubspot.NewHubSpotService()
-	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize hubspot crm repository: %w", err)
-	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 
 	notification := usecases.NewNotification(
 		fr,
@@ -121,7 +107,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		onboarding,
 		fcm,
 		mail,
-		hubspotService,
 	)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService(onboarding)
@@ -133,8 +118,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		)
 	}
 
-	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(fr, crmExt, ns, edi)
+	sms := sms.NewService(fr, ns)
 	feed := usecases.NewFeed(fr, ns)
 	whatsapp := whatsapp.NewService()
 	tw := twilio.NewService(sms, fr)
@@ -154,16 +138,13 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		tw,
 		fcm,
 		surveys,
-		hubspotService,
-		crmExt,
 		onboarding,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
 	}
 
-	husbspotHandlers := hubspotHandlers.NewHandlers(hubspotUsecases)
-	h := rest.NewPresentationHandlers(i, husbspotHandlers)
+	h := rest.NewPresentationHandlers(i)
 
 	r := mux.NewRouter() // gorilla mux
 	r.Use(otelmux.Middleware(serverutils.MetricsCollectorService("engagement")))
@@ -181,7 +162,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
 	r.Path(pubsubtools.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
@@ -191,25 +171,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendToMany())
-	r.Path("/send_marketing_sms").Methods(
-		http.MethodPost,
-		http.MethodOptions,
-	).HandlerFunc(h.SendMarketingSMS())
-
-	// HubSpot CRM specific endpoints
-	r.Path("/contact_lists").Methods(
-		http.MethodGet,
-	).HandlerFunc(h.GetContactLists())
-	r.Path("/contact_list").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.GetContactListByID())
-	r.Path("/contact_list_contacts").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.GetContactsInAList())
-	r.Path("/sync_contacts").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.HubSpotFirestoreSync())
-
 	// Callbacks
 	r.Path("/ait_callback").
 		Methods(http.MethodPost).
@@ -229,10 +190,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/facebook_data_deletion_callback").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())
-
-	r.Path("/collect_email_address").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.CollectEmailAddress())
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")

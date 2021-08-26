@@ -23,7 +23,6 @@ import (
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 )
 
 const (
@@ -66,8 +65,7 @@ func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationI
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	fcm := fcm.NewService(fr, onboarding)
 	mail := mail.NewService(fr)
-	crm := hubspot.NewHubSpotService()
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail, crm)
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail)
 	return notification, nil
 }
 
