@@ -1,4 +1,4 @@
-package database
+package fb
 
 import (
 	"context"
@@ -19,8 +19,6 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -64,7 +62,7 @@ const (
 // NewFirebaseRepository initializes a Firebase repository
 func NewFirebaseRepository(
 	ctx context.Context,
-) (repository.Repository, error) {
+) (*Repository, error) {
 	fc := firebasetools.FirebaseClient{}
 	fa, err := fc.InitFirebase()
 	if err != nil {

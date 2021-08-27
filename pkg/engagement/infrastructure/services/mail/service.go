@@ -61,11 +61,12 @@ type ServiceMail interface {
 		body *string,
 		to ...string,
 	) (string, error)
-	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
+
 	UpdateMailgunDeliveryStatus(
 		ctx context.Context,
 		payload *dto.MailgunEvent,
 	) (*dto.OutgoingEmailsLog, error)
+
 	GenerateEmailTemplate(name string, templateName string) string
 }
 

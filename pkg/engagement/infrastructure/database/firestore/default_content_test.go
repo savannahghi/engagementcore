@@ -1,4 +1,4 @@
-package database_test
+package fb_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestSetDefaultActions(t *testing.T) {

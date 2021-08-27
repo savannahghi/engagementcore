@@ -8,16 +8,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 )
 
-func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error) {
+func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	startTime := time.Now()
 
-	ghostCMSPost, err := r.interactor.Library.GetLibraryContent(ctx)
+	ghostCMSPost, err := r.usecases.GetLibraryContent(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get library content: %v", err)
 	}
@@ -27,10 +27,10 @@ func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.Ghost
 	return ghostCMSPost, nil
 }
 
-func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*library.GhostCMSPost, error) {
+func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	startTime := time.Now()
 
-	faqs, err := r.interactor.Library.GetFaqsContent(ctx, flavour)
+	faqs, err := r.usecases.GetFaqsContent(ctx, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get FAQs content: %v", err)
 	}

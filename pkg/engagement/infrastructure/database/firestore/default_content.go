@@ -1,4 +1,4 @@
-package database
+package fb
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
@@ -1313,7 +1314,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []fee
 	return items
 }
 
-func feedItemFromCMSPost(post library.GhostCMSPost) feedlib.Item {
+func feedItemFromCMSPost(post domain.GhostCMSPost) feedlib.Item {
 	future := time.Now().Add(time.Hour * futureHours)
 	return feedlib.Item{
 		ID:                   post.UUID,
@@ -1339,7 +1340,7 @@ func feedItemFromCMSPost(post library.GhostCMSPost) feedlib.Item {
 	}
 }
 
-func getLinks(post library.GhostCMSPost) []feedlib.Link {
+func getLinks(post domain.GhostCMSPost) []feedlib.Link {
 	featureImageLink := post.FeatureImage
 	defaultLinkTitle := "CMS Item default Icon"
 	if strings.HasSuffix(featureImageLink, ".png") {

@@ -17,7 +17,7 @@ func (r *mutationResolver) PhoneNumberVerificationCode(ctx context.Context, to s
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	verificationCode, err := r.interactor.Whatsapp.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
+	verificationCode, err := r.usecases.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
 	if err != nil {
 		return false, fmt.Errorf("failed to send a verification code: %v", err)
 	}
@@ -38,7 +38,7 @@ func (r *mutationResolver) WellnessCardActivationDependant(ctx context.Context, 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	wellnessCardActivationDependantMessage, err := r.interactor.Whatsapp.WellnessCardActivationDependant(
+	wellnessCardActivationDependantMessage, err := r.usecases.WellnessCardActivationDependant(
 		ctx,
 		to,
 		memberName,
@@ -66,7 +66,7 @@ func (r *mutationResolver) WellnessCardActivationPrincipal(ctx context.Context, 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	wellnessCardActivationPrincipal, err := r.interactor.Whatsapp.WellnessCardActivationPrincipal(
+	wellnessCardActivationPrincipal, err := r.usecases.WellnessCardActivationPrincipal(
 		ctx,
 		to,
 		memberName,
@@ -95,7 +95,7 @@ func (r *mutationResolver) BillNotification(ctx context.Context, to string, prod
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	billNotification, err := r.interactor.Whatsapp.BillNotification(
+	billNotification, err := r.usecases.BillNotification(
 		ctx,
 		to,
 		productName,
@@ -125,7 +125,7 @@ func (r *mutationResolver) VirtualCards(ctx context.Context, to string, wellness
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	virtualCardsNotification, err := r.interactor.Whatsapp.VirtualCards(
+	virtualCardsNotification, err := r.usecases.VirtualCards(
 		ctx,
 		to,
 		wellnessCardFamily,
@@ -153,7 +153,7 @@ func (r *mutationResolver) VisitStart(ctx context.Context, to string, memberName
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	visitStart, err := r.interactor.Whatsapp.VisitStart(
+	visitStart, err := r.usecases.VisitStart(
 		ctx,
 		to,
 		memberName,
@@ -182,7 +182,7 @@ func (r *mutationResolver) ClaimNotification(ctx context.Context, to string, cla
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	claimNotification, err := r.interactor.Whatsapp.ClaimNotification(
+	claimNotification, err := r.usecases.ClaimNotification(
 		ctx,
 		to,
 		claimReference,
@@ -213,7 +213,7 @@ func (r *mutationResolver) PreauthApproval(ctx context.Context, to string, curre
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	preauthApproval, err := r.interactor.Whatsapp.PreauthApproval(
+	preauthApproval, err := r.usecases.PreauthApproval(
 		ctx,
 		to,
 		currency,
@@ -245,7 +245,7 @@ func (r *mutationResolver) PreauthRequest(ctx context.Context, to string, curren
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	preauthRequest, err := r.interactor.Whatsapp.PreauthRequest(
+	preauthRequest, err := r.usecases.PreauthRequest(
 		ctx,
 		to,
 		currency,
@@ -278,7 +278,7 @@ func (r *mutationResolver) SladeOtp(ctx context.Context, to string, name string,
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	sladeOTP, err := r.interactor.Whatsapp.SladeOTP(ctx, to, name, otp, marketingMessage)
+	sladeOTP, err := r.usecases.SladeOTP(ctx, to, name, otp, marketingMessage)
 
 	if err != nil {
 		return false, fmt.Errorf("failed to send Slade ID OTP messages")

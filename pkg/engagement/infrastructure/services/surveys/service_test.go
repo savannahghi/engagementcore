@@ -4,15 +4,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestService_RecordNPSResponse(t *testing.T) {
 	ctx := context.Background()
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
 		return

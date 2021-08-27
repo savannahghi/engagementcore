@@ -1,4 +1,4 @@
-package usecases_test
+package feed_test
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
@@ -23,7 +23,6 @@ import (
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 )
 
 const (
@@ -54,7 +53,7 @@ const (
 // TODO Document message delete: message notified
 
 func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationImpl, error) {
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +65,7 @@ func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationI
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	fcm := fcm.NewService(fr, onboarding)
 	mail := mail.NewService(fr)
-	crm := hubspot.NewHubSpotService()
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail, crm)
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail)
 	return notification, nil
 }
 

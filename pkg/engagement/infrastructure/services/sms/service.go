@@ -14,12 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/enumutils"
@@ -58,13 +54,8 @@ type ServiceSMS interface {
 		to, message string,
 		from enumutils.SenderID,
 	) (*dto.SendMessageResponse, error)
-	SendMarketingSMS(
-		ctx context.Context,
-		to []string,
-		message string,
-		from enumutils.SenderID,
-		segment string,
-	) (*dto.SendMessageResponse, error)
+
+	// TODO: Remove DB specific implementations
 	SaveMarketingMessage(
 		ctx context.Context,
 		data dto.MarketingSMS,
@@ -83,9 +74,7 @@ type ServiceSMS interface {
 type Service struct {
 	Env        string
 	Repository repository.Repository
-	Crm        crm.ServiceCrm
 	PubSub     messaging.NotificationService
-	Edi        edi.ServiceEdi
 }
 
 // GetSmsURL is the sms endpoint
@@ -112,12 +101,10 @@ func getHost(env, service string) string {
 // NewService returns a new service
 func NewService(
 	repository repository.Repository,
-	crm crm.ServiceCrm,
 	pubsub messaging.NotificationService,
-	edi edi.ServiceEdi,
 ) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository, crm, pubsub, edi}
+	return &Service{env, repository, pubsub}
 }
 
 // SaveMarketingMessage saves the callback data for future analysis
@@ -270,100 +257,4 @@ func (s Service) newPostRequest(
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	return client.Do(req)
-}
-
-// SendMarketingSMS is a method to send marketing bulk SMS for Be.Well launch/campaigns.
-// It interacts with our DB to save the message and update our CRM with engagements
-func (s Service) SendMarketingSMS(
-	ctx context.Context,
-	to []string,
-	message string,
-	from enumutils.SenderID,
-	segment string,
-) (*dto.SendMessageResponse, error) {
-	ctx, span := tracer.Start(ctx, "SendMarketingSMS")
-	defer span.End()
-	var whitelistedNumbers []string
-	for _, phone := range to {
-		optedOut, err := s.Crm.IsOptedOut(ctx, phone)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check if the number %s is opted out: %w", phone, err)
-		}
-		if !optedOut {
-			whitelistedNumbers = append(whitelistedNumbers, phone)
-		}
-	}
-
-	if len(whitelistedNumbers) == 0 {
-		return nil, nil
-	}
-
-	recipients := strings.Join(whitelistedNumbers, ",")
-	resp, err := s.Send(ctx, recipients, message, from)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("failed to send SMS: %v", err)
-	}
-
-	smsMsgData := resp.SMSMessageData
-	if smsMsgData == nil {
-		return nil, nil
-	}
-
-	smsMsgDataRecipients := smsMsgData.Recipients
-	for _, recipient := range smsMsgDataRecipients {
-		phone := recipient.Number
-		data := dto.MarketingSMS{
-			ID:                   uuid.New().String(),
-			PhoneNumber:          phone,
-			SenderID:             from,
-			MessageSentTimeStamp: time.Now(),
-			Message:              message,
-			Status:               recipient.Status,
-		}
-		savedSms, err := s.SaveMarketingMessage(
-			ctx,
-			data,
-		)
-		if err != nil {
-			helpers.RecordSpanError(span, err)
-			return resp, fmt.Errorf(
-				"failed to create a message in our data store: %v",
-				err,
-			)
-		}
-
-		if _, err := s.Edi.UpdateMessageSent(
-			ctx,
-			data.PhoneNumber,
-			segment,
-		); err != nil {
-			helpers.RecordSpanError(span, err)
-			return resp, fmt.Errorf(
-				"failed to update message sent status to true: %v",
-				err,
-			)
-		}
-
-		metadata := map[string]interface{}{
-			"body": message,
-		}
-		if err = s.PubSub.NotifyEngagementCreate(
-			ctx,
-			data.PhoneNumber,
-			savedSms.ID,
-			"NOTE",
-			metadata,
-			common.EngagementCreateTopic,
-		); err != nil {
-			helpers.RecordSpanError(span, err)
-			return resp, fmt.Errorf(
-				"failed to publish to %v pub/sub topic with error: %v",
-				common.EngagementCreateTopic,
-				err,
-			)
-		}
-	}
-
-	return resp, nil
 }

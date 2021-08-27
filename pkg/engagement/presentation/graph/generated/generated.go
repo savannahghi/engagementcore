@@ -18,7 +18,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
@@ -461,8 +460,8 @@ type MutationResolver interface {
 	SladeOtp(ctx context.Context, to string, name string, otp string, marketingMessage string) (bool, error)
 }
 type QueryResolver interface {
-	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*library.GhostCMSPost, error)
+	GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
 	GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error)
@@ -8304,7 +8303,7 @@ func (ec *executionContext) _FirebaseWebpushConfig_data(ctx context.Context, fie
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8339,7 +8338,7 @@ func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphq
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_name(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_name(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8374,7 +8373,7 @@ func (ec *executionContext) _GhostCMSAuthor_name(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_slug(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_slug(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8409,7 +8408,7 @@ func (ec *executionContext) _GhostCMSAuthor_slug(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_url(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_url(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8444,7 +8443,7 @@ func (ec *executionContext) _GhostCMSAuthor_url(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_profileImage(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_profileImage(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8476,7 +8475,7 @@ func (ec *executionContext) _GhostCMSAuthor_profileImage(ctx context.Context, fi
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_website(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_website(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8508,7 +8507,7 @@ func (ec *executionContext) _GhostCMSAuthor_website(ctx context.Context, field g
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_location(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_location(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8540,7 +8539,7 @@ func (ec *executionContext) _GhostCMSAuthor_location(ctx context.Context, field 
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_facebook(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_facebook(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8572,7 +8571,7 @@ func (ec *executionContext) _GhostCMSAuthor_facebook(ctx context.Context, field 
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_twitter(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_twitter(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8604,7 +8603,7 @@ func (ec *executionContext) _GhostCMSAuthor_twitter(ctx context.Context, field g
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8639,7 +8638,7 @@ func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8674,7 +8673,7 @@ func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_uuid(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_uuid(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8709,7 +8708,7 @@ func (ec *executionContext) _GhostCMSPost_uuid(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8744,7 +8743,7 @@ func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8779,7 +8778,7 @@ func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8814,7 +8813,7 @@ func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_url(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_url(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8849,7 +8848,7 @@ func (ec *executionContext) _GhostCMSPost_url(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8884,7 +8883,7 @@ func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8919,7 +8918,7 @@ func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8949,12 +8948,12 @@ func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]library.GhostCMSTag)
+	res := resTmp.([]domain.GhostCMSTag)
 	fc.Result = res
-	return ec.marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTagᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8989,7 +8988,7 @@ func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field g
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9024,7 +9023,7 @@ func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_updatedAt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_updatedAt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9059,7 +9058,7 @@ func (ec *executionContext) _GhostCMSPost_updatedAt(ctx context.Context, field g
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_commentID(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_commentID(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9094,7 +9093,7 @@ func (ec *executionContext) _GhostCMSPost_commentID(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9129,7 +9128,7 @@ func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.C
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9164,7 +9163,7 @@ func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9199,7 +9198,7 @@ func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_description(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_description(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9231,7 +9230,7 @@ func (ec *executionContext) _GhostCMSTag_description(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_visibility(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_visibility(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9266,7 +9265,7 @@ func (ec *executionContext) _GhostCMSTag_visibility(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_url(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_url(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12640,9 +12639,9 @@ func (ec *executionContext) _Query_getLibraryContent(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*library.GhostCMSPost)
+	res := resTmp.([]*domain.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12682,9 +12681,9 @@ func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*library.GhostCMSPost)
+	res := resTmp.([]*domain.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_notifications(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -16608,7 +16607,7 @@ func (ec *executionContext) _FirebaseWebpushConfig(ctx context.Context, sel ast.
 
 var ghostCMSAuthorImplementors = []string{"GhostCMSAuthor"}
 
-func (ec *executionContext) _GhostCMSAuthor(ctx context.Context, sel ast.SelectionSet, obj *library.GhostCMSAuthor) graphql.Marshaler {
+func (ec *executionContext) _GhostCMSAuthor(ctx context.Context, sel ast.SelectionSet, obj *domain.GhostCMSAuthor) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSAuthorImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16660,7 +16659,7 @@ func (ec *executionContext) _GhostCMSAuthor(ctx context.Context, sel ast.Selecti
 
 var ghostCMSPostImplementors = []string{"GhostCMSPost"}
 
-func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.SelectionSet, obj *library.GhostCMSPost) graphql.Marshaler {
+func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.SelectionSet, obj *domain.GhostCMSPost) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSPostImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16752,7 +16751,7 @@ func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.Selection
 
 var ghostCMSTagImplementors = []string{"GhostCMSTag"}
 
-func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionSet, obj *library.GhostCMSTag) graphql.Marshaler {
+func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionSet, obj *domain.GhostCMSTag) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSTagImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -18360,7 +18359,7 @@ func (ec *executionContext) marshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlib
 	return v
 }
 
-func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*library.GhostCMSPost) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*domain.GhostCMSPost) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18384,7 +18383,7 @@ func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahgh
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPost(ctx, sel, v[i])
+			ret[i] = ec.marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18397,7 +18396,7 @@ func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahgh
 	return ret
 }
 
-func (ec *executionContext) marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v *library.GhostCMSPost) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v *domain.GhostCMSPost) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18407,11 +18406,11 @@ func (ec *executionContext) marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghi�
 	return ec._GhostCMSPost(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v library.GhostCMSTag) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v domain.GhostCMSTag) graphql.Marshaler {
 	return ec._GhostCMSTag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTagᚄ(ctx context.Context, sel ast.SelectionSet, v []library.GhostCMSTag) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTagᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.GhostCMSTag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18435,7 +18434,7 @@ func (ec *executionContext) marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

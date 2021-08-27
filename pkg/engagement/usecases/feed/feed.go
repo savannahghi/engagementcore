@@ -1,4 +1,4 @@
-package usecases
+package feed
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/profileutils"
@@ -20,10 +20,9 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/usecases")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/usecases/feed")
 
 // FeedUseCases represents all the profile business logic
 type FeedUseCases interface {
@@ -238,18 +237,15 @@ type FeedUseCases interface {
 
 // FeedUseCaseImpl represents the feed usecase implementation
 type FeedUseCaseImpl struct {
-	Repository          repository.Repository
-	NotificationService messaging.NotificationService
+	infrastructure infrastructure.Infrastructure
 }
 
 // NewFeed initializes a user feed
 func NewFeed(
-	repository repository.Repository,
-	notificationService messaging.NotificationService,
+	infrastructure infrastructure.Infrastructure,
 ) *FeedUseCaseImpl {
 	return &FeedUseCaseImpl{
-		Repository:          repository,
-		NotificationService: notificationService,
+		infrastructure: infrastructure,
 	}
 }
 
@@ -281,7 +277,7 @@ func (fe FeedUseCaseImpl) GetFeed(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	feed, err := fe.Repository.GetFeed(
+	feed, err := fe.infrastructure.GetFeed(
 		ctx,
 		uid,
 		isAnonymous,
@@ -370,7 +366,7 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
@@ -406,7 +402,7 @@ func (fe FeedUseCaseImpl) GetNudge(
 	if !isAuthorized {
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
-	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve nudge %s: %w", nudgeID, err)
@@ -442,7 +438,7 @@ func (fe FeedUseCaseImpl) GetAction(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	action, err := fe.Repository.GetAction(ctx, uid, flavour, actionID)
+	action, err := fe.infrastructure.GetAction(ctx, uid, flavour, actionID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
@@ -499,14 +495,14 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.SaveFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.SaveFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to publish feed item %s: %w", item.ID, err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemPublishTopic),
 		uid,
@@ -552,13 +548,13 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 		return nil // does not exist, nothing to delete
 	}
 
-	err = fe.Repository.DeleteFeedItem(ctx, uid, flavour, itemID)
+	err = fe.infrastructure.DeleteFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to delete item: %s", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemDeleteTopic),
 		uid,
@@ -572,7 +568,7 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 		return fmt.Errorf("unable to notify item to channel: %w", err)
 	}
 
-	return fe.Repository.DeleteFeedItem(ctx, uid, flavour, itemID)
+	return fe.infrastructure.DeleteFeedItem(ctx, uid, flavour, itemID)
 }
 
 // ResolveFeedItem marks a feed item as Done
@@ -598,7 +594,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -618,13 +614,13 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemResolveTopic),
 		uid,
@@ -665,7 +661,7 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -685,13 +681,13 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemResolveTopic),
 		uid,
@@ -732,7 +728,7 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -752,13 +748,13 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to pin feed item: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemPinTopic),
 		uid,
@@ -799,7 +795,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -819,13 +815,13 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to unresolve feed item: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemUnresolveTopic),
 		uid,
@@ -866,7 +862,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -886,13 +882,13 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to hide feed item: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemHideTopic),
 		uid,
@@ -933,7 +929,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
+	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -953,13 +949,13 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 		}
 	}
 
-	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
+	item, err = fe.infrastructure.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to show feed item: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ItemShowTopic),
 		uid,
@@ -998,7 +994,7 @@ func (fe FeedUseCaseImpl) Labels(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	return fe.Repository.Labels(ctx, uid, flavour)
+	return fe.infrastructure.Labels(ctx, uid, flavour)
 }
 
 // SaveLabel saves the indicated label, if it does not already exist
@@ -1024,7 +1020,7 @@ func (fe FeedUseCaseImpl) SaveLabel(
 		return fmt.Errorf("user not authorized to access this resource")
 	}
 
-	return fe.Repository.SaveLabel(ctx, uid, flavour, label)
+	return fe.infrastructure.SaveLabel(ctx, uid, flavour, label)
 }
 
 // UnreadPersistentItems returns the number of unread inbox items for this feed
@@ -1049,7 +1045,7 @@ func (fe FeedUseCaseImpl) UnreadPersistentItems(
 		return 0, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	return fe.Repository.UnreadPersistentItems(ctx, uid, flavour)
+	return fe.infrastructure.UnreadPersistentItems(ctx, uid, flavour)
 }
 
 // UpdateUnreadPersistentItemsCount updates the number of unread inbox items
@@ -1073,7 +1069,7 @@ func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 	if !isAuthorized {
 		return fmt.Errorf("user not authorized to access this resource")
 	}
-	return fe.Repository.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
+	return fe.infrastructure.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 }
 
 // PublishNudge idempotently creates or updates a nudge
@@ -1132,13 +1128,13 @@ func (fe FeedUseCaseImpl) PublishNudge(
 		}
 	}
 
-	nudge, err = fe.Repository.SaveNudge(ctx, uid, flavour, nudge)
+	nudge, err = fe.infrastructure.SaveNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to publish nudge: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.NudgePublishTopic),
 		uid,
@@ -1178,7 +1174,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
@@ -1198,13 +1194,13 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 		}
 	}
 
-	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
+	nudge, err = fe.infrastructure.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to resolve nudge: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.NudgeResolveTopic),
 		uid,
@@ -1244,7 +1240,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
@@ -1264,13 +1260,13 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 		}
 	}
 
-	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
+	nudge, err = fe.infrastructure.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to unresolve nudge: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.NudgeUnresolveTopic),
 		uid,
@@ -1310,7 +1306,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
@@ -1330,13 +1326,13 @@ func (fe FeedUseCaseImpl) HideNudge(
 		}
 	}
 
-	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
+	nudge, err = fe.infrastructure.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to hide nudge: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.NudgeHideTopic),
 		uid,
@@ -1375,7 +1371,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
@@ -1395,13 +1391,13 @@ func (fe FeedUseCaseImpl) ShowNudge(
 		}
 	}
 
-	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
+	nudge, err = fe.infrastructure.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to show nudge: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.NudgeShowTopic),
 		uid,
@@ -1446,13 +1442,13 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 		return nil // no error, "re-deleting" a nudge should not cause an error
 	}
 
-	err = fe.Repository.DeleteNudge(ctx, uid, flavour, nudgeID)
+	err = fe.infrastructure.DeleteNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't delete nudge: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.NudgeDeleteTopic),
 		uid,
@@ -1520,13 +1516,13 @@ func (fe FeedUseCaseImpl) PublishAction(
 		return nil, fmt.Errorf("invalid action: %w", err)
 	}
 
-	action, err = fe.Repository.SaveAction(ctx, uid, flavour, action)
+	action, err = fe.infrastructure.SaveAction(ctx, uid, flavour, action)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to publish action: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ActionPublishTopic),
 		uid,
@@ -1572,13 +1568,13 @@ func (fe FeedUseCaseImpl) DeleteAction(
 		return nil // no harm "re-deleting" an already deleted action
 	}
 
-	err = fe.Repository.DeleteAction(ctx, uid, flavour, actionID)
+	err = fe.infrastructure.DeleteAction(ctx, uid, flavour, actionID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to delete action: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.ActionDeleteTopic),
 		uid,
@@ -1637,7 +1633,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 		return nil, fmt.Errorf("invalid message: %w", err)
 	}
 
-	msg, err := fe.Repository.PostMessage(
+	msg, err := fe.infrastructure.PostMessage(
 		ctx,
 		uid,
 		flavour,
@@ -1649,7 +1645,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 		return nil, fmt.Errorf("unable to post a message: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.MessagePostTopic),
 		uid,
@@ -1691,7 +1687,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 		return fmt.Errorf("user not authorized to access this resource")
 	}
 
-	message, err := fe.Repository.GetMessage(
+	message, err := fe.infrastructure.GetMessage(
 		ctx,
 		uid,
 		flavour,
@@ -1701,7 +1697,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 	if err != nil || message == nil {
 		return nil // no harm "re-deleting" an already deleted message
 	}
-	err = fe.Repository.DeleteMessage(
+	err = fe.infrastructure.DeleteMessage(
 		ctx,
 		uid,
 		flavour,
@@ -1713,7 +1709,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 		return fmt.Errorf("unable to delete message: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.MessageDeleteTopic),
 		uid,
@@ -1793,13 +1789,13 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 		)
 	}
 
-	err = fe.Repository.SaveIncomingEvent(ctx, event)
+	err = fe.infrastructure.SaveIncomingEvent(ctx, event)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't save incoming event: %w", err)
 	}
 
-	if err := fe.NotificationService.Notify(
+	if err := fe.infrastructure.Notify(
 		ctx,
 		helpers.AddPubSubNamespace(common.IncomingEventTopic),
 		uid,
@@ -1840,7 +1836,7 @@ func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
 		return nil, fmt.Errorf("user not authorized to access this resource")
 	}
 
-	nudge, err := fe.Repository.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
+	nudge, err := fe.infrastructure.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve verify email nudge: %w", err)

@@ -153,6 +153,7 @@ type ServiceWhatsapp interface {
 		marketingMessage string,
 	) (bool, error)
 
+	// TODO: Remove db implementation
 	SaveTwilioCallbackResponse(
 		ctx context.Context,
 		data dto.Message,

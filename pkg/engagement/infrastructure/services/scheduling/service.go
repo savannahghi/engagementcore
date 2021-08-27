@@ -190,7 +190,7 @@ func (s Service) AddEvent(
 	attendeeEmails []string,
 	privateExtendedPropertiesContent map[string]string,
 ) (*calendar.Event, error) {
-	_, span := tracer.Start(ctx, "SendOTPToEmail")
+	_, span := tracer.Start(ctx, "AddEvent")
 	defer span.End()
 	s.checkPreconditions()
 

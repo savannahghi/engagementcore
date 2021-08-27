@@ -46,19 +46,13 @@ const (
 
 // ServiceTwilio defines the interaction with the twilio service
 type ServiceTwilio interface {
-	MakeTwilioRequest(
-		method string,
-		urlPath string,
-		content url.Values,
-		target interface{},
-	) error
-
 	Room(ctx context.Context) (*dto.Room, error)
 
 	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
 
 	SendSMS(ctx context.Context, to string, msg string) error
 
+	// TODO: Remove db call
 	SaveTwilioVideoCallbackStatus(
 		ctx context.Context,
 		data dto.CallbackData,

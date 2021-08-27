@@ -1,4 +1,4 @@
-package usecases_test
+package feed_test
 
 import (
 	"context"
@@ -11,10 +11,7 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
-	mockEDI "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi/mock"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	mockFCM "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm/mock"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
@@ -38,9 +35,6 @@ import (
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 )
 
 const (
@@ -74,7 +68,6 @@ var fakeEngagement mockEngagement.FakeEngagementRepository
 var fakeOnboarding mockOnboarding.FakeServiceOnboarding
 var fakeMessaging mockMessaging.FakeServiceMessaging
 var fakeFCM mockFCM.FakeServiceFcm
-var fakeEDI mockEDI.FakeEDIService
 
 // InitializeFakeEngagementInteractor represents a fake engagement interactor
 func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
@@ -82,26 +75,16 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	var onboardingSvc onboarding.ProfileService = &fakeOnboarding
 	var messagingSvc messaging.NotificationService = &fakeMessaging
 	var fcmSvc fcm.PushService = &fakeFCM
-	var ediSvc edi.ServiceEdi = &fakeEDI
-
-	ctx := context.Background()
 
 	feed := usecases.NewFeed(r, messagingSvc)
 	fcm := fcm.NewService(r, onboardingSvc)
 	mail := mail.NewService(r)
-	crm := hubspot.NewHubSpotService()
-	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail, crm)
+	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail)
 	uploads := uploads.NewUploadsService()
 
 	library := library.NewLibraryService(onboardingSvc)
-	hubspotService := hubspot.NewHubSpotService()
-	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize hubspot crm repository: %w", err)
-	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
-	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(r, crmExt, messagingSvc, ediSvc)
+
+	sms := sms.NewService(r, messagingSvc)
 	whatsapp := whatsapp.NewService()
 	twilio := twilio.NewService(sms, r)
 	otp := otp.NewService(whatsapp, mail, sms, twilio)
@@ -119,8 +102,6 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 		twilio,
 		fcm,
 		surveys,
-		hubspotService,
-		crmExt,
 		onboardingSvc,
 	)
 

@@ -37,7 +37,7 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.F
 		return nil, fmt.Errorf("%s is not a valid flavour", flavour)
 	}
 	anonymous := false
-	return r.interactor.Feed.GetFeed(ctx,
+	return r.usecases.GetFeed(ctx,
 		&uid,
 		&anonymous,
 		flavour,

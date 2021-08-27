@@ -8,7 +8,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/savannahghi/firebasetools"
 
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 )
 
 // This file will not be regenerated automatically.
@@ -19,37 +19,20 @@ import (
 
 // Resolver sets up a GraphQL resolver with all necessary dependencies
 type Resolver struct {
-	interactor *interactor.Interactor
+	usecases usecases.Usecases
 }
 
 // NewResolver sets up the dependencies needed for query and mutation resolvers to work
 func NewResolver(
 	ctx context.Context,
-	interactor *interactor.Interactor,
-
+	usecases usecases.Usecases,
 ) (*Resolver, error) {
 	return &Resolver{
-		interactor: interactor,
+		usecases: usecases,
 	}, nil
 }
 
-func (r Resolver) checkPreconditions() {
-	if r.interactor.Feed == nil {
-		log.Panicf("expected feed usecases to be defined resolver")
-	}
-
-	if r.interactor.Notification == nil {
-		log.Panicf("expected notification usecases to be define in resolver ")
-	}
-
-	if r.interactor.Uploads == nil {
-		log.Panicf("expected uploads usecases to be define in resolver ")
-	}
-
-	if r.interactor.Mail == nil {
-		log.Panicf("expected mail usecases to be define in resolver ")
-	}
-}
+func (r Resolver) checkPreconditions() {}
 
 func (r Resolver) getLoggedInUserUID(ctx context.Context) (string, error) {
 	authToken, err := firebasetools.GetUserTokenFromContext(ctx)
