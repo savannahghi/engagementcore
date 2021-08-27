@@ -7,18 +7,22 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 )
 
-type SurveysUsecases interface {
+// UseCases ...
+type UseCases interface {
 	RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error)
 }
 
-type SurveysImpl struct {
+// UseCasesImpl ...
+type UseCasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewSurveysImpl(infrastructure infrastructure.Infrastructure) *SurveysImpl {
-	return &SurveysImpl{infrastructure: infrastructure}
+// NewSurveysImpl ...
+func NewSurveysImpl(infrastructure infrastructure.Infrastructure) *UseCasesImpl {
+	return &UseCasesImpl{infrastructure: infrastructure}
 }
 
-func (s SurveysImpl) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
+// RecordNPSResponse ...
+func (s UseCasesImpl) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	return s.infrastructure.RecordNPSResponse(ctx, input)
 }

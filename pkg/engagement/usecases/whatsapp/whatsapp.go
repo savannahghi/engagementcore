@@ -6,7 +6,8 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 )
 
-type WhatsappUsecases interface {
+// UseCases ...
+type UseCases interface {
 	PhoneNumberVerificationCode(
 		ctx context.Context,
 		to string,
@@ -105,15 +106,18 @@ type WhatsappUsecases interface {
 	) (bool, error)
 }
 
-type WhatsappUsecasesImpl struct {
+// UseCasesImpl ...
+type UseCasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewWhatsappUsecasesImpl(infrastructure infrastructure.Infrastructure) *WhatsappUsecasesImpl {
-	return &WhatsappUsecasesImpl{infrastructure: infrastructure}
+// NewWhatsappUsecasesImpl ...
+func NewWhatsappUsecasesImpl(infrastructure infrastructure.Infrastructure) *UseCasesImpl {
+	return &UseCasesImpl{infrastructure: infrastructure}
 }
 
-func (w *WhatsappUsecasesImpl) PhoneNumberVerificationCode(
+// PhoneNumberVerificationCode ...
+func (w *UseCasesImpl) PhoneNumberVerificationCode(
 	ctx context.Context,
 	to string,
 	code string,
@@ -122,7 +126,8 @@ func (w *WhatsappUsecasesImpl) PhoneNumberVerificationCode(
 	return w.infrastructure.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) WellnessCardActivationDependant(
+// WellnessCardActivationDependant ...
+func (w *UseCasesImpl) WellnessCardActivationDependant(
 	ctx context.Context,
 	to string,
 	memberName string,
@@ -132,7 +137,8 @@ func (w *WhatsappUsecasesImpl) WellnessCardActivationDependant(
 	return w.infrastructure.WellnessCardActivationDependant(ctx, to, memberName, cardName, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) WellnessCardActivationPrincipal(
+// WellnessCardActivationPrincipal ...
+func (w *UseCasesImpl) WellnessCardActivationPrincipal(
 	ctx context.Context,
 	to string,
 	memberName string,
@@ -143,7 +149,8 @@ func (w *WhatsappUsecasesImpl) WellnessCardActivationPrincipal(
 	return w.infrastructure.WellnessCardActivationPrincipal(ctx, to, memberName, cardName, minorAgeThreshold, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) BillNotification(
+// BillNotification ...
+func (w *UseCasesImpl) BillNotification(
 	ctx context.Context,
 	to string,
 	productName string,
@@ -155,7 +162,8 @@ func (w *WhatsappUsecasesImpl) BillNotification(
 	return w.infrastructure.BillNotification(ctx, to, productName, billingPeriod, billAmount, paymentInstruction, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) VirtualCards(
+// VirtualCards ...
+func (w *UseCasesImpl) VirtualCards(
 	ctx context.Context,
 	to string,
 	wellnessCardFamily string,
@@ -165,7 +173,8 @@ func (w *WhatsappUsecasesImpl) VirtualCards(
 	return w.infrastructure.VirtualCards(ctx, to, wellnessCardFamily, virtualCardLink, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) VisitStart(
+// VisitStart ...
+func (w *UseCasesImpl) VisitStart(
 	ctx context.Context,
 	to string,
 	memberName string,
@@ -178,7 +187,8 @@ func (w *WhatsappUsecasesImpl) VisitStart(
 	return w.infrastructure.VisitStart(ctx, to, memberName, benefitName, locationName, startTime, balance, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) ClaimNotification(
+// ClaimNotification ...
+func (w *UseCasesImpl) ClaimNotification(
 	ctx context.Context,
 	to string,
 	claimReference string,
@@ -191,7 +201,8 @@ func (w *WhatsappUsecasesImpl) ClaimNotification(
 	return w.infrastructure.ClaimNotification(ctx, to, claimReference, claimTypeParenthesized, provider, visitType, claimTime, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) PreauthApproval(
+// PreauthApproval ...
+func (w *UseCasesImpl) PreauthApproval(
 	ctx context.Context,
 	to string,
 	currency string,
@@ -205,7 +216,8 @@ func (w *WhatsappUsecasesImpl) PreauthApproval(
 	return w.infrastructure.PreauthApproval(ctx, to, currency, amount, benefit, provider, member, careContact, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) PreauthRequest(
+// PreauthRequest ...
+func (w *UseCasesImpl) PreauthRequest(
 	ctx context.Context,
 	to string,
 	currency string,
@@ -220,7 +232,8 @@ func (w *WhatsappUsecasesImpl) PreauthRequest(
 	return w.infrastructure.PreauthRequest(ctx, to, currency, amount, benefit, provider, requestTime, member, careContact, marketingMessage)
 }
 
-func (w *WhatsappUsecasesImpl) SladeOTP(
+// SladeOTP ...
+func (w *UseCasesImpl) SladeOTP(
 	ctx context.Context,
 	to string,
 	name string,

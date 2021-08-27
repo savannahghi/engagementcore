@@ -81,7 +81,12 @@ func NewInfrastructureInteractor() Infrastructure {
 
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 
-	fcm := fcm.NewService(db, onboarding)
+	fcmOne := fcm.NewService(db, onboarding)
+	fcmTwo, err := fcm.NewRemotePushService(ctx)
+	if err != nil {
+		// TODO
+		log.Error(err)
+	}
 
 	lib := library.NewLibraryService(onboarding)
 
@@ -97,13 +102,16 @@ func NewInfrastructureInteractor() Infrastructure {
 	sms := sms.NewService(db, pubsub)
 	twilio := twilio.NewService(sms, db)
 
+	uploads := uploads.NewUploadsService()
+
 	otp := otp.NewService(whatsapp, mail, sms, twilio)
 
 	surveys := surveys.NewService(db)
 
 	return &Interactor{
 		db:         db,
-		fcm:        fcm,
+		fcm:        fcmOne,
+		fcmTwo:     fcmTwo,
 		lib:        lib,
 		mail:       mail,
 		messaging:  pubsub,
@@ -112,6 +120,7 @@ func NewInfrastructureInteractor() Infrastructure {
 		sms:        sms,
 		surveys:    surveys,
 		twilio:     twilio,
+		uploads:    uploads,
 		whatsapp:   whatsapp,
 	}
 }
@@ -119,6 +128,7 @@ func NewInfrastructureInteractor() Infrastructure {
 // CheckPreconditions ensures correct initialization
 func (i Interactor) CheckPreconditions() {}
 
+// GetFeed ...
 func (i *Interactor) GetFeed(
 	ctx context.Context,
 	uid *string,
@@ -133,6 +143,7 @@ func (i *Interactor) GetFeed(
 	return i.db.GetFeed(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
 }
 
+// GetFeedItem ...
 func (i *Interactor) GetFeedItem(
 	ctx context.Context,
 	uid string,
@@ -142,6 +153,7 @@ func (i *Interactor) GetFeedItem(
 	return i.db.GetFeedItem(ctx, uid, flavour, itemID)
 }
 
+// SaveFeedItem ...
 func (i *Interactor) SaveFeedItem(
 	ctx context.Context,
 	uid string,
@@ -151,6 +163,7 @@ func (i *Interactor) SaveFeedItem(
 	return i.db.SaveFeedItem(ctx, uid, flavour, item)
 }
 
+// UpdateFeedItem ...
 func (i *Interactor) UpdateFeedItem(
 	ctx context.Context,
 	uid string,
@@ -283,6 +296,7 @@ func (i *Interactor) GetMessages(
 	return i.db.GetMessages(ctx, uid, flavour, itemID)
 }
 
+// SaveIncomingEvent ...
 func (i *Interactor) SaveIncomingEvent(
 	ctx context.Context,
 	event *feedlib.Event,
@@ -290,6 +304,7 @@ func (i *Interactor) SaveIncomingEvent(
 	return i.db.SaveIncomingEvent(ctx, event)
 }
 
+// SaveOutgoingEvent ...
 func (i *Interactor) SaveOutgoingEvent(
 	ctx context.Context,
 	event *feedlib.Event,
@@ -297,6 +312,7 @@ func (i *Interactor) SaveOutgoingEvent(
 	return i.db.SaveOutgoingEvent(ctx, event)
 }
 
+// GetNudges ...
 func (i *Interactor) GetNudges(
 	ctx context.Context,
 	uid string,
@@ -308,6 +324,7 @@ func (i *Interactor) GetNudges(
 	return i.db.GetNudges(ctx, uid, flavour, status, visibility, expired)
 }
 
+// GetActions ...
 func (i *Interactor) GetActions(
 	ctx context.Context,
 	uid string,
@@ -316,6 +333,7 @@ func (i *Interactor) GetActions(
 	return i.db.GetActions(ctx, uid, flavour)
 }
 
+// GetItems ...
 func (i *Interactor) GetItems(
 	ctx context.Context,
 	uid string,
@@ -329,6 +347,7 @@ func (i *Interactor) GetItems(
 	return i.db.GetItems(ctx, uid, flavour, persistent, status, visibility, expired, filterParams)
 }
 
+// Labels ...
 func (i *Interactor) Labels(
 	ctx context.Context,
 	uid string,
@@ -337,6 +356,7 @@ func (i *Interactor) Labels(
 	return i.db.Labels(ctx, uid, flavour)
 }
 
+// SaveLabel ...
 func (i *Interactor) SaveLabel(
 	ctx context.Context,
 	uid string,
@@ -346,6 +366,7 @@ func (i *Interactor) SaveLabel(
 	return i.db.SaveLabel(ctx, uid, flavour, label)
 }
 
+// UnreadPersistentItems ...
 func (i *Interactor) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
@@ -354,6 +375,7 @@ func (i *Interactor) UnreadPersistentItems(
 	return i.db.UnreadPersistentItems(ctx, uid, flavour)
 }
 
+// UpdateUnreadPersistentItemsCount ...
 func (i *Interactor) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
@@ -362,6 +384,7 @@ func (i *Interactor) UpdateUnreadPersistentItemsCount(
 	return i.db.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 }
 
+// GetDefaultNudgeByTitle ...
 func (i *Interactor) GetDefaultNudgeByTitle(
 	ctx context.Context,
 	uid string,
@@ -423,10 +446,12 @@ func (i *Interactor) UpdateMarketingMessage(
 	return i.db.UpdateMarketingMessage(ctx, data)
 }
 
+// SaveOutgoingEmails ...
 func (i *Interactor) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
 	return i.db.SaveOutgoingEmails(ctx, payload)
 }
 
+// UpdateMailgunDeliveryStatus ...
 func (i *Interactor) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return i.db.UpdateMailgunDeliveryStatus(ctx, payload)
 }
@@ -452,6 +477,7 @@ func (i *Interactor) SaveTwilioVideoCallbackStatus(
 	return i.db.SaveTwilioVideoCallbackStatus(ctx, data)
 }
 
+// SendNotification ...
 func (i *Interactor) SendNotification(
 	ctx context.Context,
 	registrationTokens []string,
@@ -488,18 +514,22 @@ func (i *Interactor) SendFCMByPhoneOrEmail(
 	return i.fcm.SendFCMByPhoneOrEmail(ctx, phoneNumber, email, data, notification, android, ios, web)
 }
 
+// GetFeedContent ...
 func (i *Interactor) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	return i.lib.GetFeedContent(ctx, flavour)
 }
 
+// GetFaqsContent ...
 func (i *Interactor) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	return i.lib.GetFaqsContent(ctx, flavour)
 }
 
+// GetLibraryContent ...
 func (i *Interactor) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	return i.lib.GetLibraryContent(ctx)
 }
 
+// SendInBlue ...
 func (i *Interactor) SendInBlue(
 	ctx context.Context,
 	subject, text string,
@@ -508,6 +538,7 @@ func (i *Interactor) SendInBlue(
 	return i.mail.SendInBlue(ctx, subject, text, to...)
 }
 
+// SendMailgun ...
 func (i *Interactor) SendMailgun(
 	ctx context.Context,
 	subject, text string,
@@ -517,6 +548,7 @@ func (i *Interactor) SendMailgun(
 	return i.mail.SendMailgun(ctx, subject, text, body, to...)
 }
 
+// SendEmail ...
 func (i *Interactor) SendEmail(
 	ctx context.Context,
 	subject, text string,
@@ -526,6 +558,7 @@ func (i *Interactor) SendEmail(
 	return i.mail.SendMailgun(ctx, subject, text, body, to...)
 }
 
+// SimpleEmail ...
 func (i *Interactor) SimpleEmail(
 	ctx context.Context,
 	subject, text string,
@@ -535,10 +568,12 @@ func (i *Interactor) SimpleEmail(
 	return i.mail.SimpleEmail(ctx, subject, text, body, to...)
 }
 
+// GenerateEmailTemplate ...
 func (i *Interactor) GenerateEmailTemplate(name string, templateName string) string {
 	return i.mail.GenerateEmailTemplate(name, templateName)
 }
 
+// Notify ...
 func (i *Interactor) Notify(
 	ctx context.Context,
 	topicID string,
@@ -550,6 +585,7 @@ func (i *Interactor) Notify(
 	return i.messaging.Notify(ctx, topicID, uid, flavour, payload, metadata)
 }
 
+// NotifyEngagementCreate ...
 func (i *Interactor) NotifyEngagementCreate(
 	ctx context.Context,
 	phone string,
@@ -561,18 +597,22 @@ func (i *Interactor) NotifyEngagementCreate(
 	return i.messaging.NotifyEngagementCreate(ctx, phone, messageID, engagementType, metadata, topicID)
 }
 
+// TopicIDs ...
 func (i *Interactor) TopicIDs() []string {
 	return i.messaging.TopicIDs()
 }
 
+// SubscriptionIDs ...
 func (i *Interactor) SubscriptionIDs() map[string]string {
 	return i.messaging.SubscriptionIDs()
 }
 
+// ReverseSubscriptionIDs ...
 func (i *Interactor) ReverseSubscriptionIDs() map[string]string {
 	return i.messaging.ReverseSubscriptionIDs()
 }
 
+// GetEmailAddresses ...
 func (i *Interactor) GetEmailAddresses(
 	ctx context.Context,
 	uids onboarding.UserUIDs,
@@ -580,6 +620,7 @@ func (i *Interactor) GetEmailAddresses(
 	return i.onboarding.GetEmailAddresses(ctx, uids)
 }
 
+// GetPhoneNumbers ...
 func (i *Interactor) GetPhoneNumbers(
 	ctx context.Context,
 	uids onboarding.UserUIDs,
@@ -587,6 +628,7 @@ func (i *Interactor) GetPhoneNumbers(
 	return i.onboarding.GetPhoneNumbers(ctx, uids)
 }
 
+// GetDeviceTokens ...
 func (i *Interactor) GetDeviceTokens(
 	ctx context.Context,
 	uid onboarding.UserUIDs,
@@ -594,44 +636,57 @@ func (i *Interactor) GetDeviceTokens(
 	return i.onboarding.GetDeviceTokens(ctx, uid)
 }
 
+// GetUserProfile ...
 func (i *Interactor) GetUserProfile(ctx context.Context, uid string) (*profileutils.UserProfile, error) {
 	return i.onboarding.GetUserProfile(ctx, uid)
 }
 
+// GetUserProfileByPhoneOrEmail ...
 func (i *Interactor) GetUserProfileByPhoneOrEmail(ctx context.Context, payload *dto.RetrieveUserProfileInput) (*profileutils.UserProfile, error) {
 	return i.onboarding.GetUserProfileByPhoneOrEmail(ctx, payload)
 }
 
+// GenerateAndSendOTP ...
 func (i *Interactor) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
 	return i.otp.GenerateAndSendOTP(ctx, msisdn, appID)
 }
 
+// SendOTPToEmail ...
 func (i *Interactor) SendOTPToEmail(ctx context.Context, msisdn, email *string, appID *string) (string, error) {
 	return i.otp.SendOTPToEmail(ctx, msisdn, email, appID)
 }
+
+// SaveOTPToFirestore ...
 func (i *Interactor) SaveOTPToFirestore(otp dto.OTP) error {
 	return i.otp.SaveOTPToFirestore(otp)
 }
+
+// VerifyOtp ...
 func (i *Interactor) VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error) {
 	return i.otp.VerifyOtp(ctx, msisdn, verificationCode)
 }
 
+// VerifyEmailOtp ...
 func (i *Interactor) VerifyEmailOtp(ctx context.Context, email, verificationCode *string) (bool, error) {
 	return i.otp.VerifyEmailOtp(ctx, email, verificationCode)
 }
 
+// GenerateRetryOTP ...
 func (i *Interactor) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int, appID *string) (string, error) {
 	return i.otp.GenerateRetryOTP(ctx, msisdn, retryStep, appID)
 }
 
+// EmailVerificationOtp ...
 func (i *Interactor) EmailVerificationOtp(ctx context.Context, email *string) (string, error) {
 	return i.otp.EmailVerificationOtp(ctx, email)
 }
 
+// GenerateOTP ...
 func (i *Interactor) GenerateOTP(ctx context.Context) (string, error) {
 	return i.otp.GenerateOTP(ctx)
 }
 
+// SendToMany ...
 func (i *Interactor) SendToMany(
 	ctx context.Context,
 	message string,
@@ -640,6 +695,8 @@ func (i *Interactor) SendToMany(
 ) (*dto.SendMessageResponse, error) {
 	return i.sms.SendToMany(ctx, message, to, from)
 }
+
+// Send ...
 func (i *Interactor) Send(
 	ctx context.Context,
 	to, message string,
@@ -648,20 +705,27 @@ func (i *Interactor) Send(
 	return i.sms.Send(ctx, to, message, from)
 }
 
+// RecordNPSResponse ...
 func (i *Interactor) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	return i.surveys.RecordNPSResponse(ctx, input)
 }
 
+// Room ...
 func (i *Interactor) Room(ctx context.Context) (*dto.Room, error) {
 	return i.twilio.Room(ctx)
 }
+
+// TwilioAccessToken ...
 func (i *Interactor) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	return i.twilio.TwilioAccessToken(ctx)
 }
+
+// SendSMS ...
 func (i *Interactor) SendSMS(ctx context.Context, to string, msg string) error {
 	return i.twilio.SendSMS(ctx, to, msg)
 }
 
+// Upload ...
 func (i *Interactor) Upload(
 	ctx context.Context,
 	inp profileutils.UploadInput,
@@ -669,6 +733,7 @@ func (i *Interactor) Upload(
 	return i.uploads.Upload(ctx, inp)
 }
 
+// FindUploadByID ...
 func (i *Interactor) FindUploadByID(
 	ctx context.Context,
 	id string,
@@ -676,6 +741,7 @@ func (i *Interactor) FindUploadByID(
 	return i.uploads.FindUploadByID(ctx, id)
 }
 
+// PhoneNumberVerificationCode ...
 func (i *Interactor) PhoneNumberVerificationCode(
 	ctx context.Context,
 	to string,
@@ -685,6 +751,7 @@ func (i *Interactor) PhoneNumberVerificationCode(
 	return i.whatsapp.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
 }
 
+// WellnessCardActivationDependant ...
 func (i *Interactor) WellnessCardActivationDependant(
 	ctx context.Context,
 	to string,
@@ -695,6 +762,7 @@ func (i *Interactor) WellnessCardActivationDependant(
 	return i.whatsapp.WellnessCardActivationDependant(ctx, to, memberName, cardName, marketingMessage)
 }
 
+// WellnessCardActivationPrincipal ...
 func (i *Interactor) WellnessCardActivationPrincipal(
 	ctx context.Context,
 	to string,
@@ -706,6 +774,7 @@ func (i *Interactor) WellnessCardActivationPrincipal(
 	return i.whatsapp.WellnessCardActivationPrincipal(ctx, to, memberName, cardName, minorAgeThreshold, marketingMessage)
 }
 
+// BillNotification ...
 func (i *Interactor) BillNotification(
 	ctx context.Context,
 	to string,
@@ -718,6 +787,7 @@ func (i *Interactor) BillNotification(
 	return i.whatsapp.BillNotification(ctx, to, productName, billingPeriod, billAmount, paymentInstruction, marketingMessage)
 }
 
+// VirtualCards ...
 func (i *Interactor) VirtualCards(
 	ctx context.Context,
 	to string,
@@ -728,6 +798,7 @@ func (i *Interactor) VirtualCards(
 	return i.whatsapp.VirtualCards(ctx, to, wellnessCardFamily, virtualCardLink, marketingMessage)
 }
 
+// VisitStart ...
 func (i *Interactor) VisitStart(
 	ctx context.Context,
 	to string,
@@ -741,6 +812,7 @@ func (i *Interactor) VisitStart(
 	return i.whatsapp.VisitStart(ctx, to, memberName, benefitName, locationName, startTime, balance, marketingMessage)
 }
 
+// ClaimNotification ...
 func (i *Interactor) ClaimNotification(
 	ctx context.Context,
 	to string,
@@ -754,6 +826,7 @@ func (i *Interactor) ClaimNotification(
 	return i.whatsapp.ClaimNotification(ctx, to, claimReference, claimTypeParenthesized, provider, visitType, claimTime, marketingMessage)
 }
 
+// PreauthApproval ...
 func (i *Interactor) PreauthApproval(
 	ctx context.Context,
 	to string,
@@ -768,6 +841,7 @@ func (i *Interactor) PreauthApproval(
 	return i.whatsapp.PreauthApproval(ctx, to, currency, amount, benefit, provider, member, careContact, marketingMessage)
 }
 
+// PreauthRequest ...
 func (i *Interactor) PreauthRequest(
 	ctx context.Context,
 	to string,
@@ -783,6 +857,7 @@ func (i *Interactor) PreauthRequest(
 	return i.whatsapp.PreauthRequest(ctx, to, currency, amount, benefit, provider, requestTime, member, careContact, marketingMessage)
 }
 
+// SladeOTP ...
 func (i *Interactor) SladeOTP(
 	ctx context.Context,
 	to string,
@@ -793,6 +868,7 @@ func (i *Interactor) SladeOTP(
 	return i.whatsapp.SladeOTP(ctx, to, name, otp, marketingMessage)
 }
 
+// SaveTwilioCallbackResponse ...
 func (i *Interactor) SaveTwilioCallbackResponse(
 	ctx context.Context,
 	data dto.Message,
@@ -800,6 +876,7 @@ func (i *Interactor) SaveTwilioCallbackResponse(
 	return i.whatsapp.SaveTwilioCallbackResponse(ctx, data)
 }
 
+// Push ...
 func (i *Interactor) Push(
 	ctx context.Context,
 	sender string,

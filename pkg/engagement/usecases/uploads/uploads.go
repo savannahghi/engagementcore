@@ -7,23 +7,28 @@ import (
 	"github.com/savannahghi/profileutils"
 )
 
-type UploadsUsecases interface {
+// UseCases ...
+type UseCases interface {
 	FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error)
 	Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error)
 }
 
-type UploadsImpl struct {
+// UseCasesImpl ...
+type UseCasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewUploadsImpl(infrastructure infrastructure.Infrastructure) *UploadsImpl {
-	return &UploadsImpl{infrastructure: infrastructure}
+// NewUploadsImpl ...
+func NewUploadsImpl(infrastructure infrastructure.Infrastructure) *UseCasesImpl {
+	return &UseCasesImpl{infrastructure: infrastructure}
 }
 
-func (u *UploadsImpl) FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error) {
+// FindUploadByID ...
+func (u *UseCasesImpl) FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error) {
 	return u.infrastructure.FindUploadByID(ctx, id)
 }
 
-func (u *UploadsImpl) Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error) {
+// Upload ...
+func (u *UseCasesImpl) Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error) {
 	return u.infrastructure.Upload(ctx, input)
 }

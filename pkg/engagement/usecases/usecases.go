@@ -26,31 +26,31 @@ import (
 
 // Usecases is an interface that combines of all usescases
 type Usecases interface {
-	feed.FeedUseCases
+	feed.Usecases
 	feed.NotificationUsecases
-	fcm.FCMUsecases
-	library.LibraryUsecases
-	mail.MailUsecases
-	whatsapp.WhatsappUsecases
-	uploads.UploadsUsecases
-	otp.OTPUsecases
-	sms.SMSUsecases
-	surveys.SurveysUsecases
+	fcm.Usecases
+	library.UseCases
+	mail.UseCases
+	whatsapp.UseCases
+	uploads.UseCases
+	otp.UseCases
+	sms.UseCases
+	surveys.UseCases
 	tc.TeleconsultUsecases
 }
 
 // Interactor is an implementation of the usecases interface
 type Interactor struct {
-	feed         *feed.FeedUseCaseImpl
+	feed         *feed.UseCaseImpl
 	notification *feed.NotificationImpl
-	fcm          *fcm.FCMUsecasesImpl
-	lib          *library.LibraryUsecasesImpl
-	mail         *mail.MailUsecasesImpl
-	whatsapp     *whatsapp.WhatsappUsecasesImpl
-	uploads      *uploads.UploadsImpl
-	otp          *otp.OTPUsecasesImpl
-	sms          *sms.SMSUsecasesImpl
-	surveys      *surveys.SurveysImpl
+	fcm          *fcm.UsecasesImpl
+	lib          *library.UseCasesImpl
+	mail         *mail.UseCasesImpl
+	whatsapp     *whatsapp.UseCasesImpl
+	uploads      *uploads.UseCasesImpl
+	otp          *otp.UseCasesImpl
+	sms          *sms.UseCasesImpl
+	surveys      *surveys.UseCasesImpl
 	teleconsult  *tc.TeleconsultImpl
 }
 
@@ -86,6 +86,7 @@ func NewUsecasesInteractor(infrastructure infrastructure.Infrastructure) Usecase
 	return impl
 }
 
+// GetFeed ...
 func (i *Interactor) GetFeed(
 	ctx context.Context,
 	uid *string,
@@ -100,6 +101,7 @@ func (i *Interactor) GetFeed(
 	return i.feed.GetFeed(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
 }
 
+// GetThinFeed ...
 func (i *Interactor) GetThinFeed(
 	ctx context.Context,
 	uid *string,
@@ -109,6 +111,7 @@ func (i *Interactor) GetThinFeed(
 	return i.feed.GetThinFeed(ctx, uid, isAnonymous, flavour)
 }
 
+// GetFeedItem ...
 func (i *Interactor) GetFeedItem(
 	ctx context.Context,
 	uid string,
@@ -118,6 +121,7 @@ func (i *Interactor) GetFeedItem(
 	return i.feed.GetFeedItem(ctx, uid, flavour, itemID)
 }
 
+// GetNudge ...
 func (i *Interactor) GetNudge(
 	ctx context.Context,
 	uid string,
@@ -127,6 +131,7 @@ func (i *Interactor) GetNudge(
 	return i.feed.GetNudge(ctx, uid, flavour, nudgeID)
 }
 
+// GetAction ...
 func (i *Interactor) GetAction(
 	ctx context.Context,
 	uid string,
@@ -136,6 +141,7 @@ func (i *Interactor) GetAction(
 	return i.feed.GetAction(ctx, uid, flavour, actionID)
 }
 
+// PublishFeedItem ...
 func (i *Interactor) PublishFeedItem(
 	ctx context.Context,
 	uid string,
@@ -145,6 +151,7 @@ func (i *Interactor) PublishFeedItem(
 	return i.feed.PublishFeedItem(ctx, uid, flavour, item)
 }
 
+// DeleteFeedItem ...
 func (i *Interactor) DeleteFeedItem(
 	ctx context.Context,
 	uid string,
@@ -154,6 +161,7 @@ func (i *Interactor) DeleteFeedItem(
 	return i.feed.DeleteFeedItem(ctx, uid, flavour, itemID)
 }
 
+// ResolveFeedItem ...
 func (i *Interactor) ResolveFeedItem(
 	ctx context.Context,
 	uid string,
@@ -163,6 +171,7 @@ func (i *Interactor) ResolveFeedItem(
 	return i.feed.ResolveFeedItem(ctx, uid, flavour, itemID)
 }
 
+// PinFeedItem ...
 func (i *Interactor) PinFeedItem(
 	ctx context.Context,
 	uid string,
@@ -172,6 +181,7 @@ func (i *Interactor) PinFeedItem(
 	return i.feed.PinFeedItem(ctx, uid, flavour, itemID)
 }
 
+// UnpinFeedItem ...
 func (i *Interactor) UnpinFeedItem(
 	ctx context.Context,
 	uid string,
@@ -181,6 +191,7 @@ func (i *Interactor) UnpinFeedItem(
 	return i.feed.UnpinFeedItem(ctx, uid, flavour, itemID)
 }
 
+// UnresolveFeedItem ...
 func (i *Interactor) UnresolveFeedItem(
 	ctx context.Context,
 	uid string,
@@ -190,6 +201,7 @@ func (i *Interactor) UnresolveFeedItem(
 	return i.feed.UnresolveFeedItem(ctx, uid, flavour, itemID)
 }
 
+// HideFeedItem ...
 func (i *Interactor) HideFeedItem(
 	ctx context.Context,
 	uid string,
@@ -199,6 +211,7 @@ func (i *Interactor) HideFeedItem(
 	return i.feed.HideFeedItem(ctx, uid, flavour, itemID)
 }
 
+// ShowFeedItem ...
 func (i *Interactor) ShowFeedItem(
 	ctx context.Context,
 	uid string,
@@ -208,6 +221,7 @@ func (i *Interactor) ShowFeedItem(
 	return i.feed.ShowFeedItem(ctx, uid, flavour, itemID)
 }
 
+// Labels ...
 func (i *Interactor) Labels(
 	ctx context.Context,
 	uid string,
@@ -216,6 +230,7 @@ func (i *Interactor) Labels(
 	return i.feed.Labels(ctx, uid, flavour)
 }
 
+// SaveLabel ...
 func (i *Interactor) SaveLabel(
 	ctx context.Context,
 	uid string,
@@ -225,6 +240,7 @@ func (i *Interactor) SaveLabel(
 	return i.feed.SaveLabel(ctx, uid, flavour, label)
 }
 
+// UnreadPersistentItems ...
 func (i *Interactor) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
@@ -233,6 +249,7 @@ func (i *Interactor) UnreadPersistentItems(
 	return i.feed.UnreadPersistentItems(ctx, uid, flavour)
 }
 
+// UpdateUnreadPersistentItemsCount ...
 func (i *Interactor) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
@@ -241,6 +258,7 @@ func (i *Interactor) UpdateUnreadPersistentItemsCount(
 	return i.feed.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 }
 
+// PublishNudge ...
 func (i *Interactor) PublishNudge(
 	ctx context.Context,
 	uid string,
@@ -250,6 +268,7 @@ func (i *Interactor) PublishNudge(
 	return i.feed.PublishNudge(ctx, uid, flavour, nudge)
 }
 
+// ResolveNudge ...
 func (i *Interactor) ResolveNudge(
 	ctx context.Context,
 	uid string,
@@ -259,6 +278,7 @@ func (i *Interactor) ResolveNudge(
 	return i.feed.ResolveNudge(ctx, uid, flavour, nudgeID)
 }
 
+// UnresolveNudge ...
 func (i *Interactor) UnresolveNudge(
 	ctx context.Context,
 	uid string,
@@ -268,6 +288,7 @@ func (i *Interactor) UnresolveNudge(
 	return i.feed.UnresolveNudge(ctx, uid, flavour, nudgeID)
 }
 
+// HideNudge ...
 func (i *Interactor) HideNudge(
 	ctx context.Context,
 	uid string,
@@ -277,6 +298,7 @@ func (i *Interactor) HideNudge(
 	return i.feed.HideNudge(ctx, uid, flavour, nudgeID)
 }
 
+// ShowNudge ...
 func (i *Interactor) ShowNudge(
 	ctx context.Context,
 	uid string,
@@ -286,6 +308,7 @@ func (i *Interactor) ShowNudge(
 	return i.feed.ResolveNudge(ctx, uid, flavour, nudgeID)
 }
 
+// GetDefaultNudgeByTitle ...
 func (i *Interactor) GetDefaultNudgeByTitle(
 	ctx context.Context,
 	uid string,
@@ -295,6 +318,7 @@ func (i *Interactor) GetDefaultNudgeByTitle(
 	return i.feed.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 }
 
+// ProcessEvent ...
 func (i *Interactor) ProcessEvent(
 	ctx context.Context,
 	uid string,
@@ -304,6 +328,7 @@ func (i *Interactor) ProcessEvent(
 	return i.feed.ProcessEvent(ctx, uid, flavour, event)
 }
 
+// DeleteMessage ...
 func (i *Interactor) DeleteMessage(
 	ctx context.Context,
 	uid string,
@@ -314,6 +339,7 @@ func (i *Interactor) DeleteMessage(
 	return i.feed.DeleteMessage(ctx, uid, flavour, itemID, messageID)
 }
 
+// PostMessage ...
 func (i *Interactor) PostMessage(
 	ctx context.Context,
 	uid string,
@@ -324,6 +350,7 @@ func (i *Interactor) PostMessage(
 	return i.feed.PostMessage(ctx, uid, flavour, itemID, message)
 }
 
+// DeleteAction ...
 func (i *Interactor) DeleteAction(
 	ctx context.Context,
 	uid string,
@@ -333,6 +360,7 @@ func (i *Interactor) DeleteAction(
 	return i.feed.DeleteAction(ctx, uid, flavour, actionID)
 }
 
+// PublishAction ...
 func (i *Interactor) PublishAction(
 	ctx context.Context,
 	uid string,
@@ -342,6 +370,7 @@ func (i *Interactor) PublishAction(
 	return i.feed.PublishAction(ctx, uid, flavour, action)
 }
 
+// DeleteNudge ...
 func (i *Interactor) DeleteNudge(
 	ctx context.Context,
 	uid string,
@@ -351,6 +380,7 @@ func (i *Interactor) DeleteNudge(
 	return i.feed.DeleteNudge(ctx, uid, flavour, nudgeID)
 }
 
+// HandleItemPublish ...
 func (i *Interactor) HandleItemPublish(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -358,6 +388,7 @@ func (i *Interactor) HandleItemPublish(
 	return i.notification.HandleItemPublish(ctx, m)
 }
 
+// HandleItemDelete ...
 func (i *Interactor) HandleItemDelete(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -365,6 +396,7 @@ func (i *Interactor) HandleItemDelete(
 	return i.notification.HandleItemDelete(ctx, m)
 }
 
+// HandleItemResolve ...
 func (i *Interactor) HandleItemResolve(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -372,6 +404,7 @@ func (i *Interactor) HandleItemResolve(
 	return i.notification.HandleItemResolve(ctx, m)
 }
 
+// HandleItemUnresolve ...
 func (i *Interactor) HandleItemUnresolve(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -379,6 +412,7 @@ func (i *Interactor) HandleItemUnresolve(
 	return i.notification.HandleItemUnresolve(ctx, m)
 }
 
+// HandleItemHide ...
 func (i *Interactor) HandleItemHide(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -386,6 +420,7 @@ func (i *Interactor) HandleItemHide(
 	return i.notification.HandleItemHide(ctx, m)
 }
 
+// HandleItemShow ...
 func (i *Interactor) HandleItemShow(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -393,6 +428,7 @@ func (i *Interactor) HandleItemShow(
 	return i.notification.HandleItemShow(ctx, m)
 }
 
+// HandleItemPin ...
 func (i *Interactor) HandleItemPin(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -400,6 +436,7 @@ func (i *Interactor) HandleItemPin(
 	return i.notification.HandleItemPin(ctx, m)
 }
 
+// HandleItemUnpin ...
 func (i *Interactor) HandleItemUnpin(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -407,6 +444,7 @@ func (i *Interactor) HandleItemUnpin(
 	return i.notification.HandleItemUnpin(ctx, m)
 }
 
+// HandleNudgePublish ...
 func (i *Interactor) HandleNudgePublish(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -414,6 +452,7 @@ func (i *Interactor) HandleNudgePublish(
 	return i.notification.HandleNudgePublish(ctx, m)
 }
 
+// HandleNudgeDelete ...
 func (i *Interactor) HandleNudgeDelete(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -421,6 +460,7 @@ func (i *Interactor) HandleNudgeDelete(
 	return i.notification.HandleNudgeDelete(ctx, m)
 }
 
+// HandleNudgeResolve ...
 func (i *Interactor) HandleNudgeResolve(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -428,6 +468,7 @@ func (i *Interactor) HandleNudgeResolve(
 	return i.notification.HandleNudgeResolve(ctx, m)
 }
 
+// HandleNudgeUnresolve ...
 func (i *Interactor) HandleNudgeUnresolve(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -435,6 +476,7 @@ func (i *Interactor) HandleNudgeUnresolve(
 	return i.notification.HandleNudgeUnresolve(ctx, m)
 }
 
+// HandleNudgeHide ...
 func (i *Interactor) HandleNudgeHide(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -442,6 +484,7 @@ func (i *Interactor) HandleNudgeHide(
 	return i.notification.HandleNudgeHide(ctx, m)
 }
 
+// HandleNudgeShow ...
 func (i *Interactor) HandleNudgeShow(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -449,6 +492,7 @@ func (i *Interactor) HandleNudgeShow(
 	return i.notification.HandleNudgeShow(ctx, m)
 }
 
+// HandleActionPublish ...
 func (i *Interactor) HandleActionPublish(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -456,6 +500,7 @@ func (i *Interactor) HandleActionPublish(
 	return i.notification.HandleActionPublish(ctx, m)
 }
 
+// HandleActionDelete ...
 func (i *Interactor) HandleActionDelete(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -463,6 +508,7 @@ func (i *Interactor) HandleActionDelete(
 	return i.notification.HandleActionDelete(ctx, m)
 }
 
+// HandleMessagePost ...
 func (i *Interactor) HandleMessagePost(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -470,6 +516,7 @@ func (i *Interactor) HandleMessagePost(
 	return i.notification.HandleMessagePost(ctx, m)
 }
 
+// HandleMessageDelete ...
 func (i *Interactor) HandleMessageDelete(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -477,6 +524,7 @@ func (i *Interactor) HandleMessageDelete(
 	return i.notification.HandleMessageDelete(ctx, m)
 }
 
+// HandleIncomingEvent ...
 func (i *Interactor) HandleIncomingEvent(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -484,6 +532,7 @@ func (i *Interactor) HandleIncomingEvent(
 	return i.notification.HandleIncomingEvent(ctx, m)
 }
 
+// NotifyItemUpdate ...
 func (i *Interactor) NotifyItemUpdate(
 	ctx context.Context,
 	sender string,
@@ -493,6 +542,7 @@ func (i *Interactor) NotifyItemUpdate(
 	return i.notification.NotifyItemUpdate(ctx, sender, includeNotification, m)
 }
 
+// UpdateInbox ...
 func (i *Interactor) UpdateInbox(
 	ctx context.Context,
 	uid string,
@@ -501,6 +551,7 @@ func (i *Interactor) UpdateInbox(
 	return i.notification.UpdateInbox(ctx, uid, flavour)
 }
 
+// NotifyNudgeUpdate ...
 func (i *Interactor) NotifyNudgeUpdate(
 	ctx context.Context,
 	sender string,
@@ -509,6 +560,7 @@ func (i *Interactor) NotifyNudgeUpdate(
 	return i.notification.NotifyNudgeUpdate(ctx, sender, m)
 }
 
+// NotifyInboxCountUpdate ...
 func (i *Interactor) NotifyInboxCountUpdate(
 	ctx context.Context,
 	uid string,
@@ -518,6 +570,7 @@ func (i *Interactor) NotifyInboxCountUpdate(
 	return i.notification.NotifyInboxCountUpdate(ctx, uid, flavour, count)
 }
 
+// GetUserTokens ...
 func (i *Interactor) GetUserTokens(
 	ctx context.Context,
 	uids []string,
@@ -525,6 +578,7 @@ func (i *Interactor) GetUserTokens(
 	return i.notification.GetUserTokens(ctx, uids)
 }
 
+// SendNotificationViaFCM ...
 func (i *Interactor) SendNotificationViaFCM(
 	ctx context.Context,
 	uids []string,
@@ -535,6 +589,7 @@ func (i *Interactor) SendNotificationViaFCM(
 	return i.notification.SendNotificationViaFCM(ctx, uids, sender, pl, notification)
 }
 
+// HandleSendNotification ...
 func (i *Interactor) HandleSendNotification(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -542,6 +597,7 @@ func (i *Interactor) HandleSendNotification(
 	return i.notification.HandleSendNotification(ctx, m)
 }
 
+// SendEmail ...
 func (i *Interactor) SendEmail(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
@@ -549,6 +605,7 @@ func (i *Interactor) SendEmail(
 	return i.notification.SendEmail(ctx, m)
 }
 
+// SendNotification ...
 func (i *Interactor) SendNotification(
 	ctx context.Context,
 	registrationTokens []string,
@@ -585,14 +642,17 @@ func (i *Interactor) SendFCMByPhoneOrEmail(
 	return i.fcm.SendFCMByPhoneOrEmail(ctx, phoneNumber, email, data, notification, android, ios, web)
 }
 
+// GetFaqsContent ...
 func (i *Interactor) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	return i.lib.GetFaqsContent(ctx, flavour)
 }
 
+// GetLibraryContent ...
 func (i *Interactor) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	return i.lib.GetLibraryContent(ctx)
 }
 
+// SimpleEmail ...
 func (i *Interactor) SimpleEmail(
 	ctx context.Context,
 	subject, text string,
@@ -602,6 +662,7 @@ func (i *Interactor) SimpleEmail(
 	return i.mail.SimpleEmail(ctx, subject, text, body, to...)
 }
 
+// PhoneNumberVerificationCode ...
 func (i *Interactor) PhoneNumberVerificationCode(
 	ctx context.Context,
 	to string,
@@ -611,6 +672,7 @@ func (i *Interactor) PhoneNumberVerificationCode(
 	return i.whatsapp.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
 }
 
+// WellnessCardActivationDependant ...
 func (i *Interactor) WellnessCardActivationDependant(
 	ctx context.Context,
 	to string,
@@ -621,6 +683,7 @@ func (i *Interactor) WellnessCardActivationDependant(
 	return i.whatsapp.WellnessCardActivationDependant(ctx, to, memberName, cardName, marketingMessage)
 }
 
+// WellnessCardActivationPrincipal ...
 func (i *Interactor) WellnessCardActivationPrincipal(
 	ctx context.Context,
 	to string,
@@ -632,6 +695,7 @@ func (i *Interactor) WellnessCardActivationPrincipal(
 	return i.whatsapp.WellnessCardActivationPrincipal(ctx, to, memberName, cardName, minorAgeThreshold, marketingMessage)
 }
 
+// BillNotification ...
 func (i *Interactor) BillNotification(
 	ctx context.Context,
 	to string,
@@ -644,6 +708,7 @@ func (i *Interactor) BillNotification(
 	return i.whatsapp.BillNotification(ctx, to, productName, billingPeriod, billAmount, paymentInstruction, marketingMessage)
 }
 
+// VirtualCards ...
 func (i *Interactor) VirtualCards(
 	ctx context.Context,
 	to string,
@@ -654,6 +719,7 @@ func (i *Interactor) VirtualCards(
 	return i.whatsapp.VirtualCards(ctx, to, wellnessCardFamily, virtualCardLink, marketingMessage)
 }
 
+// VisitStart ...
 func (i *Interactor) VisitStart(
 	ctx context.Context,
 	to string,
@@ -667,6 +733,7 @@ func (i *Interactor) VisitStart(
 	return i.whatsapp.VisitStart(ctx, to, memberName, benefitName, locationName, startTime, balance, marketingMessage)
 }
 
+// ClaimNotification ...
 func (i *Interactor) ClaimNotification(
 	ctx context.Context,
 	to string,
@@ -680,6 +747,7 @@ func (i *Interactor) ClaimNotification(
 	return i.whatsapp.ClaimNotification(ctx, to, claimReference, claimTypeParenthesized, provider, visitType, claimTime, marketingMessage)
 }
 
+// PreauthApproval ...
 func (i *Interactor) PreauthApproval(
 	ctx context.Context,
 	to string,
@@ -694,6 +762,7 @@ func (i *Interactor) PreauthApproval(
 	return i.whatsapp.PreauthApproval(ctx, to, currency, amount, benefit, provider, member, careContact, marketingMessage)
 }
 
+// PreauthRequest ...
 func (i *Interactor) PreauthRequest(
 	ctx context.Context,
 	to string,
@@ -709,6 +778,7 @@ func (i *Interactor) PreauthRequest(
 	return i.whatsapp.PreauthRequest(ctx, to, currency, amount, benefit, provider, requestTime, member, careContact, marketingMessage)
 }
 
+// SladeOTP ...
 func (i *Interactor) SladeOTP(
 	ctx context.Context,
 	to string,
@@ -719,49 +789,62 @@ func (i *Interactor) SladeOTP(
 	return i.whatsapp.SladeOTP(ctx, to, name, otp, marketingMessage)
 }
 
+// FindUploadByID ...
 func (i *Interactor) FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error) {
 	return i.uploads.FindUploadByID(ctx, id)
 }
 
+// Upload ...
 func (i *Interactor) Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error) {
 	return i.uploads.Upload(ctx, input)
 }
 
+// GenerateAndSendOTP ...
 func (i *Interactor) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
 	return i.otp.GenerateAndSendOTP(ctx, msisdn, appID)
 }
 
+// SendOTPToEmail ...
 func (i *Interactor) SendOTPToEmail(ctx context.Context, msisdn string, email *string, appID *string) (string, error) {
 	return i.otp.SendOTPToEmail(ctx, msisdn, email, appID)
 }
 
+// VerifyOtp ...
 func (i *Interactor) VerifyOtp(ctx context.Context, msisdn, verificationCode string) (bool, error) {
 	return i.otp.VerifyOtp(ctx, msisdn, verificationCode)
 }
 
+// VerifyEmailOtp ...
 func (i *Interactor) VerifyEmailOtp(ctx context.Context, email, verificationCode string) (bool, error) {
 	return i.otp.VerifyEmailOtp(ctx, email, verificationCode)
 }
 
+// GenerateRetryOTP ...
 func (i *Interactor) GenerateRetryOTP(ctx context.Context, msisdn string, retryStep int, appID *string) (string, error) {
 	return i.otp.GenerateRetryOTP(ctx, msisdn, retryStep, appID)
 }
 
+// EmailVerificationOtp ...
 func (i *Interactor) EmailVerificationOtp(ctx context.Context, email string) (string, error) {
 	return i.otp.EmailVerificationOtp(ctx, email)
 }
 
+// Send ...
 func (i *Interactor) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {
 	return i.sms.Send(ctx, to, message)
 }
+
+// SendToMany ...
 func (i *Interactor) SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error) {
 	return i.sms.SendToMany(ctx, message, to)
 }
 
+// TwilioAccessToken ...
 func (i *Interactor) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	return i.teleconsult.TwilioAccessToken(ctx)
 }
 
+// RecordNPSResponse ...
 func (i *Interactor) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	return i.surveys.RecordNPSResponse(ctx, input)
 }

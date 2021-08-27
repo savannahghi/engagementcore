@@ -9,7 +9,8 @@ import (
 	"github.com/savannahghi/firebasetools"
 )
 
-type FCMUsecases interface {
+// Usecases ...
+type Usecases interface {
 	SendNotification(
 		ctx context.Context,
 		registrationTokens []string,
@@ -23,15 +24,18 @@ type FCMUsecases interface {
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
 }
 
-type FCMUsecasesImpl struct {
+// UsecasesImpl ...
+type UsecasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewFCMUsecaseImpl(infrastructure infrastructure.Infrastructure) *FCMUsecasesImpl {
-	return &FCMUsecasesImpl{infrastructure: infrastructure}
+// NewFCMUsecaseImpl ...
+func NewFCMUsecaseImpl(infrastructure infrastructure.Infrastructure) *UsecasesImpl {
+	return &UsecasesImpl{infrastructure: infrastructure}
 }
 
-func (f *FCMUsecasesImpl) SendNotification(
+// SendNotification ...
+func (f *UsecasesImpl) SendNotification(
 	ctx context.Context,
 	registrationTokens []string,
 	data map[string]string,
@@ -44,7 +48,7 @@ func (f *FCMUsecasesImpl) SendNotification(
 }
 
 // Notifications is used to query a user's priorities
-func (f *FCMUsecasesImpl) Notifications(
+func (f *UsecasesImpl) Notifications(
 	ctx context.Context,
 	registrationToken string,
 	newerThan time.Time,
@@ -54,7 +58,7 @@ func (f *FCMUsecasesImpl) Notifications(
 }
 
 // SendFCMByPhoneOrEmail is used to send FCM notification by phone or email
-func (f *FCMUsecasesImpl) SendFCMByPhoneOrEmail(
+func (f *UsecasesImpl) SendFCMByPhoneOrEmail(
 	ctx context.Context,
 	phoneNumber *string,
 	email *string,

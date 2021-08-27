@@ -17,8 +17,8 @@ import (
 	"github.com/kevinburke/twilio-go/token"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -60,7 +60,7 @@ type ServiceTwilio interface {
 }
 
 // NewService initializes a service to interact with Twilio
-func NewService(sms sms.ServiceSMS, repo repository.Repository) *Service {
+func NewService(sms sms.ServiceSMS, repo database.Repository) *Service {
 	region := serverutils.MustGetEnvVar(TwilioRegionEnvVarName)
 	videoBaseURL := serverutils.MustGetEnvVar(TwilioVideoAPIURLEnvVarName)
 	videoAPIKeySID := serverutils.MustGetEnvVar(TwilioVideoAPIKeySIDEnvVarName)
@@ -106,7 +106,7 @@ type Service struct {
 	callbackURL       string
 	smsNumber         string
 	sms               sms.ServiceSMS
-	repository        repository.Repository
+	repository        database.Repository
 }
 
 func (s Service) checkPreconditions() {

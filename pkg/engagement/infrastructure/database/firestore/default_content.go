@@ -13,7 +13,6 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 
 	"github.com/markbates/pkger"
 	"github.com/savannahghi/feedlib"
@@ -50,21 +49,21 @@ type actionGenerator func(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error)
 
 type nudgeGenerator func(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Nudge, error)
 
 type itemGenerator func(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Item, error)
 
 // SetDefaultActions ensures that a feed has default actions
@@ -72,7 +71,7 @@ func SetDefaultActions(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "SetDefaultActions")
 	defer span.End()
@@ -103,7 +102,7 @@ func SetDefaultNudges(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "SetDefaultNudges")
 	defer span.End()
@@ -134,7 +133,7 @@ func SetDefaultItems(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "SetDefaultItems")
 	defer span.End()
@@ -164,7 +163,7 @@ func defaultConsumerNudges(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "defaultConsumerNudges")
 	defer span.End()
@@ -187,7 +186,7 @@ func defaultProNudges(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "defaultProNudges")
 	defer span.End()
@@ -211,7 +210,7 @@ func defaultConsumerActions(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "defaultConsumerActions")
 	defer span.End()
@@ -237,7 +236,7 @@ func defaultProActions(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "defaultProActions")
 	defer span.End()
@@ -261,7 +260,7 @@ func defaultSeeDoctorAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
@@ -282,7 +281,7 @@ func defaultBuyMedicineAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
@@ -303,7 +302,7 @@ func defaultGetTestAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
@@ -324,7 +323,7 @@ func defaultGetInsuranceAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
@@ -345,7 +344,7 @@ func defaultSearchPatientAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
@@ -366,7 +365,7 @@ func defaultAddPatientAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
@@ -387,7 +386,7 @@ func partnerAccountSetupNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "partnerAccountSetupNudge")
 	defer span.End()
@@ -434,7 +433,7 @@ func verifyEmailNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "verifyEmailNudge")
 	defer span.End()
@@ -487,7 +486,7 @@ func createNudge(
 	imageTitle string,
 	imageDescription string,
 	actions []feedlib.Action,
-	repository repository.Repository,
+	repository Repository,
 	notificationBody feedlib.NotificationBody,
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "createNudge")
@@ -536,7 +535,7 @@ func createGlobalAction(
 	iconLink string,
 	iconTitle string,
 	iconDescription string,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "createGlobalAction")
 	defer span.End()
@@ -572,7 +571,7 @@ func createLocalAction(
 	name string,
 	actionType feedlib.ActionType,
 	handling feedlib.Handling,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Action, error) {
 	_, span := tracer.Start(ctx, "createLocalAction")
 	defer span.End()
@@ -618,7 +617,7 @@ func createFeedItem(
 	actions []feedlib.Action,
 	conversations []feedlib.Message,
 	persistent bool,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "createFeedItem")
 	defer span.End()
@@ -663,7 +662,7 @@ func defaultConsumerItems(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "defaultConsumerItems")
 	defer span.End()
@@ -686,7 +685,7 @@ func defaultProItems(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "defaultProItems")
 	defer span.End()
@@ -709,7 +708,7 @@ func simpleConsumerWelcome(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "simpleConsumerWelcome")
 	defer span.End()
@@ -756,7 +755,7 @@ func simpleProWelcome(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "simpleProWelcome")
 	defer span.End()
@@ -807,7 +806,7 @@ func getMessage(
 	text string,
 	replyTo *feedlib.Message,
 	postedByName string,
-	repository repository.Repository,
+	repository Repository,
 ) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "getMessage")
 	defer span.End()
@@ -841,7 +840,7 @@ func getConsumerWelcomeThread(
 	uid string,
 	flavour feedlib.Flavour,
 	itemID string,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "getConsumerWelcomeThread")
 	defer span.End()
@@ -1013,7 +1012,7 @@ func getProWelcomeThread(
 	uid string,
 	flavour feedlib.Flavour,
 	itemID string,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "getProWelcomeThread")
 	defer span.End()
@@ -1399,7 +1398,7 @@ func defaultActions(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
-	repository repository.Repository,
+	repository Repository,
 ) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "defaultActions")
 	defer span.End()
