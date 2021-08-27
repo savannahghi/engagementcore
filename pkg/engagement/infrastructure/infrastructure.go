@@ -81,7 +81,12 @@ func NewInfrastructureInteractor() Infrastructure {
 
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 
-	fcm := fcm.NewService(db, onboarding)
+	fcmOne := fcm.NewService(db, onboarding)
+	fcmTwo, err := fcm.NewRemotePushService(ctx)
+	if err != nil {
+		// TODO
+		log.Error(err)
+	}
 
 	lib := library.NewLibraryService(onboarding)
 
@@ -97,13 +102,16 @@ func NewInfrastructureInteractor() Infrastructure {
 	sms := sms.NewService(db, pubsub)
 	twilio := twilio.NewService(sms, db)
 
+	uploads := uploads.NewUploadsService()
+
 	otp := otp.NewService(whatsapp, mail, sms, twilio)
 
 	surveys := surveys.NewService(db)
 
 	return &Interactor{
 		db:         db,
-		fcm:        fcm,
+		fcm:        fcmOne,
+		fcmTwo:     fcmTwo,
 		lib:        lib,
 		mail:       mail,
 		messaging:  pubsub,
@@ -112,6 +120,7 @@ func NewInfrastructureInteractor() Infrastructure {
 		sms:        sms,
 		surveys:    surveys,
 		twilio:     twilio,
+		uploads:    uploads,
 		whatsapp:   whatsapp,
 	}
 }
