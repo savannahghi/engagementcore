@@ -76,22 +76,6 @@ func (c *Message) SetID(id string) {
 	c.ID = id
 }
 
-// Dummy ..
-type Dummy struct {
-	id string
-}
-
-//IsEntity ...
-func (d Dummy) IsEntity() {}
-
-// IsNode ..
-func (d *Dummy) IsNode() {}
-
-// SetID sets the trace's ID
-func (d *Dummy) SetID(id string) {
-	d.id = id
-}
-
 // OTP is used to persist and verify authorization codes
 // (single use 'One Time PIN's)
 type OTP struct {
