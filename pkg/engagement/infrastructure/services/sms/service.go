@@ -16,8 +16,8 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -73,7 +73,7 @@ type ServiceSMS interface {
 // Service defines a sms service struct
 type Service struct {
 	Env        string
-	Repository repository.Repository
+	Repository database.Repository
 	PubSub     messaging.NotificationService
 }
 
@@ -100,7 +100,7 @@ func getHost(env, service string) string {
 
 // NewService returns a new service
 func NewService(
-	repository repository.Repository,
+	repository database.Repository,
 	pubsub messaging.NotificationService,
 ) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)

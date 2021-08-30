@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func newTwilioService(ctx context.Context) (*twilio.Service, error) {
-	var repo repository.Repository
+	var repo database.Repository
 	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {

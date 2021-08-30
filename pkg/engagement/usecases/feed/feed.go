@@ -24,8 +24,8 @@ import (
 
 var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/usecases/feed")
 
-// FeedUseCases represents all the profile business logic
-type FeedUseCases interface {
+// Usecases represents all the profile business logic
+type Usecases interface {
 	GetFeed(
 		ctx context.Context,
 		uid *string,
@@ -235,22 +235,22 @@ type FeedUseCases interface {
 	) error
 }
 
-// FeedUseCaseImpl represents the feed usecase implementation
-type FeedUseCaseImpl struct {
+// UseCaseImpl represents the feed usecase implementation
+type UseCaseImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
 // NewFeed initializes a user feed
 func NewFeed(
 	infrastructure infrastructure.Infrastructure,
-) *FeedUseCaseImpl {
-	return &FeedUseCaseImpl{
+) *UseCaseImpl {
+	return &UseCaseImpl{
 		infrastructure: infrastructure,
 	}
 }
 
 // GetFeed retrieves a feed
-func (fe FeedUseCaseImpl) GetFeed(
+func (fe UseCaseImpl) GetFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
@@ -305,7 +305,7 @@ func (fe FeedUseCaseImpl) GetFeed(
 //
 // It is used for efficient instantiation of feeds by code that does not need
 // the full detail.
-func (fe FeedUseCaseImpl) GetThinFeed(
+func (fe UseCaseImpl) GetThinFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
@@ -344,7 +344,7 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 }
 
 // GetFeedItem retrieves a feed item
-func (fe FeedUseCaseImpl) GetFeedItem(
+func (fe UseCaseImpl) GetFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -381,7 +381,7 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 }
 
 // GetNudge retrieves a feed item
-func (fe FeedUseCaseImpl) GetNudge(
+func (fe UseCaseImpl) GetNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -416,7 +416,7 @@ func (fe FeedUseCaseImpl) GetNudge(
 }
 
 // GetAction retrieves a feed item
-func (fe FeedUseCaseImpl) GetAction(
+func (fe UseCaseImpl) GetAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -453,7 +453,7 @@ func (fe FeedUseCaseImpl) GetAction(
 }
 
 // PublishFeedItem idempotently creates or updates a feed item
-func (fe FeedUseCaseImpl) PublishFeedItem(
+func (fe UseCaseImpl) PublishFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -520,7 +520,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 }
 
 // DeleteFeedItem removes a feed item
-func (fe FeedUseCaseImpl) DeleteFeedItem(
+func (fe UseCaseImpl) DeleteFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -572,7 +572,7 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 }
 
 // ResolveFeedItem marks a feed item as Done
-func (fe FeedUseCaseImpl) ResolveFeedItem(
+func (fe UseCaseImpl) ResolveFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -639,7 +639,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 }
 
 // PinFeedItem marks a feed item as persistent
-func (fe FeedUseCaseImpl) PinFeedItem(
+func (fe UseCaseImpl) PinFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -706,7 +706,7 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 }
 
 // UnpinFeedItem marks a feed item as not persistent
-func (fe FeedUseCaseImpl) UnpinFeedItem(
+func (fe UseCaseImpl) UnpinFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -773,7 +773,7 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 }
 
 // UnresolveFeedItem marks a feed item as pending
-func (fe FeedUseCaseImpl) UnresolveFeedItem(
+func (fe UseCaseImpl) UnresolveFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -840,7 +840,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 }
 
 // HideFeedItem hides a feed item from a specific user's feed
-func (fe FeedUseCaseImpl) HideFeedItem(
+func (fe UseCaseImpl) HideFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -907,7 +907,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 }
 
 // ShowFeedItem shows a feed item on a specific user's feed
-func (fe FeedUseCaseImpl) ShowFeedItem(
+func (fe UseCaseImpl) ShowFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -974,7 +974,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 }
 
 // Labels returns the valid labels / filters for this feed
-func (fe FeedUseCaseImpl) Labels(
+func (fe UseCaseImpl) Labels(
 	ctx context.Context,
 	uid string, flavour feedlib.Flavour,
 ) ([]string, error) {
@@ -998,7 +998,7 @@ func (fe FeedUseCaseImpl) Labels(
 }
 
 // SaveLabel saves the indicated label, if it does not already exist
-func (fe FeedUseCaseImpl) SaveLabel(
+func (fe UseCaseImpl) SaveLabel(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1024,7 +1024,7 @@ func (fe FeedUseCaseImpl) SaveLabel(
 }
 
 // UnreadPersistentItems returns the number of unread inbox items for this feed
-func (fe FeedUseCaseImpl) UnreadPersistentItems(
+func (fe UseCaseImpl) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1049,7 +1049,7 @@ func (fe FeedUseCaseImpl) UnreadPersistentItems(
 }
 
 // UpdateUnreadPersistentItemsCount updates the number of unread inbox items
-func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
+func (fe UseCaseImpl) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1086,7 +1086,7 @@ func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 // ignored. This makes the push method idempotent.
 //
 // If the nudge does not have a sequence number, it is assigned one.
-func (fe FeedUseCaseImpl) PublishNudge(
+func (fe UseCaseImpl) PublishNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1152,7 +1152,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 }
 
 // ResolveNudge marks a feed item as Done
-func (fe FeedUseCaseImpl) ResolveNudge(
+func (fe UseCaseImpl) ResolveNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1218,7 +1218,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 }
 
 // UnresolveNudge marks a feed item as pending
-func (fe FeedUseCaseImpl) UnresolveNudge(
+func (fe UseCaseImpl) UnresolveNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1284,7 +1284,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 }
 
 // HideNudge hides a feed item from a specific user's feed
-func (fe FeedUseCaseImpl) HideNudge(
+func (fe UseCaseImpl) HideNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1349,7 +1349,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 }
 
 // ShowNudge hides a feed item from a specific user's feed
-func (fe FeedUseCaseImpl) ShowNudge(
+func (fe UseCaseImpl) ShowNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1415,7 +1415,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 }
 
 // DeleteNudge removes a nudge
-func (fe FeedUseCaseImpl) DeleteNudge(
+func (fe UseCaseImpl) DeleteNudge(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1480,7 +1480,7 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 // ignored. This makes the push method idempotent.
 //
 // If the action does not have a sequence number, it is assigned one.
-func (fe FeedUseCaseImpl) PublishAction(
+func (fe UseCaseImpl) PublishAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1541,7 +1541,7 @@ func (fe FeedUseCaseImpl) PublishAction(
 }
 
 // DeleteAction removes a nudge
-func (fe FeedUseCaseImpl) DeleteAction(
+func (fe UseCaseImpl) DeleteAction(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1592,7 +1592,7 @@ func (fe FeedUseCaseImpl) DeleteAction(
 }
 
 // PostMessage updates a feed/thread with a new message OR a reply
-func (fe FeedUseCaseImpl) PostMessage(
+func (fe UseCaseImpl) PostMessage(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1664,7 +1664,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 }
 
 // DeleteMessage permanently removes a message
-func (fe FeedUseCaseImpl) DeleteMessage(
+func (fe UseCaseImpl) DeleteMessage(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1737,7 +1737,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 //  2. Marking nudges as done and notifying their subscribers
 //  3. Updating an audit trail
 //  4. Updating (streaming) analytics
-func (fe FeedUseCaseImpl) ProcessEvent(
+func (fe UseCaseImpl) ProcessEvent(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,
@@ -1814,7 +1814,7 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 }
 
 // GetDefaultNudgeByTitle retrieves a default feed nudge
-func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
+func (fe UseCaseImpl) GetDefaultNudgeByTitle(
 	ctx context.Context,
 	uid string,
 	flavour feedlib.Flavour,

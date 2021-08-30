@@ -6,7 +6,8 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 )
 
-type OTPUsecases interface {
+// UseCases ...
+type UseCases interface {
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
 	GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error)
@@ -15,34 +16,42 @@ type OTPUsecases interface {
 	EmailVerificationOtp(ctx context.Context, email string) (string, error)
 }
 
-type OTPUsecasesImpl struct {
+// UseCasesImpl ...
+type UseCasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewOTPUsecasesImpl(infrastructure infrastructure.Infrastructure) *OTPUsecasesImpl {
-	return &OTPUsecasesImpl{infrastructure: infrastructure}
+// NewOTPUsecasesImpl ...
+func NewOTPUsecasesImpl(infrastructure infrastructure.Infrastructure) *UseCasesImpl {
+	return &UseCasesImpl{infrastructure: infrastructure}
 }
 
-func (o *OTPUsecasesImpl) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
+// GenerateAndSendOTP ...
+func (o *UseCasesImpl) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
 	return o.infrastructure.GenerateAndSendOTP(ctx, msisdn, appID)
 }
 
-func (o *OTPUsecasesImpl) SendOTPToEmail(ctx context.Context, msisdn string, email *string, appID *string) (string, error) {
+// SendOTPToEmail ...
+func (o *UseCasesImpl) SendOTPToEmail(ctx context.Context, msisdn string, email *string, appID *string) (string, error) {
 	return o.infrastructure.SendOTPToEmail(ctx, &msisdn, email, appID)
 }
 
-func (o *OTPUsecasesImpl) VerifyOtp(ctx context.Context, msisdn, verificationCode string) (bool, error) {
+// VerifyOtp ...
+func (o *UseCasesImpl) VerifyOtp(ctx context.Context, msisdn, verificationCode string) (bool, error) {
 	return o.infrastructure.VerifyOtp(ctx, &msisdn, &verificationCode)
 }
 
-func (o *OTPUsecasesImpl) VerifyEmailOtp(ctx context.Context, email, verificationCode string) (bool, error) {
+// VerifyEmailOtp ...
+func (o *UseCasesImpl) VerifyEmailOtp(ctx context.Context, email, verificationCode string) (bool, error) {
 	return o.infrastructure.VerifyEmailOtp(ctx, &email, &verificationCode)
 }
 
-func (o *OTPUsecasesImpl) GenerateRetryOTP(ctx context.Context, msisdn string, retryStep int, appID *string) (string, error) {
+// GenerateRetryOTP ...
+func (o *UseCasesImpl) GenerateRetryOTP(ctx context.Context, msisdn string, retryStep int, appID *string) (string, error) {
 	return o.infrastructure.GenerateRetryOTP(ctx, &msisdn, retryStep, appID)
 }
 
-func (o *OTPUsecasesImpl) EmailVerificationOtp(ctx context.Context, email string) (string, error) {
+// EmailVerificationOtp ...
+func (o *UseCasesImpl) EmailVerificationOtp(ctx context.Context, email string) (string, error) {
 	return o.infrastructure.EmailVerificationOtp(ctx, &email)
 }

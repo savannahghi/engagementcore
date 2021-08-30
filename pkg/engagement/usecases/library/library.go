@@ -8,23 +8,28 @@ import (
 	"github.com/savannahghi/feedlib"
 )
 
-type LibraryUsecases interface {
+// UseCases ...
+type UseCases interface {
 	GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
 }
 
-type LibraryUsecasesImpl struct {
+// UseCasesImpl ...
+type UseCasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewLibraryUsecasesImpl(infrastructure infrastructure.Infrastructure) *LibraryUsecasesImpl {
-	return &LibraryUsecasesImpl{infrastructure: infrastructure}
+// NewLibraryUsecasesImpl ...
+func NewLibraryUsecasesImpl(infrastructure infrastructure.Infrastructure) *UseCasesImpl {
+	return &UseCasesImpl{infrastructure: infrastructure}
 }
 
-func (l *LibraryUsecasesImpl) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
+// GetFaqsContent ...
+func (l *UseCasesImpl) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	return l.infrastructure.GetFaqsContent(ctx, flavour)
 }
 
-func (l *LibraryUsecasesImpl) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
+// GetLibraryContent ...
+func (l *UseCasesImpl) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	return l.infrastructure.GetLibraryContent(ctx)
 }

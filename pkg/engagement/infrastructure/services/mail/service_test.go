@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/mailgun/mailgun-go/v4"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
 
@@ -109,7 +109,7 @@ func TestService_SendEmail(t *testing.T) {
 
 func TestService_SendInBlue(t *testing.T) {
 	ctx := context.Background()
-	var repo repository.Repository
+	var repo database.Repository
 	type args struct {
 		subject string
 		text    string
@@ -150,13 +150,13 @@ func TestService_SendInBlue(t *testing.T) {
 }
 
 func TestService_CheckPreconditions(t *testing.T) {
-	var repo repository.Repository
+	var repo database.Repository
 	type fields struct {
 		Mg                *mailgun.MailgunImpl
 		From              string
 		SendInBlueEnabled bool
 		SendInBlueAPIKey  string
-		Repository        repository.Repository
+		Repository        database.Repository
 	}
 	tests := []struct {
 		name   string

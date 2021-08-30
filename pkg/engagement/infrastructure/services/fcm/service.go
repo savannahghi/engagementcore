@@ -13,8 +13,8 @@ import (
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"go.opentelemetry.io/otel"
 )
@@ -25,7 +25,7 @@ var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/servi
 type Service struct {
 	fcmClient       *messaging.Client
 	firestoreClient *firestore.Client
-	Repository      repository.Repository
+	Repository      database.Repository
 	onboarding      onboarding.ProfileService
 }
 
@@ -92,7 +92,7 @@ type ServiceFCM interface {
 }
 
 // NewService initializes a service to interact with Firebase Cloud Messaging
-func NewService(repository repository.Repository, onboarding onboarding.ProfileService) *Service {
+func NewService(repository database.Repository, onboarding onboarding.ProfileService) *Service {
 	fcmClient, err := initializeFCMClient()
 	if err != nil {
 		log.Panicf("error getting Messaging client: %v\n", err)

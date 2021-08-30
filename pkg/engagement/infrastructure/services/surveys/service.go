@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/firebasetools"
 	"go.opentelemetry.io/otel"
 )
@@ -26,7 +26,7 @@ type ServiceSurveys interface {
 }
 
 // NewService initializes a surveys service
-func NewService(repository repository.Repository) *Service {
+func NewService(repository database.Repository) *Service {
 	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
@@ -56,7 +56,7 @@ func (s Service) checkPreconditions() {
 // Service is an surveys service
 type Service struct {
 	firestoreClient *firestore.Client
-	Repository      repository.Repository
+	Repository      database.Repository
 }
 
 // RecordNPSResponse ...

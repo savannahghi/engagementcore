@@ -8,22 +8,28 @@ import (
 	"github.com/savannahghi/enumutils"
 )
 
-type SMSUsecases interface {
+// UseCases ...
+type UseCases interface {
 	Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error)
 	SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error)
 }
 
-type SMSUsecasesImpl struct {
+// UseCasesImpl ...
+type UseCasesImpl struct {
 	infrastructure infrastructure.Infrastructure
 }
 
-func NewSMSUsecasesImpl(infrastructure infrastructure.Infrastructure) *SMSUsecasesImpl {
-	return &SMSUsecasesImpl{infrastructure: infrastructure}
+// NewSMSUsecasesImpl ...
+func NewSMSUsecasesImpl(infrastructure infrastructure.Infrastructure) *UseCasesImpl {
+	return &UseCasesImpl{infrastructure: infrastructure}
 }
 
-func (s *SMSUsecasesImpl) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {
+// Send ...
+func (s *UseCasesImpl) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {
 	return s.infrastructure.Send(ctx, to, message, enumutils.SenderIDBewell)
 }
-func (s *SMSUsecasesImpl) SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error) {
+
+// SendToMany ...
+func (s *UseCasesImpl) SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error) {
 	return s.infrastructure.SendToMany(ctx, message, to, enumutils.SenderIDBewell)
 }

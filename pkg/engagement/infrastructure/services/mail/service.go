@@ -17,7 +17,7 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 )
@@ -71,7 +71,7 @@ type ServiceMail interface {
 }
 
 // NewService initializes a new MailGun service
-func NewService(repository repository.Repository) *Service {
+func NewService(repository database.Repository) *Service {
 	apiKey := serverutils.MustGetEnvVar(MailGunAPIKeyEnvVarName)
 	domain := serverutils.MustGetEnvVar(MailGunDomainEnvVarName)
 	from := serverutils.MustGetEnvVar(MailGunFromEnvVarName)
@@ -104,7 +104,7 @@ type Service struct {
 	From              string
 	SendInBlueEnabled bool
 	SendInBlueAPIKey  string
-	Repository        repository.Repository
+	Repository        database.Repository
 }
 
 // CheckPreconditions checks that all the required preconditions are satisfied
