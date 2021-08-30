@@ -3,7 +3,6 @@ package sms_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"testing"
 
@@ -13,23 +12,11 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
-	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 )
 
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", "testing")
 	os.Exit(m.Run())
-}
-
-func newHubSpotService(ctx context.Context) *hubspotUsecases.HubSpot {
-	hubspotService := hubspot.NewHubSpotService()
-	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
-	if err != nil {
-		log.Panic("failed to initialize hubspot crm repository: %w", err)
-	}
-	return hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 }
 
 func newTestSMSService() (*sms.Service, error) {
