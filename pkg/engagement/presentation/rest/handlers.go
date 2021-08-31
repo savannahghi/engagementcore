@@ -11,8 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 
 	"net/http"
 
@@ -29,8 +31,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
-	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 )
 
 const (
@@ -103,8 +103,6 @@ type PresentationHandlers interface {
 
 	SendToMany() http.HandlerFunc
 
-	SendMarketingSMS() http.HandlerFunc
-
 	GetAITSMSDeliveryCallback() http.HandlerFunc
 
 	GetNotificationHandler() http.HandlerFunc
@@ -125,15 +123,7 @@ type PresentationHandlers interface {
 
 	SendNotificationHandler() http.HandlerFunc
 
-	GetContactLists() http.HandlerFunc
-	GetContactListByID() http.HandlerFunc
-	GetContactsInAList() http.HandlerFunc
-	CollectEmailAddress() http.HandlerFunc
-	SetBewellAware() http.HandlerFunc
-
 	UpdateMailgunDeliveryStatus() http.HandlerFunc
-
-	HubSpotFirestoreSync() http.HandlerFunc
 
 	DataDeletionRequestCallback() http.HandlerFunc
 
@@ -144,16 +134,14 @@ type PresentationHandlers interface {
 
 // PresentationHandlersImpl represents the usecase implementation object
 type PresentationHandlersImpl struct {
-	interactor      *interactor.Interactor
-	hubspotHandlers hubspotHandlers.Handlers
+	usecases       usecases.Usecases
+	infrastructure infrastructure.Infrastructure
 }
 
 // NewPresentationHandlers initializes a new rest handlers usecase
-func NewPresentationHandlers(
-	i *interactor.Interactor,
-	hubspotHandlers hubspotHandlers.Handlers,
-) PresentationHandlers {
-	return &PresentationHandlersImpl{i, hubspotHandlers}
+func NewPresentationHandlers(infrastructure infrastructure.Infrastructure, usecases usecases.Usecases) PresentationHandlers {
+
+	return &PresentationHandlersImpl{infrastructure: infrastructure, usecases: usecases}
 }
 
 //GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
@@ -198,7 +186,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 
 	switch topicID {
 	case helpers.AddPubSubNamespace(common.ItemPublishTopic):
-		err = p.interactor.Notification.HandleItemPublish(ctx, m)
+		err = p.usecases.HandleItemPublish(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -208,7 +196,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemDeleteTopic):
-		err = p.interactor.Notification.HandleItemDelete(ctx, m)
+		err = p.usecases.HandleItemDelete(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -218,7 +206,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemResolveTopic):
-		err = p.interactor.Notification.HandleItemResolve(ctx, m)
+		err = p.usecases.HandleItemResolve(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -228,7 +216,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemUnresolveTopic):
-		err = p.interactor.Notification.HandleItemUnresolve(ctx, m)
+		err = p.usecases.HandleItemUnresolve(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -238,7 +226,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemHideTopic):
-		err = p.interactor.Notification.HandleItemHide(ctx, m)
+		err = p.usecases.HandleItemHide(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -248,7 +236,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemShowTopic):
-		err = p.interactor.Notification.HandleItemShow(ctx, m)
+		err = p.usecases.HandleItemShow(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -258,7 +246,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemPinTopic):
-		err = p.interactor.Notification.HandleItemPin(ctx, m)
+		err = p.usecases.HandleItemPin(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -268,7 +256,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemUnpinTopic):
-		err = p.interactor.Notification.HandleItemUnpin(ctx, m)
+		err = p.usecases.HandleItemUnpin(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -278,7 +266,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgePublishTopic):
-		err = p.interactor.Notification.HandleNudgePublish(ctx, m)
+		err = p.usecases.HandleNudgePublish(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -288,7 +276,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeDeleteTopic):
-		err = p.interactor.Notification.HandleNudgeDelete(ctx, m)
+		err = p.usecases.HandleNudgeDelete(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -298,7 +286,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeResolveTopic):
-		err = p.interactor.Notification.HandleNudgeResolve(ctx, m)
+		err = p.usecases.HandleNudgeResolve(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -308,7 +296,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeUnresolveTopic):
-		err = p.interactor.Notification.HandleNudgeUnresolve(ctx, m)
+		err = p.usecases.HandleNudgeUnresolve(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -318,7 +306,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeHideTopic):
-		err = p.interactor.Notification.HandleNudgeHide(ctx, m)
+		err = p.usecases.HandleNudgeHide(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -328,7 +316,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeShowTopic):
-		err = p.interactor.Notification.HandleNudgeShow(ctx, m)
+		err = p.usecases.HandleNudgeShow(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -338,7 +326,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ActionPublishTopic):
-		err = p.interactor.Notification.HandleActionPublish(ctx, m)
+		err = p.usecases.HandleActionPublish(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -348,7 +336,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ActionDeleteTopic):
-		err = p.interactor.Notification.HandleActionDelete(ctx, m)
+		err = p.usecases.HandleActionDelete(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -358,7 +346,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.MessagePostTopic):
-		err = p.interactor.Notification.HandleMessagePost(ctx, m)
+		err = p.usecases.HandleMessagePost(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -368,7 +356,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.MessageDeleteTopic):
-		err = p.interactor.Notification.HandleMessageDelete(ctx, m)
+		err = p.usecases.HandleMessageDelete(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -378,7 +366,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.IncomingEventTopic):
-		err = p.interactor.Notification.HandleIncomingEvent(ctx, m)
+		err = p.usecases.HandleIncomingEvent(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -388,7 +376,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.FcmPublishTopic):
-		err = p.interactor.Notification.HandleSendNotification(ctx, m)
+		err = p.usecases.HandleSendNotification(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -398,7 +386,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.SentEmailTopic):
-		err = p.interactor.Notification.SendEmail(ctx, m)
+		err = p.usecases.SendEmail(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -407,20 +395,6 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			)
 			return
 		}
-	case helpers.AddPubSubNamespace(common.EngagementCreateTopic):
-		engagement, err := p.interactor.Notification.HandleEngagementCreate(
-			ctx,
-			m,
-		)
-		if err != nil {
-			serverutils.WriteJSONResponse(
-				w,
-				errorcode.ErrorMap(err),
-				http.StatusBadRequest,
-			)
-			return
-		}
-		log.Print(engagement)
 	default:
 		// the topic should be anticipated/handled here
 		errMsg := fmt.Sprintf(
@@ -485,7 +459,7 @@ func (p PresentationHandlersImpl) GetFeed() http.HandlerFunc {
 			return
 		}
 
-		feed, err := p.interactor.Feed.GetFeed(
+		feed, err := p.usecases.GetFeed(
 			addUIDToContext(ctx, *uid),
 			uid,
 			anonymous,
@@ -527,7 +501,7 @@ func (p PresentationHandlersImpl) GetFeedItem() http.HandlerFunc {
 			return
 		}
 
-		item, err := p.interactor.Feed.GetFeedItem(
+		item, err := p.usecases.GetFeedItem(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -570,7 +544,7 @@ func (p PresentationHandlersImpl) GetNudge() http.HandlerFunc {
 		}
 
 		ctx = addUIDToContext(ctx, *uid)
-		nudge, err := p.interactor.Feed.GetNudge(
+		nudge, err := p.usecases.GetNudge(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -612,7 +586,7 @@ func (p PresentationHandlersImpl) GetAction() http.HandlerFunc {
 			return
 		}
 
-		action, err := p.interactor.Feed.GetAction(
+		action, err := p.usecases.GetAction(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -669,7 +643,7 @@ func (p PresentationHandlersImpl) PublishFeedItem() http.HandlerFunc {
 			return
 		}
 
-		publishedItem, err := p.interactor.Feed.PublishFeedItem(
+		publishedItem, err := p.usecases.PublishFeedItem(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -707,7 +681,7 @@ func (p PresentationHandlersImpl) DeleteFeedItem() http.HandlerFunc {
 			return
 		}
 
-		err = p.interactor.Feed.DeleteFeedItem(
+		err = p.usecases.DeleteFeedItem(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -734,7 +708,7 @@ func (p PresentationHandlersImpl) ResolveFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchItem(ctx, p.interactor.Feed.ResolveFeedItem, w, r)
+		patchItem(ctx, p.usecases.ResolveFeedItem, w, r)
 	}
 }
 
@@ -743,7 +717,7 @@ func (p PresentationHandlersImpl) PinFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchItem(ctx, p.interactor.Feed.PinFeedItem, w, r)
+		patchItem(ctx, p.usecases.PinFeedItem, w, r)
 	}
 }
 
@@ -752,7 +726,7 @@ func (p PresentationHandlersImpl) UnpinFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchItem(ctx, p.interactor.Feed.UnpinFeedItem, w, r)
+		patchItem(ctx, p.usecases.UnpinFeedItem, w, r)
 	}
 }
 
@@ -761,7 +735,7 @@ func (p PresentationHandlersImpl) HideFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchItem(ctx, p.interactor.Feed.HideFeedItem, w, r)
+		patchItem(ctx, p.usecases.HideFeedItem, w, r)
 	}
 }
 
@@ -770,7 +744,7 @@ func (p PresentationHandlersImpl) ShowFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchItem(ctx, p.interactor.Feed.ShowFeedItem, w, r)
+		patchItem(ctx, p.usecases.ShowFeedItem, w, r)
 	}
 }
 
@@ -779,7 +753,7 @@ func (p PresentationHandlersImpl) UnresolveFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchItem(ctx, p.interactor.Feed.UnresolveFeedItem, w, r)
+		patchItem(ctx, p.usecases.UnresolveFeedItem, w, r)
 	}
 }
 
@@ -807,7 +781,7 @@ func (p PresentationHandlersImpl) PublishNudge() http.HandlerFunc {
 			return
 		}
 
-		publishedNudge, err := p.interactor.Feed.PublishNudge(
+		publishedNudge, err := p.usecases.PublishNudge(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -840,7 +814,7 @@ func (p PresentationHandlersImpl) ResolveNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchNudge(ctx, p.interactor.Feed.ResolveNudge, w, r)
+		patchNudge(ctx, p.usecases.ResolveNudge, w, r)
 	}
 }
 
@@ -862,7 +836,7 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge() http.HandlerFunc {
 			return
 		}
 
-		nudge, err := p.interactor.Feed.GetDefaultNudgeByTitle(
+		nudge, err := p.usecases.GetDefaultNudgeByTitle(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -888,7 +862,7 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge() http.HandlerFunc {
 			respondWithJSON(w, http.StatusOK, marshalled)
 		}
 
-		_, err = p.interactor.Feed.ResolveNudge(
+		_, err = p.usecases.ResolveNudge(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -908,7 +882,7 @@ func (p PresentationHandlersImpl) UnresolveNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchNudge(ctx, p.interactor.Feed.UnresolveNudge, w, r)
+		patchNudge(ctx, p.usecases.UnresolveNudge, w, r)
 	}
 }
 
@@ -917,7 +891,7 @@ func (p PresentationHandlersImpl) HideNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchNudge(ctx, p.interactor.Feed.HideNudge, w, r)
+		patchNudge(ctx, p.usecases.HideNudge, w, r)
 	}
 }
 
@@ -926,7 +900,7 @@ func (p PresentationHandlersImpl) ShowNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		patchNudge(ctx, p.interactor.Feed.ShowNudge, w, r)
+		patchNudge(ctx, p.usecases.ShowNudge, w, r)
 	}
 }
 
@@ -947,7 +921,7 @@ func (p PresentationHandlersImpl) DeleteNudge() http.HandlerFunc {
 			return
 		}
 
-		err = p.interactor.Feed.DeleteNudge(
+		err = p.usecases.DeleteNudge(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -993,7 +967,7 @@ func (p PresentationHandlersImpl) PublishAction() http.HandlerFunc {
 			return
 		}
 
-		publishedAction, err := p.interactor.Feed.PublishAction(
+		publishedAction, err := p.usecases.PublishAction(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -1031,7 +1005,7 @@ func (p PresentationHandlersImpl) DeleteAction() http.HandlerFunc {
 			return
 		}
 
-		err = p.interactor.Feed.DeleteAction(
+		err = p.usecases.DeleteAction(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -1083,7 +1057,7 @@ func (p PresentationHandlersImpl) PostMessage() http.HandlerFunc {
 			return
 		}
 
-		postedMessage, err := p.interactor.Feed.PostMessage(
+		postedMessage, err := p.usecases.PostMessage(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -1128,7 +1102,7 @@ func (p PresentationHandlersImpl) DeleteMessage() http.HandlerFunc {
 			return
 		}
 
-		err = p.interactor.Feed.DeleteMessage(
+		err = p.usecases.DeleteMessage(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -1175,7 +1149,7 @@ func (p PresentationHandlersImpl) ProcessEvent() http.HandlerFunc {
 			return
 		}
 
-		err = p.interactor.Feed.ProcessEvent(
+		err = p.usecases.ProcessEvent(
 			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
@@ -1233,7 +1207,7 @@ func (p PresentationHandlersImpl) Upload() http.HandlerFunc {
 			return
 		}
 
-		upload, err := p.interactor.Uploads.Upload(ctx, uploadInput)
+		upload, err := p.usecases.Upload(ctx, uploadInput)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -1265,7 +1239,7 @@ func (p PresentationHandlersImpl) FindUpload() http.HandlerFunc {
 			return
 		}
 
-		upload, err := p.interactor.Uploads.FindUploadByID(ctx, uploadID)
+		upload, err := p.usecases.FindUploadByID(ctx, uploadID)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -1310,7 +1284,7 @@ func (p PresentationHandlersImpl) SendEmail() http.HandlerFunc {
 			return
 		}
 
-		resp, _, err := p.interactor.Mail.SendEmail(
+		resp, _, err := p.infrastructure.SendEmail(
 			ctx,
 			payload.Subject,
 			payload.Text,
@@ -1357,7 +1331,7 @@ func (p PresentationHandlersImpl) SendToMany() http.HandlerFunc {
 			return
 		}
 
-		resp, err := p.interactor.SMS.SendToMany(
+		resp, err := p.infrastructure.SendToMany(
 			ctx,
 			payload.Message,
 			payload.To,
@@ -1373,60 +1347,6 @@ func (p PresentationHandlersImpl) SendToMany() http.HandlerFunc {
 				return
 			}
 
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		marshalled, err := json.Marshal(resp)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
-// SendMarketingSMS sends a data message to the specified recipient
-func (p PresentationHandlersImpl) SendMarketingSMS() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		payload := &dto.SendSMSPayload{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		if len(payload.To) == 0 {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("expected atleast one phone number"),
-			)
-			return
-		}
-
-		if payload.Message == "" {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("can't send sms, expected a message"),
-			)
-			return
-		}
-
-		resp, err := p.interactor.SMS.SendMarketingSMS(
-			ctx,
-			payload.To,
-			payload.Message,
-			payload.Sender,
-			*payload.Segment,
-		)
-		if err != nil {
-			badRequest := strings.Contains(
-				err.Error(),
-				"http error status: 400",
-			)
-			if badRequest {
-				respondWithError(w, http.StatusBadRequest, err)
-				return
-			}
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -1478,7 +1398,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 			DeliveryReportTimeStamp: time.Now(),
 		}
 
-		sms, err := p.interactor.SMS.GetMarketingSMSByPhone(ctx, phoneNumber)
+		sms, err := p.infrastructure.GetMarketingSMSByPhone(ctx, phoneNumber)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -1490,7 +1410,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 		)
 
 		sms.DeliveryReport = deliveryReport
-		updatedSms, err := p.interactor.SMS.UpdateMarketingMessage(
+		updatedSms, err := p.infrastructure.UpdateMarketingMessage(
 			ctx,
 			sms,
 		)
@@ -1536,7 +1456,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler() http.HandlerFunc {
 		}
 
 		// save Twilio response for audit purposes
-		err := p.interactor.Whatsapp.SaveTwilioCallbackResponse(ctx, *payload)
+		err := p.infrastructure.SaveTwilioCallbackResponse(ctx, *payload)
 		if err != nil {
 			err := fmt.Errorf("twilio notification payload not saved")
 			log.Printf("Twilio callback error: %s", err)
@@ -1577,7 +1497,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler() http.HandlerFunc {
 		}
 
 		// save Twilio response for audit purposes
-		err := p.interactor.Whatsapp.SaveTwilioCallbackResponse(ctx, *payload)
+		err := p.infrastructure.SaveTwilioCallbackResponse(ctx, *payload)
 		if err != nil {
 			err := fmt.Errorf("twilio notification payload not saved")
 			log.Printf("Twilio callback error: %s", err)
@@ -1622,7 +1542,7 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler() http.Hand
 
 		serverutils.DecodeJSONToTargetStruct(rw, r, payloadRequest)
 
-		ok, err := p.interactor.Whatsapp.PhoneNumberVerificationCode(
+		ok, err := p.usecases.PhoneNumberVerificationCode(
 			ctx,
 			payloadRequest.To,
 			payloadRequest.Code,
@@ -1653,7 +1573,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			return
 		}
 
-		code, err := p.interactor.OTP.GenerateAndSendOTP(
+		code, err := p.usecases.GenerateAndSendOTP(
 			ctx,
 			payload.Msisdn,
 			payload.AppID,
@@ -1684,9 +1604,9 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		code, err := p.interactor.OTP.GenerateRetryOTP(
+		code, err := p.usecases.GenerateRetryOTP(
 			ctx,
-			payload.Msisdn,
+			*payload.Msisdn,
 			payload.RetryStep,
 			payload.AppID,
 		)
@@ -1719,10 +1639,10 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler() http.HandlerFunc {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := p.interactor.OTP.VerifyOtp(
+		isVerified, err := p.usecases.VerifyOtp(
 			ctx,
-			payload.Msisdn,
-			payload.VerificationCode,
+			*payload.Msisdn,
+			*payload.VerificationCode,
 		)
 		if err != nil {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
@@ -1750,10 +1670,10 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler() http.HandlerFunc 
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := p.interactor.OTP.VerifyEmailOtp(
+		isVerified, err := p.usecases.VerifyEmailOtp(
 			ctx,
-			payload.Email,
-			payload.VerificationCode,
+			*payload.Email,
+			*payload.VerificationCode,
 		)
 		if err != nil {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
@@ -1782,7 +1702,7 @@ func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 			return
 		}
 
-		_, err := p.interactor.FCM.SendNotification(
+		_, err := p.usecases.SendNotification(
 			ctx,
 			payload.RegistrationTokens,
 			payload.Data,
@@ -1812,110 +1732,6 @@ func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 	}
 }
 
-// GetContactLists fetches all the Contact Lists on hubspot
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) GetContactLists() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		contactLists, err := p.interactor.CRM.GetContactLists()
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		serverutils.WriteJSONResponse(w, contactLists, http.StatusOK)
-	}
-}
-
-// GetContactListByID fetches a specific Contact List given its listId
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) GetContactListByID() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.ListID{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contactList, err := p.interactor.CRM.GetContactListByID(payload.ListID)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
-	}
-}
-
-// GetContactsInAList fetches all the contacts segmented in a Contact List
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.ListID{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contactList, err := p.interactor.CRM.GetContactsInAList(payload.ListID)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
-	}
-}
-
-//SetBewellAware the user identified by the provided email as bewell-aware
-func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		payload := &dto.SetBewellAwareInput{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contact, err := p.interactor.CrmExt.BeWellAware(
-			ctx,
-			payload.EmailAddress,
-		)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		marshalled, err := json.Marshal(contact)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
-// CollectEmailAddress updates a user CRM contact with the supplied email
-func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		payload := &dto.PrimaryEmailAddressPayload{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		if payload.PhoneNumber == "" || payload.EmailAddress == "" {
-			err := fmt.Errorf(
-				"expected either a phone number or an email to be defined",
-			)
-			serverutils.WriteJSONResponse(w, errorcode.CustomError{
-				Err:     err,
-				Message: err.Error(),
-			}, http.StatusBadRequest)
-			return
-		}
-
-		contact, err := p.interactor.CrmExt.CollectEmails(
-			ctx,
-			payload.EmailAddress,
-			payload.PhoneNumber,
-		)
-		if err != nil {
-			errorcode.RespondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		marshalled, err := json.Marshal(contact)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
 // UpdateMailgunDeliveryStatus gets the status of the sent emails and logs them in the database
 func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
@@ -1924,7 +1740,7 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 		payload := &dto.MailgunEvent{}
 		serverutils.DecodeJSONToTargetStruct(rw, r, payload)
 
-		emailLog, err := p.interactor.Mail.UpdateMailgunDeliveryStatus(
+		emailLog, err := p.infrastructure.UpdateMailgunDeliveryStatus(
 			ctx,
 			payload,
 		)
@@ -1940,13 +1756,6 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 			return
 		}
 		respondWithJSON(rw, http.StatusOK, marshalled)
-	}
-}
-
-// HubSpotFirestoreSync syncs hubspot contacts and our firestore records
-func (p PresentationHandlersImpl) HubSpotFirestoreSync() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		p.hubspotHandlers.HubspotFireStoreSync(w, r)
 	}
 }
 
@@ -1975,7 +1784,7 @@ func (p PresentationHandlersImpl) GetTwilioVideoCallbackFunc() http.HandlerFunc 
 		if r.Form == nil || len(r.Form) == 0 {
 			return
 		}
-		if err := p.interactor.Twilio.SaveTwilioVideoCallbackStatus(
+		if err := p.infrastructure.SaveTwilioVideoCallbackStatus(
 			r.Context(),
 			dto.CallbackData{Values: r.Form},
 		); err != nil {

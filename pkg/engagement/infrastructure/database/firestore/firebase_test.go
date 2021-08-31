@@ -1,4 +1,4 @@
-package database_test
+package fb_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"

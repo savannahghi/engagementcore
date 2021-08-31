@@ -14,7 +14,7 @@ import (
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -153,6 +153,7 @@ type ServiceWhatsapp interface {
 		marketingMessage string,
 	) (bool, error)
 
+	// TODO: Remove db implementation
 	SaveTwilioCallbackResponse(
 		ctx context.Context,
 		data dto.Message,
@@ -180,7 +181,7 @@ type Service struct {
 	AccountAuthToken string
 	Sender           string
 	HTTPClient       *http.Client
-	Repository       repository.Repository
+	Repository       database.Repository
 }
 
 // CheckPreconditions ...

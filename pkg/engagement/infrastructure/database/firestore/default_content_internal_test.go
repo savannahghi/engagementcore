@@ -1,4 +1,4 @@
-package database
+package fb
 
 import (
 	"context"
@@ -19,11 +19,11 @@ func Test_partnerAccountSetupNudge(t *testing.T) {
 		t.Errorf("unable to create FirebaseRepository: %v", err)
 	}
 
-	nudge, err := partnerAccountSetupNudge(ctx, emptyUID, consumer, fr)
+	nudge, err := partnerAccountSetupNudge(ctx, emptyUID, consumer, *fr)
 	assert.Empty(t, nudge)
 	assert.NotNil(t, err)
 
-	nudge, err = partnerAccountSetupNudge(ctx, emptyUID, pro, fr)
+	nudge, err = partnerAccountSetupNudge(ctx, emptyUID, pro, *fr)
 	assert.Empty(t, nudge)
 	assert.NotNil(t, err)
 }
@@ -39,11 +39,11 @@ func Test_verifyEmailNudge(t *testing.T) {
 		t.Errorf("unable to create FirebaseRepository: %v", err)
 	}
 
-	nudge, err := verifyEmailNudge(ctx, emptyUID, consumer, fr)
+	nudge, err := verifyEmailNudge(ctx, emptyUID, consumer, *fr)
 	assert.Empty(t, nudge)
 	assert.NotNil(t, err)
 
-	nudge, err = verifyEmailNudge(ctx, emptyUID, pro, fr)
+	nudge, err = verifyEmailNudge(ctx, emptyUID, pro, *fr)
 	assert.Empty(t, nudge)
 	assert.NotNil(t, err)
 }
@@ -77,7 +77,7 @@ func Test_createNudge(t *testing.T) {
 		imageTitle,
 		imageDescription,
 		actions,
-		fr,
+		*fr,
 		notificationBody,
 	)
 	assert.Empty(t, nudge)
@@ -92,7 +92,7 @@ func Test_createNudge(t *testing.T) {
 		imageTitle,
 		imageDescription,
 		actions,
-		fr,
+		*fr,
 		notificationBody,
 	)
 	assert.Empty(t, nudge)
@@ -128,7 +128,7 @@ func Test_createGlobalAction(t *testing.T) {
 		iconLink,
 		iconTitle,
 		iconDescription,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, nudge)
 	assert.NotNil(t, err)
@@ -144,7 +144,7 @@ func Test_createGlobalAction(t *testing.T) {
 		iconLink,
 		iconTitle,
 		iconDescription,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, nudge)
 	assert.NotNil(t, err)
@@ -191,7 +191,7 @@ func Test_createFeedItem(t *testing.T) {
 		actions,
 		conversations,
 		persistent,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, feed)
 	assert.NotNil(t, err)
@@ -213,7 +213,7 @@ func Test_createFeedItem(t *testing.T) {
 		actions,
 		conversations,
 		persistent,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, feed)
 	assert.NotNil(t, err)
@@ -230,11 +230,11 @@ func Test_simpleConsumerWelcome(t *testing.T) {
 		t.Errorf("unable to create FirebaseRepository: %v", err)
 	}
 
-	welcome, err := simpleConsumerWelcome(ctx, emptyUID, consumer, fr)
+	welcome, err := simpleConsumerWelcome(ctx, emptyUID, consumer, *fr)
 	assert.Empty(t, welcome)
 	assert.NotNil(t, err)
 
-	welcome, err = simpleConsumerWelcome(ctx, emptyUID, pro, fr)
+	welcome, err = simpleConsumerWelcome(ctx, emptyUID, pro, *fr)
 	assert.Empty(t, welcome)
 	assert.NotNil(t, err)
 }
@@ -250,11 +250,11 @@ func Test_simpleProWelcome(t *testing.T) {
 		t.Errorf("unable to create FirebaseRepository: %v", err)
 	}
 
-	welcome, err := simpleProWelcome(ctx, emptyUID, consumer, fr)
+	welcome, err := simpleProWelcome(ctx, emptyUID, consumer, *fr)
 	assert.Empty(t, welcome)
 	assert.NotNil(t, err)
 
-	welcome, err = simpleProWelcome(ctx, emptyUID, pro, fr)
+	welcome, err = simpleProWelcome(ctx, emptyUID, pro, *fr)
 	assert.Empty(t, welcome)
 	assert.NotNil(t, err)
 }
@@ -282,7 +282,7 @@ func Test_getMessage(t *testing.T) {
 		text,
 		&replyTo,
 		postedByName,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)
@@ -295,7 +295,7 @@ func Test_getMessage(t *testing.T) {
 		text,
 		&replyTo,
 		postedByName,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)
@@ -318,7 +318,7 @@ func Test_getConsumerWelcomeThread(t *testing.T) {
 		emptyUID,
 		consumer,
 		itemID,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)
@@ -328,7 +328,7 @@ func Test_getConsumerWelcomeThread(t *testing.T) {
 		emptyUID,
 		pro,
 		itemID,
-		fr)
+		*fr)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)
 }
@@ -350,7 +350,7 @@ func Test_getProWelcomeThread(t *testing.T) {
 		emptyUID,
 		consumer,
 		itemID,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)
@@ -360,7 +360,7 @@ func Test_getProWelcomeThread(t *testing.T) {
 		emptyUID,
 		pro,
 		itemID,
-		fr,
+		*fr,
 	)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)

@@ -35,7 +35,7 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/rest"
 	"github.com/savannahghi/interserviceclient"
@@ -5586,7 +5586,7 @@ func resolveTestNudge(
 	nudge *feedlib.Nudge,
 ) error {
 
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		return fmt.Errorf("can't initialize Firebase Repository: %s", err)
 	}
@@ -5617,7 +5617,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 	}
 	uid := token.UID
 	fl := feedlib.FlavourConsumer
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't initialize Firebase Repository: %s", err)
 	}
@@ -5632,11 +5632,11 @@ func TestResolveDefaultNudge(t *testing.T) {
 		}
 	}
 
-	defaultNudges, err := database.SetDefaultNudges(
+	defaultNudges, err := db.SetDefaultNudges(
 		ctx,
 		uid,
 		fl,
-		fr,
+		*fr,
 	)
 
 	if err != nil {
@@ -5911,7 +5911,7 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 		SenderID:    enumutils.SenderIDBewell,
 	}
 
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't initialize Firebase Repository: %s", err)
 		return
@@ -6024,7 +6024,7 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 	ctx := context.Background()
 	headers := getDefaultHeaders(ctx, t, baseURL)
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't initialize Firebase Repository: %s", err)
 		return

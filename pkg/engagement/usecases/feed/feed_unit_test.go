@@ -1,28 +1,39 @@
-package usecases_test
+package feed_test
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
+	mockRepo "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/mock"
+	mockMessaging "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging/mock"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases/feed"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/segmentio/ksuid"
 )
 
+var fakeEngagement mockRepo.FakeEngagementRepository
+var fakeMessaging mockMessaging.FakeServiceMessaging
+
+func TestMain(m *testing.M) {
+	os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
+	os.Setenv("ENVIRONMENT", "staging")
+	os.Exit(m.Run())
+}
+
 func TestPublishFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
 
 	uid := ksuid.New().String()
 	testItem := testItem()
+
 	type args struct {
 		ctx     context.Context
 		uid     string
@@ -50,7 +61,7 @@ func TestPublishFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				item:    testItem,
+				item:    nil,
 			},
 			wantErr: true,
 		},
@@ -60,7 +71,7 @@ func TestPublishFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				item:    testItem,
+				item:    nil,
 			},
 			wantErr: true,
 		},
@@ -90,7 +101,7 @@ func TestPublishFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				item:    testItem,
+				item:    nil,
 			},
 			wantErr: true,
 		},
@@ -201,7 +212,8 @@ func TestPublishFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.PublishFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.item)
+			fe := feed.NewFeed(i)
+			got, err := fe.PublishFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.item)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.PublishFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -232,11 +244,8 @@ func TestPublishFeedItem(t *testing.T) {
 func TestDeleteFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
 	uid := ksuid.New().String()
 
 	testItem := testItem()
@@ -278,9 +287,9 @@ func TestDeleteFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  "",
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid:fail_to_send_notification",
@@ -288,9 +297,9 @@ func TestDeleteFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  "",
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 
@@ -396,7 +405,8 @@ func TestDeleteFeedItem(t *testing.T) {
 				}
 			}
 
-			err := i.Feed.DeleteFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			fe := feed.NewFeed(i)
+			err := fe.DeleteFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestDeleteFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -420,14 +430,22 @@ func TestDeleteFeedItem(t *testing.T) {
 func TestResolveFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
-	testItem := getTestItem()
+	testItem := testItem()
+
+	unsavedItem := getTestItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -456,7 +474,7 @@ func TestResolveFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -466,7 +484,7 @@ func TestResolveFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -476,7 +494,7 @@ func TestResolveFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  "",
 			},
 			wantErr: true,
 		},
@@ -599,7 +617,7 @@ func TestResolveFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.ResolveFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := fe.ResolveFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestResolveFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -624,19 +642,33 @@ func TestResolveFeedItem(t *testing.T) {
 		})
 	}
 
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
+
 }
 
 func TestPinFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
-	testItem := getTestItem()
+	testItem := testItem()
+
+	unsavedItem := getTestItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -667,7 +699,7 @@ func TestPinFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantPersistent: false,
 			wantErr:        true,
@@ -678,7 +710,7 @@ func TestPinFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantPersistent: false,
 			wantErr:        true,
@@ -689,7 +721,7 @@ func TestPinFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantPersistent: false,
 			wantErr:        true,
@@ -857,7 +889,7 @@ func TestPinFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.PinFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := fe.PinFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.PinFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -881,19 +913,32 @@ func TestPinFeedItem(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestUnpinFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
-	testItem := getTestItem()
+	testItem := testItem()
+
+	unsavedItem := getTestItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -924,7 +969,7 @@ func TestUnpinFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantPersistent: false,
 			wantErr:        true,
@@ -935,7 +980,7 @@ func TestUnpinFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantPersistent: false,
 			wantErr:        true,
@@ -946,7 +991,7 @@ func TestUnpinFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantPersistent: false,
 			wantErr:        true,
@@ -1114,7 +1159,8 @@ func TestUnpinFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.UnpinFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			fe := feed.NewFeed(i)
+			got, err := fe.UnpinFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.UnpinFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1138,19 +1184,32 @@ func TestUnpinFeedItem(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestUnresolveFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
-	testItem := getTestItem()
+	testItem := testItem()
+
+	unsavedItem := getTestItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -1179,7 +1238,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1189,7 +1248,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1199,7 +1258,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1342,7 +1401,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.UnresolveFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := fe.UnresolveFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestUnresolveFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1366,19 +1425,33 @@ func TestUnresolveFeedItem(t *testing.T) {
 			}
 		})
 	}
+
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestHideFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
-	testItem := getTestItem()
+	testItem := testItem()
+
+	unsavedItem := getTestItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -1409,7 +1482,7 @@ func TestHideFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1419,7 +1492,7 @@ func TestHideFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1429,7 +1502,7 @@ func TestHideFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1552,7 +1625,7 @@ func TestHideFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.HideFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := fe.HideFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestHideFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1576,19 +1649,32 @@ func TestHideFeedItem(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestShowFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
-	testItem := getTestItem()
+	testItem := testItem()
+
+	unsavedItem := getTestItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -1619,7 +1705,7 @@ func TestShowFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1629,7 +1715,7 @@ func TestShowFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1639,7 +1725,7 @@ func TestShowFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				itemID:  testItem.ID,
+				itemID:  unsavedItem.ID,
 			},
 			wantErr: true,
 		},
@@ -1784,7 +1870,7 @@ func TestShowFeedItem(t *testing.T) {
 				}
 			}
 
-			got, err := i.Feed.ShowFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := fe.ShowFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestShowFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1808,17 +1894,31 @@ func TestShowFeedItem(t *testing.T) {
 			}
 		})
 	}
+
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestLabels(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
+
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -1855,7 +1955,7 @@ func TestLabels(t *testing.T) {
 					return []string{common.DefaultLabel}, nil
 				}
 			}
-			got, err := i.Feed.Labels(tt.args.ctx, tt.args.uid, tt.args.flavour)
+			got, err := fe.Labels(tt.args.ctx, tt.args.uid, tt.args.flavour)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestLabels() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1879,18 +1979,30 @@ func TestLabels(t *testing.T) {
 			}
 		})
 	}
-
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestSaveLabel(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
+
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -1930,7 +2042,7 @@ func TestSaveLabel(t *testing.T) {
 					return nil
 				}
 			}
-			err := i.Feed.SaveLabel(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.label)
+			err := fe.SaveLabel(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.label)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestSaveLabel() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1949,18 +2061,30 @@ func TestSaveLabel(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestUnreadPersistentItems(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
 
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 	type args struct {
 		ctx     context.Context
 		uid     string
@@ -1996,7 +2120,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 					return 0, nil
 				}
 			}
-			_, err := i.Feed.UnreadPersistentItems(tt.args.ctx, tt.args.uid, tt.args.flavour)
+			_, err := fe.UnreadPersistentItems(tt.args.ctx, tt.args.uid, tt.args.flavour)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestUnreadPersistentItems() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2015,17 +2139,30 @@ func TestUnreadPersistentItems(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
+
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -2062,7 +2199,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 					return nil
 				}
 			}
-			err := i.Feed.UpdateUnreadPersistentItemsCount(tt.args.ctx, tt.args.uid, tt.args.flavour)
+			err := fe.UpdateUnreadPersistentItemsCount(tt.args.ctx, tt.args.uid, tt.args.flavour)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FeedUseCaseImpl.TestUpdateUnreadPersistentItemsCount() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2081,17 +2218,31 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestPublishNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
+
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
+
 	nudge := testNudge()
 	type args struct {
 		ctx     context.Context
@@ -2274,7 +2425,7 @@ func TestPublishNudge(t *testing.T) {
 					}, fmt.Errorf("invalid nudge")
 				}
 			}
-			got, err := i.Feed.PublishNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudge)
+			got, err := fe.PublishNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudge)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.PublishNudge() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2298,18 +2449,42 @@ func TestPublishNudge(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
+	err = fe.DeleteNudge(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown test nudge %s:", err)
+	}
 }
 
 func TestResolveNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
+
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
+
 	nudge := testNudge()
+
+	_, err = fe.PublishNudge(ctx, uid, flavour, nudge)
+	if err != nil {
+		t.Errorf("failed to create test nudge %v", err)
+	}
+
 	type args struct {
 		ctx     context.Context
 		uid     string
@@ -2339,7 +2514,7 @@ func TestResolveNudge(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				nudgeID: nudge.ID,
+				nudgeID: ksuid.New().String(),
 			},
 			wantErr: true,
 		},
@@ -2349,7 +2524,7 @@ func TestResolveNudge(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				nudgeID: nudge.ID,
+				nudgeID: ksuid.New().String(),
 			},
 			wantErr: true,
 		},
@@ -2359,7 +2534,7 @@ func TestResolveNudge(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				nudgeID: nudge.ID,
+				nudgeID: "",
 			},
 			wantErr: true,
 		},
@@ -2490,7 +2665,7 @@ func TestResolveNudge(t *testing.T) {
 					return fmt.Errorf("unable to send notification")
 				}
 			}
-			got, err := i.Feed.ResolveNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudgeID)
+			got, err := fe.ResolveNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudgeID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.ResolveNudge() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2514,18 +2689,36 @@ func TestResolveNudge(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
 }
 
 func TestUnresolveNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i, err := InitializeFakeEngagementInteractor()
-	if err != nil {
-		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
-		return
-	}
+	i := infrastructure.NewInfrastructureInteractor()
+
+	fe := feed.NewFeed(i)
+
 	uid := ksuid.New().String()
+
+	testItem := testItem()
+
+	flavour := feedlib.FlavourConsumer
+
+	_, err := fe.PublishFeedItem(ctx, uid, flavour, testItem)
+	if err != nil {
+		t.Errorf("failed to create test item %v", err)
+	}
 	nudge := testNudge()
+
+	_, err = fe.PublishNudge(ctx, uid, flavour, nudge)
+	if err != nil {
+		t.Errorf("failed to create test nudge %v", err)
+	}
 	type args struct {
 		ctx     context.Context
 		uid     string
@@ -2555,7 +2748,7 @@ func TestUnresolveNudge(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				nudgeID: nudge.ID,
+				nudgeID: ksuid.New().String(),
 			},
 			wantErr: true,
 		},
@@ -2565,7 +2758,7 @@ func TestUnresolveNudge(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				nudgeID: nudge.ID,
+				nudgeID: ksuid.New().String(),
 			},
 			wantErr: true,
 		},
@@ -2575,7 +2768,7 @@ func TestUnresolveNudge(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: feedlib.FlavourConsumer,
-				nudgeID: nudge.ID,
+				nudgeID: "",
 			},
 			wantErr: true,
 		},
@@ -2706,7 +2899,7 @@ func TestUnresolveNudge(t *testing.T) {
 					return fmt.Errorf("unable to send notification")
 				}
 			}
-			got, err := i.Feed.UnresolveNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudgeID)
+			got, err := fe.UnresolveNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudgeID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.UnresolveNudge() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2729,5 +2922,14 @@ func TestUnresolveNudge(t *testing.T) {
 				}
 			}
 		})
+	}
+	// Teardown
+	err = fe.DeleteFeedItem(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown feed item %s:", err)
+	}
+	err = fe.DeleteNudge(ctx, uid, flavour, testItem.ID)
+	if err != nil {
+		t.Errorf("failed to teardown test nudge %s:", err)
 	}
 }

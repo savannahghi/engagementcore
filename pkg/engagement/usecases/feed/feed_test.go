@@ -1,9 +1,8 @@
-package usecases_test
+package feed_test
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -11,36 +10,12 @@ import (
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
-	mockEDI "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi/mock"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	mockFCM "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm/mock"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
-	mockMessaging "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging/mock"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
-	mockOnboarding "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding/mock"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/uploads"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
-	mockEngagement "github.com/savannahghi/engagement/pkg/engagement/repository/mock"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases/feed"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
-	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 )
 
 const (
@@ -49,86 +24,58 @@ const (
 	IntMax = 9007199254740990
 )
 
-func InitializeTestNewFeed(ctx context.Context) (*usecases.FeedUseCaseImpl, error) {
-	fr, err := db.NewFirebaseRepository(ctx)
-	if err != nil {
-		return nil, err
-	}
-	projectID, err := serverutils.GetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't get projectID from env var `%s`: %w",
-			serverutils.GoogleCloudProjectIDEnvVarName,
-			err,
-		)
-	}
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
-	}
-	feed := usecases.NewFeed(fr, ns)
-	return feed, nil
+func InitializeTestNewFeed(ctx context.Context) (*feed.UseCaseImpl, infrastructure.Infrastructure, error) {
+	infra := infrastructure.NewInfrastructureInteractor()
+	feed := feed.NewFeed(infra)
+	return feed, infra, nil
 }
 
-var fakeEngagement mockEngagement.FakeEngagementRepository
-var fakeOnboarding mockOnboarding.FakeServiceOnboarding
-var fakeMessaging mockMessaging.FakeServiceMessaging
-var fakeFCM mockFCM.FakeServiceFcm
-var fakeEDI mockEDI.FakeEDIService
+// var fakeEngagement mockEngagement.FakeEngagementRepository
+// var fakeOnboarding mockOnboarding.FakeServiceOnboarding
+// var fakeMessaging mockMessaging.FakeServiceMessaging
+// var fakeFCM mockFCM.FakeServiceFcm
 
-// InitializeFakeEngagementInteractor represents a fake engagement interactor
-func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
-	var r repository.Repository = &fakeEngagement
-	var onboardingSvc onboarding.ProfileService = &fakeOnboarding
-	var messagingSvc messaging.NotificationService = &fakeMessaging
-	var fcmSvc fcm.PushService = &fakeFCM
-	var ediSvc edi.ServiceEdi = &fakeEDI
+// // InitializeFakeEngagementInteractor represents a fake engagement interactor
+// func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
+// 	var r repository.Repository = &fakeEngagement
+// 	var onboardingSvc onboarding.ProfileService = &fakeOnboarding
+// 	var messagingSvc messaging.NotificationService = &fakeMessaging
+// 	var fcmSvc fcm.PushService = &fakeFCM
 
-	ctx := context.Background()
+// 	feed := usecases.NewFeed(r, messagingSvc)
+// 	fcm := fcm.NewService(r, onboardingSvc)
+// 	mail := mail.NewService(r)
+// 	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail)
+// 	uploads := uploads.NewUploadsService()
 
-	feed := usecases.NewFeed(r, messagingSvc)
-	fcm := fcm.NewService(r, onboardingSvc)
-	mail := mail.NewService(r)
-	crm := hubspot.NewHubSpotService()
-	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail, crm)
-	uploads := uploads.NewUploadsService()
+// 	library := library.NewLibraryService(onboardingSvc)
 
-	library := library.NewLibraryService(onboardingSvc)
-	hubspotService := hubspot.NewHubSpotService()
-	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize hubspot crm repository: %w", err)
-	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
-	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(r, crmExt, messagingSvc, ediSvc)
-	whatsapp := whatsapp.NewService()
-	twilio := twilio.NewService(sms, r)
-	otp := otp.NewService(whatsapp, mail, sms, twilio)
-	surveys := surveys.NewService(r)
+// 	sms := sms.NewService(r, messagingSvc)
+// 	whatsapp := whatsapp.NewService()
+// 	twilio := twilio.NewService(sms, r)
+// 	otp := otp.NewService(whatsapp, mail, sms, twilio)
+// 	surveys := surveys.NewService(r)
 
-	i, err := interactor.NewEngagementInteractor(
-		feed,
-		notification,
-		uploads,
-		library,
-		sms,
-		*mail,
-		whatsapp,
-		otp,
-		twilio,
-		fcm,
-		surveys,
-		hubspotService,
-		crmExt,
-		onboardingSvc,
-	)
+// 	i, err := interactor.NewEngagementInteractor(
+// 		feed,
+// 		notification,
+// 		uploads,
+// 		library,
+// 		sms,
+// 		*mail,
+// 		whatsapp,
+// 		otp,
+// 		twilio,
+// 		fcm,
+// 		surveys,
+// 		onboardingSvc,
+// 	)
 
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate service : %w", err)
-	}
-	return i, nil
-}
+// 	if err != nil {
+// 		return nil, fmt.Errorf("can't instantiate service : %w", err)
+// 	}
+// 	return i, nil
+// }
 
 func getEmptyJson(t *testing.T) []byte {
 	emptyJSONBytes, err := json.Marshal(map[string]string{})
@@ -1666,7 +1613,7 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 
 func TestFeed_GetItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -1680,7 +1627,7 @@ func TestFeed_GetItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -1741,7 +1688,7 @@ func TestFeed_GetItem(t *testing.T) {
 
 func TestFeed_GetNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -1754,7 +1701,7 @@ func TestFeed_GetNudge(t *testing.T) {
 	flavour := feedlib.FlavourConsumer
 	nudge := testNudge()
 
-	savedNudge, err := agg.Repository.SaveNudge(ctx, uid, flavour, nudge)
+	savedNudge, err := infra.SaveNudge(ctx, uid, flavour, nudge)
 	assert.Nil(t, err)
 	assert.NotNil(t, savedNudge)
 
@@ -1808,7 +1755,7 @@ func TestFeed_GetNudge(t *testing.T) {
 
 func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	if err != nil {
 		t.Errorf("failed to initialize a new feed")
 		return
@@ -1817,7 +1764,7 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 	uid := ksuid.New().String()
 
 	nudge := testNudge()
-	savedNudge, err := agg.Repository.SaveNudge(ctx, uid, fl, nudge)
+	savedNudge, err := infra.SaveNudge(ctx, uid, fl, nudge)
 	if err != nil {
 		t.Errorf("failed to save nudge")
 		return
@@ -1880,7 +1827,7 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 }
 func TestFeed_GetAction(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -1891,7 +1838,7 @@ func TestFeed_GetAction(t *testing.T) {
 	assert.NotNil(t, fe)
 
 	action := getTestAction()
-	savedAction, err := agg.Repository.SaveAction(ctx, uid, fl, &action)
+	savedAction, err := infra.SaveAction(ctx, uid, fl, &action)
 	assert.Nil(t, err)
 	assert.NotNil(t, savedAction)
 
@@ -1946,7 +1893,7 @@ func TestFeed_GetAction(t *testing.T) {
 func TestFeed_PublishFeedItem(t *testing.T) {
 
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2017,7 +1964,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 
 func TestFeed_DeleteFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2031,7 +1978,7 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2078,7 +2025,7 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 
 func TestFeed_ResolveFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2092,7 +2039,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2141,7 +2088,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 
 func TestFeed_UnresolveFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2155,7 +2102,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2204,7 +2151,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 
 func TestFeed_PinFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2218,7 +2165,7 @@ func TestFeed_PinFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2262,7 +2209,7 @@ func TestFeed_PinFeedItem(t *testing.T) {
 
 func TestFeed_UnpinFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2276,7 +2223,7 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2320,7 +2267,7 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 
 func TestFeed_HideFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2334,7 +2281,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2378,7 +2325,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 
 func TestFeed_ShowFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, infra, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 
@@ -2392,7 +2339,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 
 	testItem := testItem()
 
-	item, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := infra.SaveFeedItem(ctx, uid, flavour, testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -2436,7 +2383,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 
 func TestFeed_PublishNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2494,7 +2441,7 @@ func TestFeed_PublishNudge(t *testing.T) {
 
 func TestFeed_DeleteNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2552,7 +2499,7 @@ func TestFeed_DeleteNudge(t *testing.T) {
 
 func TestFeed_ResolveNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2607,7 +2554,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 
 func TestFeed_UnresolveNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2667,7 +2614,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 
 func TestFeed_HideNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2722,7 +2669,7 @@ func TestFeed_HideNudge(t *testing.T) {
 
 func TestFeed_ShowNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2777,7 +2724,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 
 func TestFeed_PublishAction(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2837,7 +2784,7 @@ func TestFeed_PublishAction(t *testing.T) {
 
 func TestFeed_DeleteAction(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2894,7 +2841,7 @@ func TestFeed_DeleteAction(t *testing.T) {
 
 func TestFeed_PostMessage(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -2991,7 +2938,7 @@ func TestFeed_PostMessage(t *testing.T) {
 
 func TestFeed_DeleteMessage(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -3065,7 +3012,7 @@ func TestFeed_DeleteMessage(t *testing.T) {
 
 func TestFeed_ProcessEvent(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -3448,7 +3395,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 
 func TestFeed_Labels(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -3496,7 +3443,7 @@ func TestFeed_Labels(t *testing.T) {
 
 func TestFeed_SaveLabel(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -3539,7 +3486,7 @@ func TestFeed_SaveLabel(t *testing.T) {
 
 func TestFeed_UnreadPersistentItems(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()
@@ -3587,7 +3534,7 @@ func TestFeed_UnreadPersistentItems(t *testing.T) {
 
 func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	agg, err := InitializeTestNewFeed(ctx)
+	agg, _, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
 	uid := ksuid.New().String()

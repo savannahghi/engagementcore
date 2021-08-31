@@ -9,9 +9,10 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
+
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestMain(m *testing.M) {
@@ -22,7 +23,7 @@ func TestMain(m *testing.M) {
 func TestNewService(t *testing.T) {
 	ctx := context.Background()
 
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -53,7 +54,7 @@ func TestService_SendEmail(t *testing.T) {
 	testUserMail := "test@bewell.co.ke"
 	ctx := context.Background()
 
-	fr, err := database.NewFirebaseRepository(ctx)
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -108,7 +109,7 @@ func TestService_SendEmail(t *testing.T) {
 
 func TestService_SendInBlue(t *testing.T) {
 	ctx := context.Background()
-	var repo repository.Repository
+	var repo database.Repository
 	type args struct {
 		subject string
 		text    string
@@ -149,13 +150,13 @@ func TestService_SendInBlue(t *testing.T) {
 }
 
 func TestService_CheckPreconditions(t *testing.T) {
-	var repo repository.Repository
+	var repo database.Repository
 	type fields struct {
 		Mg                *mailgun.MailgunImpl
 		From              string
 		SendInBlueEnabled bool
 		SendInBlueAPIKey  string
-		Repository        repository.Repository
+		Repository        database.Repository
 	}
 	tests := []struct {
 		name   string

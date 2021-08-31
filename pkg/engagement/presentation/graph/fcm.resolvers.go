@@ -26,7 +26,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 		return false, err
 	}
 
-	sent, err := r.interactor.FCM.SendNotification(
+	sent, err := r.usecases.SendNotification(
 		ctx,
 		registrationTokens,
 		notificationData,
@@ -49,16 +49,13 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 	return sent, nil
 }
 
-func (r *mutationResolver) SendFCMByPhoneOrEmail(ctx context.Context, phoneNumber *string, email *string, data map[string]interface{},
-	notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput,
-	ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {
-
+func (r *mutationResolver) SendFCMByPhoneOrEmail(ctx context.Context, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	sent, err := r.interactor.FCM.SendFCMByPhoneOrEmail(
+	sent, err := r.usecases.SendFCMByPhoneOrEmail(
 		ctx,
 		phoneNumber,
 		email,
@@ -88,7 +85,7 @@ func (r *queryResolver) Notifications(ctx context.Context, registrationToken str
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	notification, err := r.interactor.FCM.Notifications(ctx, registrationToken, newerThan, limit)
+	notification, err := r.usecases.Notifications(ctx, registrationToken, newerThan, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve notifications: %w", err)
 	}

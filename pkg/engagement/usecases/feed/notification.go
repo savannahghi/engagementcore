@@ -1,28 +1,23 @@
-package usecases
+package feed
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/authorization"
 	"github.com/savannahghi/engagement/pkg/engagement/application/authorization/permission"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/pubsubtools"
 )
 
@@ -192,11 +187,6 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		m *pubsubtools.PubSubPayload,
 	) error
-
-	HandleEngagementCreate(
-		ctx context.Context,
-		m *pubsubtools.PubSubPayload,
-	) (*domain.EngagementData, error)
 }
 
 // HandlePubsubPayload defines the signature of a function that handles
@@ -205,30 +195,13 @@ type HandlePubsubPayload func(ctx context.Context, m *pubsubtools.PubSubPayload)
 
 // NotificationImpl represents the notification usecase implementation
 type NotificationImpl struct {
-	repository repository.Repository
-	push       fcm.PushService
-	onboarding onboarding.ProfileService
-	fcm        fcm.ServiceFCM
-	mail       mail.ServiceMail
-	crm        hubspot.ServiceHubSpotInterface
+	infrastructure infrastructure.Infrastructure
 }
 
 // NewNotification initializes a notification usecase
-func NewNotification(
-	repository repository.Repository,
-	push fcm.PushService,
-	onboarding onboarding.ProfileService,
-	fcm fcm.ServiceFCM,
-	mail mail.ServiceMail,
-	crm hubspot.ServiceHubSpotInterface,
-) *NotificationImpl {
+func NewNotification(infrastructure infrastructure.Infrastructure) *NotificationImpl {
 	return &NotificationImpl{
-		repository: repository,
-		push:       push,
-		onboarding: onboarding,
-		fcm:        fcm,
-		mail:       mail,
-		crm:        crm,
+		infrastructure: infrastructure,
 	}
 }
 
@@ -937,7 +910,7 @@ func (n NotificationImpl) HandleSendNotification(
 		)
 	}
 
-	_, err = n.fcm.SendNotification(
+	_, err = n.infrastructure.SendNotification(
 		ctx,
 		payload.RegistrationTokens,
 		payload.Data,
@@ -1023,7 +996,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 
 	switch sender {
 	case itemPublishSender:
-		existingLabels, err := n.repository.Labels(
+		existingLabels, err := n.infrastructure.Labels(
 			ctx,
 			envelope.UID,
 			envelope.Flavour,
@@ -1037,7 +1010,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 			existingLabels,
 			item.Label,
 		) {
-			err = n.repository.SaveLabel(
+			err = n.infrastructure.SaveLabel(
 				ctx,
 				envelope.UID,
 				envelope.Flavour,
@@ -1094,13 +1067,13 @@ func (n NotificationImpl) UpdateInbox(
 		return fmt.Errorf("user not authorized to access this resource")
 	}
 
-	err = n.repository.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
+	err = n.infrastructure.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't update inbox count: %w", err)
 	}
 
-	_, err = n.repository.UnreadPersistentItems(ctx, uid, flavour)
+	_, err = n.infrastructure.UnreadPersistentItems(ctx, uid, flavour)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't get inbox count: %w", err)
@@ -1268,7 +1241,7 @@ func (n NotificationImpl) GetUserTokens(
 ) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "GetUserTokens")
 	defer span.End()
-	userTokens, err := n.onboarding.GetDeviceTokens(ctx, onboarding.UserUIDs{
+	userTokens, err := n.infrastructure.GetDeviceTokens(ctx, onboarding.UserUIDs{
 		UIDs: uids,
 	})
 	if err != nil {
@@ -1340,7 +1313,7 @@ func (n NotificationImpl) SendNotificationViaFCM(
 		},
 	}
 
-	err = n.push.Push(ctx, sender, payload)
+	err = n.infrastructure.Push(ctx, sender, payload)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't send element over FCM: %w", err)
@@ -1383,7 +1356,7 @@ func (n NotificationImpl) SendEmail(
 		return fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
-	_, _, err = n.mail.SendEmail(
+	_, _, err = n.infrastructure.SendEmail(
 		ctx,
 		payload.Subject,
 		payload.Text,
@@ -1396,61 +1369,4 @@ func (n NotificationImpl) SendEmail(
 		return fmt.Errorf("unable to send email: %v", err)
 	}
 	return nil
-}
-
-// HandleEngagementCreate creates a Hubspot crm engagement
-func (n NotificationImpl) HandleEngagementCreate(
-	ctx context.Context,
-	m *pubsubtools.PubSubPayload,
-) (*domain.EngagementData, error) {
-	ctx, span := tracer.Start(ctx, "HandleEngagementCreate")
-	defer span.End()
-
-	var engagement dto.EngagementPubSubMessage
-	err := json.Unmarshal(m.Message.Data, &engagement)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf(
-			"can't unmarshal notification envelope from pubsub data: %w",
-			err,
-		)
-	}
-
-	sms, err := n.repository.GetMarketingSMSByID(ctx, engagement.MessageID)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to get message with message id %s",
-			engagement.MessageID,
-		)
-	}
-	sms.Engagement = engagement.Engagement
-	updatedSms, err := n.repository.UpdateMarketingMessage(ctx, sms)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to update message with engagement report: %v",
-			err,
-		)
-	}
-
-	engagementData, err := n.crm.CreateEngagementByPhone(
-		engagement.PhoneNumber,
-		engagement.Engagement,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create hubspot engagement: %v", err)
-	}
-
-	updatedSms.IsSynced = true
-	now := time.Now()
-	updatedSms.TimeSynced = &now
-
-	_, err = n.repository.UpdateMarketingMessage(ctx, updatedSms)
-	if err != nil {
-		return engagementData, fmt.Errorf(
-			"failed to update message with engagement sync status: %v",
-			err,
-		)
-	}
-
-	return engagementData, nil
 }

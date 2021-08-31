@@ -1,15 +1,13 @@
-package database_test
+package fb_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
-
 	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestSetDefaultActions(t *testing.T) {
@@ -23,7 +21,7 @@ func TestSetDefaultActions(t *testing.T) {
 		ctx        context.Context
 		uid        string
 		flavour    feedlib.Flavour
-		repository repository.Repository
+		repository db.Repository
 	}
 	tests := []struct {
 		name    string
@@ -36,7 +34,7 @@ func TestSetDefaultActions(t *testing.T) {
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
 				flavour:    feedlib.FlavourConsumer,
-				repository: fr,
+				repository: *fr,
 			},
 		},
 		{
@@ -45,7 +43,7 @@ func TestSetDefaultActions(t *testing.T) {
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
 				flavour:    feedlib.FlavourPro,
-				repository: fr,
+				repository: *fr,
 			},
 		},
 		{
@@ -54,7 +52,7 @@ func TestSetDefaultActions(t *testing.T) {
 				ctx:        ctx,
 				uid:        "",
 				flavour:    feedlib.FlavourPro,
-				repository: fr,
+				repository: *fr,
 			},
 			wantErr: true,
 		},
@@ -64,7 +62,7 @@ func TestSetDefaultActions(t *testing.T) {
 				ctx:        ctx,
 				uid:        "",
 				flavour:    feedlib.FlavourConsumer,
-				repository: fr,
+				repository: *fr,
 			},
 			wantErr: true,
 		},
@@ -116,7 +114,7 @@ func TestSetDefaultNudges(t *testing.T) {
 		ctx        context.Context
 		uid        string
 		flavour    feedlib.Flavour
-		repository repository.Repository
+		repository db.Repository
 	}
 	tests := []struct {
 		name    string
@@ -129,7 +127,7 @@ func TestSetDefaultNudges(t *testing.T) {
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
 				flavour:    feedlib.FlavourConsumer,
-				repository: fr,
+				repository: *fr,
 			},
 		},
 		{
@@ -138,7 +136,7 @@ func TestSetDefaultNudges(t *testing.T) {
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
 				flavour:    feedlib.FlavourPro,
-				repository: fr,
+				repository: *fr,
 			},
 		},
 		{
@@ -147,7 +145,7 @@ func TestSetDefaultNudges(t *testing.T) {
 				ctx:        ctx,
 				uid:        "",
 				flavour:    feedlib.FlavourPro,
-				repository: fr,
+				repository: *fr,
 			},
 			wantErr: true,
 		},
@@ -157,7 +155,7 @@ func TestSetDefaultNudges(t *testing.T) {
 				ctx:        ctx,
 				uid:        "",
 				flavour:    feedlib.FlavourConsumer,
-				repository: fr,
+				repository: *fr,
 			},
 			wantErr: true,
 		},
@@ -215,7 +213,7 @@ func TestSetDefaultItems(t *testing.T) {
 		ctx        context.Context
 		uid        string
 		flavour    feedlib.Flavour
-		repository repository.Repository
+		repository db.Repository
 	}
 	tests := []struct {
 		name    string
@@ -228,7 +226,7 @@ func TestSetDefaultItems(t *testing.T) {
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
 				flavour:    feedlib.FlavourConsumer,
-				repository: fr,
+				repository: *fr,
 			},
 		},
 		{
@@ -237,7 +235,7 @@ func TestSetDefaultItems(t *testing.T) {
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
 				flavour:    feedlib.FlavourPro,
-				repository: fr,
+				repository: *fr,
 			},
 		},
 		{
@@ -246,7 +244,7 @@ func TestSetDefaultItems(t *testing.T) {
 				ctx:        ctx,
 				uid:        "",
 				flavour:    feedlib.FlavourPro,
-				repository: fr,
+				repository: *fr,
 			},
 			wantErr: true,
 		},
@@ -256,7 +254,7 @@ func TestSetDefaultItems(t *testing.T) {
 				ctx:        ctx,
 				uid:        "",
 				flavour:    feedlib.FlavourConsumer,
-				repository: fr,
+				repository: *fr,
 			},
 			wantErr: true,
 		},

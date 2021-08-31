@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/profileutils"
@@ -38,9 +39,9 @@ const (
 
 // ServiceLibrary ...
 type ServiceLibrary interface {
-	GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error)
-	GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error)
+	GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
+	GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error)
 }
 
 type requestType int
@@ -166,7 +167,7 @@ func (s Service) composeRequest(reqType requestType) string {
 	return urlRequest
 }
 
-func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*GhostCMSPost, error) {
+func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*domain.GhostCMSPost, error) {
 	_, span := tracer.Start(ctx, "getCMSPosts")
 	defer span.End()
 	s.checkPreconditions()
@@ -185,7 +186,7 @@ func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*G
 	}
 	defer resp.Body.Close()
 
-	var rr GhostCMSServerResponse
+	var rr domain.GhostCMSServerResponse
 	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to decoder response with err %v", err)
@@ -194,7 +195,7 @@ func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*G
 }
 
 // GetFeedContent fetches posts that should be added to the feed.
-func (s Service) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error) {
+func (s Service) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	var request requestType
 
 	switch flavour {
@@ -209,7 +210,7 @@ func (s Service) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([
 }
 
 // GetFaqsContent fetches posts tagged as FAQs.
-func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error) {
+func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	ctx, span := tracer.Start(ctx, "GetFaqsContent")
 	defer span.End()
 	if !feedlib.FlavourConsumer.IsValid() {
@@ -245,6 +246,6 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([
 }
 
 // GetLibraryContent gets library content to be show under library section of the app.
-func (s Service) GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error) {
+func (s Service) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	return s.getCMSPosts(ctx, libraryRequest)
 }

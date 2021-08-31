@@ -8,18 +8,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 	"github.com/savannahghi/pubsubtools"
-	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -29,13 +21,7 @@ import (
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/uploads"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/rest"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 
 	"net/http"
 
@@ -44,9 +30,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
-	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 )
 
 const (
@@ -78,92 +61,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		return nil, err
 	}
 
-	fr, err := database.NewFirebaseRepository(ctx)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't instantiate firebase repository in resolver: %w",
-			err,
-		)
-	}
-	fcmNotification, err := fcm.NewRemotePushService(ctx)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't instantiate push notification service : %w",
-			err,
-		)
-	}
-
-	projectID, err := serverutils.GetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't get projectID from env var `%s`: %w",
-			serverutils.GoogleCloudProjectIDEnvVarName,
-			err,
-		)
-	}
-
 	// Initialize new instances of the infrastructure services
-	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
-	fcm := fcm.NewService(fr, onboarding)
-	mail := mail.NewService(fr)
-	edi := edi.NewEdiService(edi.NewEDIClient())
+	infrastructure := infrastructure.NewInfrastructureInteractor()
+	usecases := usecases.NewUsecasesInteractor(infrastructure)
 
-	hubspotService := hubspot.NewHubSpotService()
-	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize hubspot crm repository: %w", err)
-	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
-
-	notification := usecases.NewNotification(
-		fr,
-		fcmNotification,
-		onboarding,
-		fcm,
-		mail,
-		hubspotService,
-	)
-	uploads := uploads.NewUploadsService()
-	library := library.NewLibraryService(onboarding)
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't instantiate notification service in resolver: %w",
-			err,
-		)
-	}
-
-	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(fr, crmExt, ns, edi)
-	feed := usecases.NewFeed(fr, ns)
-	whatsapp := whatsapp.NewService()
-	tw := twilio.NewService(sms, fr)
-	otp := otp.NewService(whatsapp, mail, sms, tw)
-	surveys := surveys.NewService(fr)
-
-	// Initialize the interactor
-	i, err := interactor.NewEngagementInteractor(
-		feed,
-		notification,
-		uploads,
-		library,
-		sms,
-		*mail,
-		whatsapp,
-		otp,
-		tw,
-		fcm,
-		surveys,
-		hubspotService,
-		crmExt,
-		onboarding,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate service : %w", err)
-	}
-
-	husbspotHandlers := hubspotHandlers.NewHandlers(hubspotUsecases)
-	h := rest.NewPresentationHandlers(i, husbspotHandlers)
+	h := rest.NewPresentationHandlers(infrastructure, usecases)
 
 	r := mux.NewRouter() // gorilla mux
 	r.Use(otelmux.Middleware(serverutils.MetricsCollectorService("engagement")))
@@ -181,7 +83,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
 	r.Path(pubsubtools.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
@@ -191,24 +92,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendToMany())
-	r.Path("/send_marketing_sms").Methods(
-		http.MethodPost,
-		http.MethodOptions,
-	).HandlerFunc(h.SendMarketingSMS())
-
-	// HubSpot CRM specific endpoints
-	r.Path("/contact_lists").Methods(
-		http.MethodGet,
-	).HandlerFunc(h.GetContactLists())
-	r.Path("/contact_list").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.GetContactListByID())
-	r.Path("/contact_list_contacts").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.GetContactsInAList())
-	r.Path("/sync_contacts").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.HubSpotFirestoreSync())
 
 	// Callbacks
 	r.Path("/ait_callback").
@@ -230,9 +113,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())
 
-	r.Path("/collect_email_address").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.CollectEmailAddress())
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
@@ -259,7 +139,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	authR.Methods(
 		http.MethodPost,
 		http.MethodGet,
-	).HandlerFunc(GQLHandler(ctx, i))
+	).HandlerFunc(GQLHandler(ctx, usecases))
 
 	// REST routes
 
@@ -532,9 +412,9 @@ func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 
 // GQLHandler sets up a GraphQL resolver
 func GQLHandler(ctx context.Context,
-	service *interactor.Interactor,
+	usecases usecases.Usecases,
 ) http.HandlerFunc {
-	resolver, err := graph.NewResolver(ctx, service)
+	resolver, err := graph.NewResolver(ctx, usecases)
 	if err != nil {
 		serverutils.LogStartupError(ctx, err)
 	}
