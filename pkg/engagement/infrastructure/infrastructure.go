@@ -884,3 +884,17 @@ func (i *Interactor) Push(
 ) error {
 	return i.fcmTwo.Push(ctx, sender, payload)
 }
+
+// SendTemporaryPIN ..
+func (i *Interactor) SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error {
+	return i.otp.SendTemporaryPIN(ctx, input)
+}
+
+// TemporaryPIN ..
+func (i *Interactor) TemporaryPIN(
+	ctx context.Context,
+	to string,
+	message string,
+) (bool, error) {
+	return i.whatsapp.TemporaryPIN(ctx, to, message)
+}
