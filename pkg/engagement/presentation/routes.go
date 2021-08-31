@@ -1,12 +1,8 @@
 package presentation
 
 import (
-	"compress/gzip"
 	"context"
 	"encoding/json"
-	"fmt"
-	"os"
-	"time"
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
@@ -14,10 +10,6 @@ import (
 	"github.com/savannahghi/pubsubtools"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
-	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 
@@ -32,42 +24,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	mbBytes              = 1048576
-	serverTimeoutSeconds = 120
-)
-
-// AllowedOrigins is list of CORS origins allowed to interact with
-// this service
-var AllowedOrigins = []string{
-	"https://healthcloud.co.ke",
-	"https://bewell.healthcloud.co.ke",
-	"https://a.bewell.co.ke",
-	"https://b.bewell.co.ke",
-	"http://localhost:5000",
-	"https://europe-west3-bewell-app.cloudfunctions.net",
-}
-var allowedHeaders = []string{
-	"Authorization", "Accept", "Accept-Charset", "Accept-Language",
-	"Accept-Encoding", "Origin", "Host", "User-Agent", "Content-Length",
-	"Content-Type", " X-Authorization", " Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers",
-}
-
-// Router sets up the ginContext router
-func Router(ctx context.Context) (*mux.Router, error) {
-	fc := &firebasetools.FirebaseClient{}
-	firebaseApp, err := fc.InitFirebase()
-	if err != nil {
-		return nil, err
-	}
-
-	// Initialize new instances of the infrastructure services
+func newPresentationHandlers() rest.PresentationHandlers {
 	infrastructure := infrastructure.NewInfrastructureInteractor()
 	usecases := usecases.NewUsecasesInteractor(infrastructure)
+	return rest.NewPresentationHandlers(infrastructure, usecases)
+}
 
-	h := rest.NewPresentationHandlers(infrastructure, usecases)
+// SharedUnauthenticatedRoutes return REST routes shared by open/closed engagement services
+func SharedUnauthenticatedRoutes(ctx context.Context, r *mux.Router) {
+	h := newPresentationHandlers()
 
-	r := mux.NewRouter() // gorilla mux
 	r.Use(otelmux.Middleware(serverutils.MetricsCollectorService("engagement")))
 	r.Use(
 		handlers.RecoveryHandler(
@@ -109,15 +75,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path(twilio.TwilioCallbackPath).
 		Methods(http.MethodPost).
 		HandlerFunc(h.GetTwilioVideoCallbackFunc())
-	r.Path("/facebook_data_deletion_callback").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.DataDeletionRequestCallback())
 
-	// Upload route.
-	// The reason for the below endpoint is to help upload base64 data.
-	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
-	// that occurs in https://graph-test.bewell.co.ke/ while trying to upload large sized photos
-	// This patch allows for the upload of a photo of any size.
 	r.Path("/upload").Methods(
 		http.MethodPost,
 		http.MethodOptions,
@@ -126,26 +84,25 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()
 	if err != nil {
-		return nil, fmt.Errorf(
+		log.Fatal(
 			"can't instantiate schema file handler: %w",
 			err,
 		)
 	}
 	r.PathPrefix("/schema/").Handler(schemaFileHandler)
+}
 
-	// Authenticated routes
-	authR := r.Path("/graphql").Subrouter()
-	authR.Use(firebasetools.AuthenticationMiddleware(firebaseApp))
-	authR.Methods(
-		http.MethodPost,
-		http.MethodGet,
-	).HandlerFunc(GQLHandler(ctx, usecases))
+//HealthStatusCheck endpoint to check if the server is working.
+func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(true)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-	// REST routes
-
-	// Bulk routes
-	bulk := r.PathPrefix("/bulk/").Subrouter()
-	bulk.Use(interserviceclient.InterServiceAuthenticationMiddleware())
+// SharedAuthenticatedISCRoutes return ISC REST routes shared by open/closed engagement services
+func SharedAuthenticatedISCRoutes(ctx context.Context, r *mux.Router) {
+	h := newPresentationHandlers()
 
 	// Interservice Authenticated routes
 	feedISC := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()
@@ -359,73 +316,4 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	isc.Path("/send_temporary_pin").Methods(
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.SendTemporaryPIN())
-
-	// return the combined router
-	return r, nil
-}
-
-// PrepareServer starts up a server
-func PrepareServer(
-	ctx context.Context,
-	port int,
-	allowedOrigins []string,
-) *http.Server {
-	// start up the router
-	r, err := Router(ctx)
-	if err != nil {
-		serverutils.LogStartupError(ctx, err)
-	}
-
-	// start the server
-	addr := fmt.Sprintf(":%d", port)
-	h := handlers.CompressHandlerLevel(r, gzip.BestCompression)
-
-	h = handlers.CORS(
-		handlers.AllowedHeaders(allowedHeaders),
-		handlers.AllowedOrigins(allowedOrigins),
-		handlers.AllowCredentials(),
-		handlers.AllowedMethods([]string{"OPTIONS", "GET", "POST"}),
-	)(h)
-	h = handlers.CombinedLoggingHandler(os.Stdout, h)
-	h = handlers.ContentTypeHandler(
-		h,
-		"application/json",
-		"application/x-www-form-urlencoded",
-	)
-	srv := &http.Server{
-		Handler:      h,
-		Addr:         addr,
-		WriteTimeout: serverTimeoutSeconds * time.Second,
-		ReadTimeout:  serverTimeoutSeconds * time.Second,
-	}
-	log.Infof("Server running at port %v", addr)
-	return srv
-}
-
-//HealthStatusCheck endpoint to check if the server is working.
-func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(true)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// GQLHandler sets up a GraphQL resolver
-func GQLHandler(ctx context.Context,
-	usecases usecases.Usecases,
-) http.HandlerFunc {
-	resolver, err := graph.NewResolver(ctx, usecases)
-	if err != nil {
-		serverutils.LogStartupError(ctx, err)
-	}
-	srv := handler.NewDefaultServer(
-		generated.NewExecutableSchema(
-			generated.Config{
-				Resolvers: resolver,
-			},
-		),
-	)
-	return func(w http.ResponseWriter, r *http.Request) {
-		srv.ServeHTTP(w, r)
-	}
 }
