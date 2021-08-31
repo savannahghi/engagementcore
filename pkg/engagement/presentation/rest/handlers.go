@@ -1803,7 +1803,7 @@ func (p PresentationHandlersImpl) SendTemporaryPIN() http.HandlerFunc {
 		payload := dto.TemporaryPIN{}
 		serverutils.DecodeJSONToTargetStruct(rw, r, payload)
 
-		err := p.interactor.OTP.SendTemporaryPIN(ctx, payload)
+		err := p.infrastructure.SendTemporaryPIN(ctx, payload)
 		if err != nil {
 			respondWithError(rw, http.StatusInternalServerError, err)
 			return

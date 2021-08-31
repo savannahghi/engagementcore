@@ -159,14 +159,6 @@ type ServiceWhatsapp interface {
 		data dto.Message,
 	) error
 
-	MakeTwilioRequest(
-		ctx context.Context,
-		method string,
-		urlPath string,
-		content url.Values,
-		target interface{},
-	) error
-
 	TemporaryPIN(
 		ctx context.Context,
 		to string,
