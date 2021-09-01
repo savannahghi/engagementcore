@@ -1991,8 +1991,7 @@ func TestGraphQlGetLibraryContent(t *testing.T) {
 				},
 			},
 			wantStatus: http.StatusOK,
-			// todo: restore after ghost is fixed
-			wantErr: true,
+			wantErr:    false,
 		},
 		{
 			name: "invalid query",
@@ -2136,8 +2135,7 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 				},
 			},
 			wantStatus: http.StatusOK,
-			// todo: restore after ghost is fixed
-			wantErr: true,
+			wantErr:    false,
 		},
 		// TODO: Restore after fixing profile problem
 		// {

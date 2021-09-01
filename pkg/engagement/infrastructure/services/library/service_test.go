@@ -47,9 +47,8 @@ func TestService_GetFeedContent(t *testing.T) {
 				flavour: feedlib.FlavourConsumer,
 				ctx:     ctx,
 			},
-			// Todo: revert this when ghost gets back up
-			wantNonZero: false,
-			wantErr:     true,
+			wantNonZero: true,
+			wantErr:     false,
 		},
 	}
 	for _, tt := range tests {
@@ -97,8 +96,7 @@ func TestService_GetFaqsContent(t *testing.T) {
 				ctx:     ctx,
 				flavour: "PRO",
 			},
-			// Todo: revert this when ghost gets back up
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "valid:retrieved_consumer_faq",
@@ -106,8 +104,7 @@ func TestService_GetFaqsContent(t *testing.T) {
 				ctx:     ctx,
 				flavour: "CONSUMER",
 			},
-			// Todo: revert this when ghost gets back up
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid:pass_invalid_flavor",
@@ -172,9 +169,8 @@ func TestService_GetLibraryContent(t *testing.T) {
 			args: args{
 				ctx,
 			},
-			// Todo: revert this when ghost gets back up
-			wantNonZero: false,
-			wantErr:     true,
+			wantNonZero: true,
+			wantErr:     false,
 		},
 	}
 	for _, tt := range tests {
