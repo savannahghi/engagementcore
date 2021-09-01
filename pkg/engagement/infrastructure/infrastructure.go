@@ -26,7 +26,6 @@ import (
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/serverutils"
-	crmDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // Infrastructure defines the contract provided by the infrastructure layer
@@ -554,18 +553,6 @@ func (i *Interactor) Notify(
 	metadata map[string]interface{},
 ) error {
 	return i.messaging.Notify(ctx, topicID, uid, flavour, payload, metadata)
-}
-
-// NotifyEngagementCreate ...
-func (i *Interactor) NotifyEngagementCreate(
-	ctx context.Context,
-	phone string,
-	messageID string,
-	engagementType crmDomain.EngagementType,
-	metadata map[string]interface{},
-	topicID string,
-) error {
-	return i.messaging.NotifyEngagementCreate(ctx, phone, messageID, engagementType, metadata, topicID)
 }
 
 // TopicIDs ...
