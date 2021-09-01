@@ -7,6 +7,7 @@ require (
 	cloud.google.com/go/firestore v1.5.0
 	cloud.google.com/go/pubsub v1.12.2
 	cloud.google.com/go/storage v1.16.0
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.8 // indirect
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.1 // indirect
@@ -15,6 +16,7 @@ require (
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/casbin/casbin/v2 v2.33.0
 	github.com/gobuffalo/here v0.6.2 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
@@ -41,13 +43,14 @@ require (
 	github.com/savannahghi/interserviceclient v0.0.13
 	github.com/savannahghi/profileutils v0.0.7
 	github.com/savannahghi/pubsubtools v0.0.2
+	github.com/savannahghi/scalarutils v0.0.2 // indirect
 	github.com/savannahghi/serverutils v0.0.3
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
-	gitlab.slade360emr.com/go/apiclient v0.0.15
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.21.0
 	go.opentelemetry.io/otel v1.0.0-RC1
