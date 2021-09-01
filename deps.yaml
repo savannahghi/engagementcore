@@ -5,7 +5,7 @@ staging:
     depRootDomain: https://edi-staging.healthcloud.co.ke
 testing:
   - depName: profile
-    depRootDomain: https://profile-testing.healthcloud.co.ke
+    depRootDomain: https://onboarding-testing.savannahghi.org
   - depName: edi
     depRootDomain: https://edi-testing.healthcloud.co.ke
 demo:
