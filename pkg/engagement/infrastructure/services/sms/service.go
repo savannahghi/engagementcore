@@ -54,20 +54,6 @@ type ServiceSMS interface {
 		to, message string,
 		from enumutils.SenderID,
 	) (*dto.SendMessageResponse, error)
-
-	// TODO: Remove DB specific implementations
-	SaveMarketingMessage(
-		ctx context.Context,
-		data dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-	UpdateMarketingMessage(
-		ctx context.Context,
-		data *dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-	GetMarketingSMSByPhone(
-		ctx context.Context,
-		phoneNumber string,
-	) (*dto.MarketingSMS, error)
 }
 
 // Service defines a sms service struct
@@ -105,30 +91,6 @@ func NewService(
 ) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
 	return &Service{env, repository, pubsub}
-}
-
-// SaveMarketingMessage saves the callback data for future analysis
-func (s Service) SaveMarketingMessage(
-	ctx context.Context,
-	data dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return s.Repository.SaveMarketingMessage(ctx, data)
-}
-
-// UpdateMarketingMessage adds a delivery report to an AIT SMS
-func (s Service) UpdateMarketingMessage(
-	ctx context.Context,
-	data *dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return s.Repository.UpdateMarketingMessage(ctx, data)
-}
-
-// GetMarketingSMSByPhone returns the latest message given a phone number
-func (s Service) GetMarketingSMSByPhone(
-	ctx context.Context,
-	phoneNumber string,
-) (*dto.MarketingSMS, error) {
-	return s.Repository.GetMarketingSMSByPhone(ctx, phoneNumber)
 }
 
 // SendToMany is a utility method to send to many recipients at the same time

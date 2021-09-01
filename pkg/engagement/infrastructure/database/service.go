@@ -221,26 +221,6 @@ type Repository interface {
 		title string,
 	) (*feedlib.Nudge, error)
 
-	SaveMarketingMessage(
-		ctx context.Context,
-		data dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-
-	GetMarketingSMSByID(
-		ctx context.Context,
-		id string,
-	) (*dto.MarketingSMS, error)
-
-	GetMarketingSMSByPhone(
-		ctx context.Context,
-		phoneNumber string,
-	) (*dto.MarketingSMS, error)
-
-	UpdateMarketingMessage(
-		ctx context.Context,
-		data *dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-
 	SaveTwilioResponse(
 		ctx context.Context,
 		data dto.Message,
@@ -573,14 +553,6 @@ func (d *DbService) GetDefaultNudgeByTitle(
 	return d.firestore.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 }
 
-// SaveMarketingMessage saves the callback data for future analysis
-func (d *DbService) SaveMarketingMessage(
-	ctx context.Context,
-	data dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return d.firestore.SaveMarketingMessage(ctx, data)
-}
-
 // SaveTwilioResponse saves the callback data for future analysis
 func (d *DbService) SaveTwilioResponse(
 	ctx context.Context,
@@ -617,14 +589,6 @@ func (d *DbService) SaveNPSResponse(
 	return d.firestore.SaveNPSResponse(ctx, response)
 }
 
-// UpdateMarketingMessage ..
-func (d *DbService) UpdateMarketingMessage(
-	ctx context.Context,
-	data *dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return d.firestore.UpdateMarketingMessage(ctx, data)
-}
-
 // SaveOutgoingEmails ...
 func (d *DbService) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
 	return d.firestore.SaveOutgoingEmails(ctx, payload)
@@ -633,19 +597,6 @@ func (d *DbService) SaveOutgoingEmails(ctx context.Context, payload *dto.Outgoin
 // UpdateMailgunDeliveryStatus ...
 func (d *DbService) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return d.firestore.UpdateMailgunDeliveryStatus(ctx, payload)
-}
-
-// GetMarketingSMSByPhone ..
-func (d *DbService) GetMarketingSMSByPhone(ctx context.Context, phoneNumber string) (*dto.MarketingSMS, error) {
-	return d.firestore.GetMarketingSMSByPhone(ctx, phoneNumber)
-}
-
-// GetMarketingSMSByID ..
-func (d *DbService) GetMarketingSMSByID(
-	ctx context.Context,
-	id string,
-) (*dto.MarketingSMS, error) {
-	return d.firestore.GetMarketingSMSByID(ctx, id)
 }
 
 // SaveTwilioVideoCallbackStatus ..

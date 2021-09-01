@@ -55,9 +55,6 @@ func SharedUnauthenticatedRoutes(ctx context.Context, r *mux.Router) {
 	).HandlerFunc(h.SendToMany())
 
 	// Callbacks
-	r.Path("/ait_callback").
-		Methods(http.MethodPost).
-		HandlerFunc(h.GetAITSMSDeliveryCallback())
 	r.Path("/twilio_notification").
 		Methods(http.MethodPost).
 		HandlerFunc(h.GetNotificationHandler())

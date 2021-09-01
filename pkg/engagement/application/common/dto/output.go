@@ -242,28 +242,6 @@ func NewOKResp(rawResponse interface{}) *OKResp {
 	}
 }
 
-// MarketingDataLoadOutput ...
-type MarketingDataLoadOutput struct {
-	LoadingError                  error                            `json:"loading_error"`
-	StartedAt                     time.Time                        `json:"started_at"`
-	StoppedAt                     time.Time                        `json:"stopped_at"`
-	HoursTaken                    float64                          `json:"hours_taken"`
-	EntriesUniqueLoadedOnFirebase int                              `json:"entries_unique_loaded_on_firebase"`
-	EntriesUniqueLoadedOnCRM      int                              `json:"entries_unique_loaded_on_crm"`
-	TotalEntriesFoundOnFile       int                              `json:"total_entries_found_on_file"`
-	Entries                       []MarketingDataLoadEntriesOutput `json:"marketing_data_load_entries_output"`
-}
-
-// MarketingDataLoadEntriesOutput ...
-type MarketingDataLoadEntriesOutput struct {
-	Identifier                  string `json:"identifier"`
-	HasLoadedToFirebase         bool   `json:"has_loaded_to_firebase"`
-	HasBeenRollBackFromFirebase bool   `json:"has_been_rolled_back_from_firebase"`
-	HasLoadedToCRM              bool   `json:"has_loaded_to_crm"`
-	FirebaseLoadError           error  `json:"firebase_load_error"`
-	CRMLoadError                error  `json:"crm_load_error"`
-}
-
 // MailgunEventOutput represents the MailGun's event name and delivery time in standardized time
 // since mailgun gives us time as unixtimestamp
 type MailgunEventOutput struct {

@@ -394,14 +394,6 @@ func (i *Interactor) GetDefaultNudgeByTitle(
 	return i.db.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 }
 
-// SaveMarketingMessage saves the callback data for future analysis
-func (i *Interactor) SaveMarketingMessage(
-	ctx context.Context,
-	data dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return i.db.SaveMarketingMessage(ctx, data)
-}
-
 // SaveTwilioResponse saves the callback data for future analysis
 func (i *Interactor) SaveTwilioResponse(
 	ctx context.Context,
@@ -438,14 +430,6 @@ func (i *Interactor) SaveNPSResponse(
 	return i.db.SaveNPSResponse(ctx, response)
 }
 
-// UpdateMarketingMessage ..
-func (i *Interactor) UpdateMarketingMessage(
-	ctx context.Context,
-	data *dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return i.db.UpdateMarketingMessage(ctx, data)
-}
-
 // SaveOutgoingEmails ...
 func (i *Interactor) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
 	return i.db.SaveOutgoingEmails(ctx, payload)
@@ -454,19 +438,6 @@ func (i *Interactor) SaveOutgoingEmails(ctx context.Context, payload *dto.Outgoi
 // UpdateMailgunDeliveryStatus ...
 func (i *Interactor) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return i.db.UpdateMailgunDeliveryStatus(ctx, payload)
-}
-
-// GetMarketingSMSByPhone ..
-func (i *Interactor) GetMarketingSMSByPhone(ctx context.Context, phoneNumber string) (*dto.MarketingSMS, error) {
-	return i.db.GetMarketingSMSByPhone(ctx, phoneNumber)
-}
-
-// GetMarketingSMSByID ..
-func (i *Interactor) GetMarketingSMSByID(
-	ctx context.Context,
-	id string,
-) (*dto.MarketingSMS, error) {
-	return i.db.GetMarketingSMSByID(ctx, id)
 }
 
 // SaveTwilioVideoCallbackStatus ..

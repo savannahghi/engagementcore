@@ -17,11 +17,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
-	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
@@ -5898,125 +5896,6 @@ func TestSendEmail(t *testing.T) {
 				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
 				return
 			}
-		})
-	}
-}
-
-func TestGetAITSMSDeliveryCallback(t *testing.T) {
-	ctx := context.Background()
-	sms := dto.MarketingSMS{
-		ID:          uuid.New().String(),
-		PhoneNumber: gofakeit.Phone(),
-		Message:     gofakeit.FarmAnimal(),
-		SenderID:    enumutils.SenderIDBewell,
-	}
-
-	fr, err := db.NewFirebaseRepository(ctx)
-	if err != nil {
-		t.Errorf("can't initialize Firebase Repository: %s", err)
-		return
-	}
-
-	savedSms, err := fr.SaveMarketingMessage(ctx, sms)
-	if err != nil {
-		t.Errorf("unable to save marketing message: %w",
-			err,
-		)
-		return
-	}
-	expectedPayload := map[string]interface{}{
-		"phoneNumber": savedSms.PhoneNumber,
-		"retryCount":  "0",
-		"status":      "success",
-	}
-	bs, err := json.Marshal(expectedPayload)
-	if err != nil {
-		t.Errorf("unable to marshal upload input to JSON: %s", err)
-	}
-	payload := bytes.NewBuffer(bs)
-
-	headers := req.Header{
-		"Accept":        "application/json",
-		"Content-Type":  "application/x-www-form-urlencoded",
-		"Authorization": getInterserviceBearerTokenHeader(ctx, t, baseURL),
-	}
-
-	type args struct {
-		url        string
-		httpMethod string
-		headers    map[string]string
-		body       io.Reader
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantStatus int
-		wantErr    bool
-	}{
-		{
-			name: "Happy AT callback :)",
-			args: args{
-				url: fmt.Sprintf(
-					"%s/ait_callback",
-					baseURL,
-				),
-				httpMethod: http.MethodPost,
-				headers:    headers,
-				body:       payload,
-			},
-			wantStatus: http.StatusOK,
-			wantErr:    false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r, err := http.NewRequest(
-				tt.args.httpMethod,
-				tt.args.url,
-				tt.args.body,
-			)
-			if err != nil {
-				t.Errorf("unable to compose request: %s", err)
-				return
-			}
-
-			if r == nil {
-				t.Errorf("nil request")
-				return
-			}
-
-			for k, v := range tt.args.headers {
-				r.Header.Add(k, v)
-			}
-			client := http.DefaultClient
-			resp, err := client.Do(r)
-			if err != nil {
-				t.Errorf("request error: %s", err)
-				return
-			}
-
-			if resp == nil && !tt.wantErr {
-				t.Errorf("nil response")
-				return
-			}
-
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				t.Errorf("can't read request body: %s", err)
-				return
-			}
-			assert.NotNil(t, data)
-			if data == nil {
-				t.Errorf("nil response data")
-				return
-			}
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 		})
 	}
 }
