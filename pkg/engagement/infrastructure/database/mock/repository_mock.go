@@ -216,11 +216,6 @@ type FakeEngagementRepository struct {
 		title string,
 	) (*feedlib.Nudge, error)
 
-	SaveMarketingMessageFn func(
-		ctx context.Context,
-		data dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-
 	SaveTwilioResponseFn func(
 		ctx context.Context,
 		data dto.Message,
@@ -245,26 +240,8 @@ type FakeEngagementRepository struct {
 		response *dto.NPSResponse,
 	) error
 
-	UpdateMarketingMessageFn func(
-		ctx context.Context,
-		data *dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-
-	UpdateUserCRMEmailFn       func(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
-	UpdateUserCRMBewellAwareFn func(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
-
 	SaveOutgoingEmailsFn          func(ctx context.Context, payload *dto.OutgoingEmailsLog) error
 	UpdateMailgunDeliveryStatusFn func(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
-
-	GetMarketingSMSByIDFn func(
-		ctx context.Context,
-		id string,
-	) (*dto.MarketingSMS, error)
-
-	GetMarketingSMSByPhoneFn func(
-		ctx context.Context,
-		phoneNumber string,
-	) (*dto.MarketingSMS, error)
 
 	SaveTwilioVideoCallbackStatusFn func(
 		ctx context.Context,
@@ -538,14 +515,6 @@ func (f *FakeEngagementRepository) GetDefaultNudgeByTitle(
 	return f.GetDefaultNudgeByTitleFn(ctx, uid, flavour, title)
 }
 
-// SaveMarketingMessage saves the callback data for future analysis
-func (f *FakeEngagementRepository) SaveMarketingMessage(
-	ctx context.Context,
-	data dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return f.SaveMarketingMessageFn(ctx, data)
-}
-
 // SaveTwilioResponse saves the callback data for future analysis
 func (f *FakeEngagementRepository) SaveTwilioResponse(
 	ctx context.Context,
@@ -582,24 +551,6 @@ func (f *FakeEngagementRepository) SaveNPSResponse(
 	return f.SaveNPSResponseFn(ctx, response)
 }
 
-// UpdateMarketingMessage ..
-func (f *FakeEngagementRepository) UpdateMarketingMessage(
-	ctx context.Context,
-	data *dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	return f.UpdateMarketingMessageFn(ctx, data)
-}
-
-// UpdateUserCRMEmail ..
-func (f *FakeEngagementRepository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
-	return f.UpdateUserCRMEmailFn(ctx, phoneNumber, payload)
-}
-
-// UpdateUserCRMBewellAware ..
-func (f *FakeEngagementRepository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
-	return f.UpdateUserCRMBewellAwareFn(ctx, email, payload)
-}
-
 // SaveOutgoingEmails ...
 func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
 	return f.SaveOutgoingEmailsFn(ctx, payload)
@@ -608,19 +559,6 @@ func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, paylo
 // UpdateMailgunDeliveryStatus ...
 func (f *FakeEngagementRepository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return f.UpdateMailgunDeliveryStatusFn(ctx, payload)
-}
-
-// GetMarketingSMSByPhone ..
-func (f *FakeEngagementRepository) GetMarketingSMSByPhone(ctx context.Context, phoneNumber string) (*dto.MarketingSMS, error) {
-	return f.GetMarketingSMSByPhoneFn(ctx, phoneNumber)
-}
-
-// GetMarketingSMSByID ..
-func (f *FakeEngagementRepository) GetMarketingSMSByID(
-	ctx context.Context,
-	id string,
-) (*dto.MarketingSMS, error) {
-	return f.GetMarketingSMSByIDFn(ctx, id)
 }
 
 // SaveTwilioVideoCallbackStatus ..

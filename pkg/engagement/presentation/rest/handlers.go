@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
@@ -102,8 +100,6 @@ type PresentationHandlers interface {
 	SendEmail() http.HandlerFunc
 
 	SendToMany() http.HandlerFunc
-
-	GetAITSMSDeliveryCallback() http.HandlerFunc
 
 	GetNotificationHandler() http.HandlerFunc
 
@@ -1356,81 +1352,6 @@ func (p PresentationHandlersImpl) SendToMany() http.HandlerFunc {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
-// GetAITSMSDeliveryCallback generates an SMS Delivery Report by saving the callback data for future analysis.
-func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		err := r.ParseForm()
-		if err != nil {
-			log.Printf("unable to parse request data %v", err)
-			return
-		}
-		if r.Form == nil || len(r.Form) == 0 {
-			return
-		}
-
-		phoneNumber := r.Form.Get("phoneNumber")
-		log.Printf(
-			"AT callback URL has been called for phone number %s",
-			phoneNumber,
-		)
-
-		networkCode := r.Form.Get("networkCode")
-		failureReason := r.Form.Get("failureReason")
-		retryCount, err := strconv.Atoi(r.Form.Get("retryCount"))
-		if err != nil {
-			log.Printf("unable to convert retry count to int")
-			return
-		}
-
-		deliveryReport := &dto.ATDeliveryReport{
-			ID:                      r.Form.Get("id"),
-			Status:                  r.Form.Get("status"),
-			PhoneNumber:             phoneNumber,
-			NetworkCode:             &networkCode,
-			FailureReason:           &failureReason,
-			RetryCount:              retryCount,
-			DeliveryReportTimeStamp: time.Now(),
-		}
-
-		sms, err := p.infrastructure.GetMarketingSMSByPhone(ctx, phoneNumber)
-		if err != nil {
-			respondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		log.Printf(
-			"SMS with id %s for phone number %s has been retrieved",
-			sms.ID,
-			phoneNumber,
-		)
-
-		sms.DeliveryReport = deliveryReport
-		updatedSms, err := p.infrastructure.UpdateMarketingMessage(
-			ctx,
-			sms,
-		)
-		if err != nil {
-			respondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-		log.Printf(
-			"SMS with id %s for phone number %s has been updated with delivery report with id %s",
-			sms.ID,
-			phoneNumber,
-			deliveryReport.ID,
-		)
-
-		marshalled, err := json.Marshal(updatedSms)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }

@@ -63,20 +63,6 @@ type LoadCampgainDataInput struct {
 	Emails      []string `json:"emails"`
 }
 
-// MarketingSMS represents marketing SMS data
-type MarketingSMS struct {
-	ID                   string                `json:"id"`
-	PhoneNumber          string                `json:"phoneNumber"`
-	SenderID             enumutils.SenderID    `json:"senderId"`
-	MessageSentTimeStamp time.Time             `json:"messageSentTimeStamp"`
-	Message              string                `json:"message"`
-	DeliveryReport       *ATDeliveryReport     `json:"deliveryReport"`
-	Status               string                `json:"status"`
-	IsSynced             bool                  `json:"isSynced"`
-	TimeSynced           *time.Time            `json:"timeSynced"`
-	Engagement           domain.EngagementData `json:"engagement"`
-}
-
 // ATDeliveryReport callback delivery reports
 type ATDeliveryReport struct {
 	ID                      string    `json:"id"`

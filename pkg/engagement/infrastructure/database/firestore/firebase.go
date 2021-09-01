@@ -37,9 +37,6 @@ const (
 	messagesSubcollectionName    = "messages"
 	incomingEventsCollectionName = "incoming_events"
 	outgoingEventsCollectionName = "outgoing_events"
-	//AITMarketingMessageName is the name of a Cloud Firestore collection into which AIT
-	// callback data will be saved for future analysis
-	AITMarketingMessageName = "ait_marketing_sms"
 
 	// NPSResponseCollectionName firestore collection name where nps responses are stored
 	NPSResponseCollectionName = "nps_response"
@@ -885,11 +882,6 @@ func (fr Repository) getFeedCollectionName() string {
 	return suffixed
 }
 
-func (fr Repository) getMaretingSMSCollectionName() string {
-	suffixed := firebasetools.SuffixCollection(AITMarketingMessageName)
-	return suffixed
-}
-
 func (fr Repository) getNotificationCollectionName() string {
 	suffixed := firebasetools.SuffixCollection(notificationCollectionName)
 	return suffixed
@@ -1612,103 +1604,6 @@ func (fr Repository) GetDefaultNudgeByTitle(
 		nudge = nudgeData
 	}
 	return nudge, nil
-}
-
-// SaveMarketingMessage saves SMS data for future analysis
-func (fr Repository) SaveMarketingMessage(
-	ctx context.Context,
-	data dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	ctx, span := tracer.Start(ctx, "SaveMarketingMessage")
-	defer span.End()
-	if err := fr.checkPreconditions(); err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("repository precondition check failed: %w", err)
-	}
-
-	collectionName := fr.getMaretingSMSCollectionName()
-	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to save callback response")
-	}
-
-	return &data, nil
-}
-
-func getMarketingSMSData(
-	ctx context.Context,
-	atleastOne bool,
-	query firestore.Query,
-) (*dto.MarketingSMS, error) {
-	ctx, span := tracer.Start(ctx, "getMarketingSMSData")
-	defer span.End()
-	docs, err := fetchQueryDocs(ctx, query, atleastOne)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-
-	var marketingSMS dto.MarketingSMS
-	err = docs[0].DataTo(&marketingSMS)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf(
-			"unable to unmarshal marketing SMS from doc snapshot: %w", err)
-	}
-
-	return &marketingSMS, nil
-}
-
-// GetMarketingSMSByID returns a message given its id
-func (fr Repository) GetMarketingSMSByID(
-	ctx context.Context,
-	id string,
-) (*dto.MarketingSMS, error) {
-	ctx, span := tracer.Start(ctx, "GetMarketingSMSByID")
-	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
-		Where("ID", "==", id)
-	return getMarketingSMSData(ctx, true, query)
-}
-
-// GetMarketingSMSByPhone returns the latest message given a phone number
-func (fr Repository) GetMarketingSMSByPhone(
-	ctx context.Context,
-	phoneNumber string,
-) (*dto.MarketingSMS, error) {
-	ctx, span := tracer.Start(ctx, "GetMarketingSMSByPhone")
-	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
-		Where("PhoneNumber", "==", phoneNumber).
-		OrderBy("MessageSentTimeStamp", firestore.Desc)
-	return getMarketingSMSData(ctx, true, query)
-}
-
-// UpdateMarketingMessage updates marketing SMS data
-func (fr Repository) UpdateMarketingMessage(
-	ctx context.Context,
-	data *dto.MarketingSMS,
-) (*dto.MarketingSMS, error) {
-	ctx, span := tracer.Start(ctx, "UpdateMarketingMessage")
-	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
-		Where("ID", "==", data.ID)
-
-	docs, err := fetchQueryDocs(ctx, query, true)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-
-	doc := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
-		Doc(docs[0].Ref.ID)
-	if _, err = doc.Set(ctx, data); err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-
-	return fr.GetMarketingSMSByID(ctx, data.ID)
 }
 
 // SaveTwilioResponse saves the callback data
