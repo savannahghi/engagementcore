@@ -41,7 +41,6 @@ require (
 	github.com/savannahghi/interserviceclient v0.0.13
 	github.com/savannahghi/profileutils v0.0.7
 	github.com/savannahghi/pubsubtools v0.0.2
-	github.com/savannahghi/scalarutils v0.0.2
 	github.com/savannahghi/serverutils v0.0.3
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
@@ -49,7 +48,6 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
 	gitlab.slade360emr.com/go/apiclient v0.0.15
-	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210812143204-e6a6342f5f94
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.21.0
 	go.opentelemetry.io/otel v1.0.0-RC1

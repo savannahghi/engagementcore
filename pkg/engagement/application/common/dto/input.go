@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/savannahghi/enumutils"
-	"github.com/savannahghi/scalarutils"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // SendSMSPayload is used to serialise an SMS sent through the AIT service REST API
@@ -47,64 +45,9 @@ type NPSInput struct {
 	Feedback    []*FeedbackInput `json:"feedback"`
 }
 
-// ListID is a HubSpot Contact List ID
-type ListID struct {
-	ListID int `json:"listId"`
-}
-
-// SetBewellAwareInput payload to set bewell aware
-type SetBewellAwareInput struct {
-	EmailAddress string `json:"email"`
-}
-
-// LoadCampgainDataInput input
-type LoadCampgainDataInput struct {
-	PhoneNumber *string  `json:"phoneNumber"`
-	Emails      []string `json:"emails"`
-}
-
-// ATDeliveryReport callback delivery reports
-type ATDeliveryReport struct {
-	ID                      string    `json:"id"`
-	Status                  string    `json:"status"`
-	PhoneNumber             string    `json:"phoneNumber"`
-	NetworkCode             *string   `json:"networkCode"`
-	FailureReason           *string   `json:"failureReason"`
-	RetryCount              int       `json:"retryCount"`
-	DeliveryReportTimeStamp time.Time `json:"deliveryReportTimeStamp"`
-}
-
-// PrimaryEmailAddressPayload used when collecting HubSpot user email.
-type PrimaryEmailAddressPayload struct {
-	PhoneNumber  string `json:"phone"`
-	EmailAddress string `json:"email"`
-}
-
-// UpdateContactPSMessage represents CRM update contact Pub/Sub message
-type UpdateContactPSMessage struct {
-	Properties domain.ContactProperties `json:"properties"`
-	Phone      string                   `json:"phone"`
-}
-
 // UIDPayload is the user ID used in some inter-service requests
 type UIDPayload struct {
 	UID *string `json:"uid"`
-}
-
-// ContactLeadInput ...
-// todo there should be better management of this @mathenge
-type ContactLeadInput struct {
-	ContactType    string                   `json:"contact_type,omitempty"`
-	ContactValue   string                   `json:"contact_value,omitempty"`
-	FirstName      string                   `json:"first_name,omitempty"`
-	LastName       string                   `json:"last_name,omitempty"`
-	DateOfBirth    scalarutils.Date         `json:"date_of_birth,omitempty"`
-	IsSync         bool                     `json:"isSync"  firestore:"IsSync"`
-	TimeSync       *time.Time               `json:"timeSync"  firestore:"TimeSync"`
-	OptOut         domain.GeneralOptionType `json:"opt_out,omitempty"`
-	WantCover      bool                     `json:"wantCover" firestore:"wantCover"`
-	ContactChannel string                   `json:"contact_channel,omitempty"`
-	IsRegistered   bool                     `json:"is_registered,omitempty"`
 }
 
 // OutgoingEmailsLog contains the content of the sent email message sent via MailGun
@@ -126,13 +69,6 @@ type MailgunEvent struct {
 	DeliveredOn string `json:"timestamp" firestore:"deliveredOn"`
 	// MessageID is a unique identifier of mailgun's message
 	MessageID string `json:"message-id" firestore:"messageID"`
-}
-
-// EngagementPubSubMessage represents engagement payload published to pubsub
-type EngagementPubSubMessage struct {
-	Engagement  domain.EngagementData `json:"engagement"`
-	PhoneNumber string                `json:"phoneNumber"`
-	MessageID   string                `json:"messageID"`
 }
 
 // RetrieveUserProfileInput used to retrieve user profile info using either email address or phone

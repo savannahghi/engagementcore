@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // FakeServiceMessaging is a mock implementation of the "messaging" service
@@ -16,14 +15,6 @@ type FakeServiceMessaging struct {
 		flavour feedlib.Flavour,
 		payload feedlib.Element,
 		metadata map[string]interface{},
-	) error
-	NotifyEngagementCreateFn func(
-		ctx context.Context,
-		phone string,
-		messageID string,
-		engagementType domain.EngagementType,
-		metadata map[string]interface{},
-		topicID string,
 	) error
 
 	// Ask the notification service about the topics that it knows about
@@ -59,16 +50,4 @@ func (f *FakeServiceMessaging) SubscriptionIDs() map[string]string {
 // ReverseSubscriptionIDs ...
 func (f *FakeServiceMessaging) ReverseSubscriptionIDs() map[string]string {
 	return f.ReverseSubscriptionIDsFn()
-}
-
-// NotifyEngagementCreate ..
-func (f *FakeServiceMessaging) NotifyEngagementCreate(
-	ctx context.Context,
-	phone string,
-	messageID string,
-	engagementType domain.EngagementType,
-	metadata map[string]interface{},
-	topicID string,
-) error {
-	return f.NotifyEngagementCreateFn(ctx, phone, messageID, engagementType, metadata, topicID)
 }
