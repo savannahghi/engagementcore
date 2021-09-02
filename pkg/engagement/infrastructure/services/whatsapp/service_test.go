@@ -101,7 +101,7 @@ func TestService_checkPreconditions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := whatsapp.Service{
+			s := whatsapp.ServiceWhatsappImpl{
 				BaseURL:          tt.fields.baseURL,
 				AccountSID:       tt.fields.accountSID,
 				AccountAuthToken: tt.fields.accountAuthToken,

@@ -17,7 +17,7 @@ import (
 func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	startTime := time.Now()
 
-	ghostCMSPost, err := r.usecases.GetLibraryContent(ctx)
+	ghostCMSPost, err := r.infra.GetLibraryContent(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get library content: %v", err)
 	}
@@ -30,7 +30,7 @@ func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*domain.GhostC
 func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	startTime := time.Now()
 
-	faqs, err := r.usecases.GetFaqsContent(ctx, flavour)
+	faqs, err := r.infra.GetFaqsContent(ctx, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get FAQs content: %v", err)
 	}

@@ -16,7 +16,7 @@ func (r *mutationResolver) Upload(ctx context.Context, input profileutils.Upload
 	startTime := time.Now()
 
 	r.checkPreconditions()
-	upload, err := r.usecases.Upload(ctx, input)
+	upload, err := r.infra.Upload(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("unable to upload: %v", err)
 	}
@@ -35,7 +35,7 @@ func (r *queryResolver) FindUploadByID(ctx context.Context, id string) (*profile
 	startTime := time.Now()
 
 	r.checkPreconditions()
-	upload, err := r.usecases.FindUploadByID(ctx, id)
+	upload, err := r.infra.FindUploadByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find upload by ID: %v", err)
 	}

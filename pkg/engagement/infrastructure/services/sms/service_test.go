@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTestSMSService() (*sms.Service, error) {
+func newTestSMSService() (*sms.ServiceSMSImpl, error) {
 	ctx := context.Background()
 	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {

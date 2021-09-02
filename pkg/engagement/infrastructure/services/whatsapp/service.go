@@ -38,14 +38,14 @@ const (
 )
 
 // NewService initializes a properly set up WhatsApp service
-func NewService() *Service {
+func NewService() *ServiceWhatsappImpl {
 	sid := serverutils.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
 	authToken := serverutils.MustGetEnvVar(TwilioWhatsappAuthTokenEnvVarName)
 	sender := serverutils.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
 	httpClient := &http.Client{
 		Timeout: time.Second * TwilioHTTPClientTimeoutSeconds,
 	}
-	return &Service{
+	return &ServiceWhatsappImpl{
 		BaseURL:          twilioWhatsappBaseURL,
 		AccountSID:       sid,
 		AccountAuthToken: authToken,
@@ -76,8 +76,8 @@ type ServiceWhatsapp interface {
 	) (bool, error)
 }
 
-// Service is a WhatsApp service. The receivers implement the query and mutation resolvers.
-type Service struct {
+// ServiceWhatsappImpl is a WhatsApp service. The receivers implement the query and mutation resolvers.
+type ServiceWhatsappImpl struct {
 	BaseURL          string
 	AccountSID       string
 	AccountAuthToken string
@@ -87,7 +87,7 @@ type Service struct {
 }
 
 // CheckPreconditions ...
-func (s Service) CheckPreconditions() {
+func (s ServiceWhatsappImpl) CheckPreconditions() {
 	if s.HTTPClient == nil {
 		log.Panicf("nil http client in Twilio WhatsApp service")
 	}
@@ -110,7 +110,7 @@ func (s Service) CheckPreconditions() {
 }
 
 // MakeTwilioRequest makes a twilio request
-func (s Service) MakeTwilioRequest(
+func (s ServiceWhatsappImpl) MakeTwilioRequest(
 	ctx context.Context,
 	method string,
 	urlPath string,
@@ -164,7 +164,7 @@ func (s Service) MakeTwilioRequest(
 }
 
 // PhoneNumberVerificationCode sends Phone Number verification codes via WhatsApp
-func (s Service) PhoneNumberVerificationCode(
+func (s ServiceWhatsappImpl) PhoneNumberVerificationCode(
 	ctx context.Context,
 	to string,
 	code string,
@@ -216,7 +216,7 @@ func (s Service) PhoneNumberVerificationCode(
 
 // SaveTwilioCallbackResponse saves the twilio callback response for future
 // analysis
-func (s Service) SaveTwilioCallbackResponse(
+func (s ServiceWhatsappImpl) SaveTwilioCallbackResponse(
 	ctx context.Context,
 	data dto.Message,
 ) error {
@@ -224,7 +224,7 @@ func (s Service) SaveTwilioCallbackResponse(
 }
 
 //TemporaryPIN send PIN via whatsapp to user
-func (s Service) TemporaryPIN(
+func (s ServiceWhatsappImpl) TemporaryPIN(
 	ctx context.Context,
 	to string,
 	message string,

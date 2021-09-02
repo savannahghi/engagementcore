@@ -24,8 +24,8 @@ const (
 	IntMax = 9007199254740990
 )
 
-func InitializeTestNewFeed(ctx context.Context) (*feed.UseCaseImpl, infrastructure.Infrastructure, error) {
-	infra := infrastructure.NewInfrastructureInteractor()
+func InitializeTestNewFeed(ctx context.Context) (*feed.UseCaseImpl, infrastructure.Interactor, error) {
+	infra := infrastructure.NewInteractor()
 	feed := feed.NewFeed(infra)
 	return feed, infra, nil
 }

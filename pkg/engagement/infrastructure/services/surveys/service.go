@@ -26,7 +26,7 @@ type ServiceSurveys interface {
 }
 
 // NewService initializes a surveys service
-func NewService(repository database.Repository) *Service {
+func NewService(repository database.Repository) *ServiceSurveyImpl {
 	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
@@ -39,7 +39,7 @@ func NewService(repository database.Repository) *Service {
 		log.Panicf("unable to initialize Firestore client: %s", err)
 	}
 
-	srv := &Service{
+	srv := &ServiceSurveyImpl{
 		firestoreClient: firestoreClient,
 		Repository:      repository,
 	}
@@ -47,20 +47,20 @@ func NewService(repository database.Repository) *Service {
 	return srv
 }
 
-func (s Service) checkPreconditions() {
+func (s ServiceSurveyImpl) checkPreconditions() {
 	if s.firestoreClient == nil {
 		log.Panicf("surveys service has a nil firestore client")
 	}
 }
 
-// Service is an surveys service
-type Service struct {
+// ServiceSurveyImpl is an surveys service
+type ServiceSurveyImpl struct {
 	firestoreClient *firestore.Client
 	Repository      database.Repository
 }
 
 // RecordNPSResponse ...
-func (s Service) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
+func (s ServiceSurveyImpl) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	ctx, span := tracer.Start(ctx, "RecordNPSResponse")
 	defer span.End()
 	s.checkPreconditions()

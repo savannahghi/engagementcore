@@ -130,13 +130,12 @@ type PresentationHandlers interface {
 
 // PresentationHandlersImpl represents the usecase implementation object
 type PresentationHandlersImpl struct {
-	usecases       usecases.Usecases
-	infrastructure infrastructure.Infrastructure
+	usecases       usecases.Interactor
+	infrastructure infrastructure.Interactor
 }
 
 // NewPresentationHandlers initializes a new rest handlers usecase
-func NewPresentationHandlers(infrastructure infrastructure.Infrastructure, usecases usecases.Usecases) PresentationHandlers {
-
+func NewPresentationHandlers(infrastructure infrastructure.Interactor, usecases usecases.Interactor) PresentationHandlers {
 	return &PresentationHandlersImpl{infrastructure: infrastructure, usecases: usecases}
 }
 
@@ -1203,7 +1202,7 @@ func (p PresentationHandlersImpl) Upload() http.HandlerFunc {
 			return
 		}
 
-		upload, err := p.usecases.Upload(ctx, uploadInput)
+		upload, err := p.infrastructure.Upload(ctx, uploadInput)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -1235,7 +1234,7 @@ func (p PresentationHandlersImpl) FindUpload() http.HandlerFunc {
 			return
 		}
 
-		upload, err := p.usecases.FindUploadByID(ctx, uploadID)
+		upload, err := p.infrastructure.FindUploadByID(ctx, uploadID)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -1463,7 +1462,7 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler() http.Hand
 
 		serverutils.DecodeJSONToTargetStruct(rw, r, payloadRequest)
 
-		ok, err := p.usecases.PhoneNumberVerificationCode(
+		ok, err := p.infrastructure.PhoneNumberVerificationCode(
 			ctx,
 			payloadRequest.To,
 			payloadRequest.Code,
@@ -1494,7 +1493,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			return
 		}
 
-		code, err := p.usecases.GenerateAndSendOTP(
+		code, err := p.infrastructure.GenerateAndSendOTP(
 			ctx,
 			payload.Msisdn,
 			payload.AppID,
@@ -1525,9 +1524,9 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		code, err := p.usecases.GenerateRetryOTP(
+		code, err := p.infrastructure.GenerateRetryOTP(
 			ctx,
-			*payload.Msisdn,
+			payload.Msisdn,
 			payload.RetryStep,
 			payload.AppID,
 		)
@@ -1560,10 +1559,10 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler() http.HandlerFunc {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := p.usecases.VerifyOtp(
+		isVerified, err := p.infrastructure.VerifyOtp(
 			ctx,
-			*payload.Msisdn,
-			*payload.VerificationCode,
+			payload.Msisdn,
+			payload.VerificationCode,
 		)
 		if err != nil {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
@@ -1591,10 +1590,10 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler() http.HandlerFunc 
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := p.usecases.VerifyEmailOtp(
+		isVerified, err := p.infrastructure.VerifyEmailOtp(
 			ctx,
-			*payload.Email,
-			*payload.VerificationCode,
+			payload.Email,
+			payload.VerificationCode,
 		)
 		if err != nil {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
@@ -1623,7 +1622,7 @@ func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 			return
 		}
 
-		_, err := p.usecases.SendNotification(
+		_, err := p.infrastructure.SendNotification(
 			ctx,
 			payload.RegistrationTokens,
 			payload.Data,
@@ -1661,7 +1660,7 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 		payload := &dto.MailgunEvent{}
 		serverutils.DecodeJSONToTargetStruct(rw, r, payload)
 
-		emailLog, err := p.infrastructure.UpdateMailgunDeliveryStatus(
+		emailLog, err := p.infrastructure.Repository.UpdateMailgunDeliveryStatus(
 			ctx,
 			payload,
 		)
@@ -1705,7 +1704,7 @@ func (p PresentationHandlersImpl) GetTwilioVideoCallbackFunc() http.HandlerFunc 
 		if r.Form == nil || len(r.Form) == 0 {
 			return
 		}
-		if err := p.infrastructure.SaveTwilioVideoCallbackStatus(
+		if err := p.infrastructure.Repository.SaveTwilioVideoCallbackStatus(
 			r.Context(),
 			dto.CallbackData{Values: r.Form},
 		); err != nil {

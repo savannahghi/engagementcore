@@ -195,11 +195,11 @@ type HandlePubsubPayload func(ctx context.Context, m *pubsubtools.PubSubPayload)
 
 // NotificationImpl represents the notification usecase implementation
 type NotificationImpl struct {
-	infrastructure infrastructure.Infrastructure
+	infrastructure infrastructure.Interactor
 }
 
 // NewNotification initializes a notification usecase
-func NewNotification(infrastructure infrastructure.Infrastructure) *NotificationImpl {
+func NewNotification(infrastructure infrastructure.Interactor) *NotificationImpl {
 	return &NotificationImpl{
 		infrastructure: infrastructure,
 	}

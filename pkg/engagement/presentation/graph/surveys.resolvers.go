@@ -18,7 +18,7 @@ func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input dto.NPSI
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	response, err := r.usecases.RecordNPSResponse(ctx, input)
+	response, err := r.infra.RecordNPSResponse(ctx, input)
 	if err != nil {
 		return false, fmt.Errorf("failed to record nps response")
 	}

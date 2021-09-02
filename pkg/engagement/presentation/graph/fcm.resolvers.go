@@ -26,7 +26,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 		return false, err
 	}
 
-	sent, err := r.usecases.SendNotification(
+	sent, err := r.infra.SendNotification(
 		ctx,
 		registrationTokens,
 		notificationData,
@@ -55,7 +55,7 @@ func (r *mutationResolver) SendFCMByPhoneOrEmail(ctx context.Context, phoneNumbe
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	sent, err := r.usecases.SendFCMByPhoneOrEmail(
+	sent, err := r.infra.SendFCMByPhoneOrEmail(
 		ctx,
 		phoneNumber,
 		email,
@@ -85,7 +85,7 @@ func (r *queryResolver) Notifications(ctx context.Context, registrationToken str
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	notification, err := r.usecases.Notifications(ctx, registrationToken, newerThan, limit)
+	notification, err := r.infra.Notifications(ctx, registrationToken, newerThan, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve notifications: %w", err)
 	}

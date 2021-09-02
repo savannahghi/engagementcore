@@ -17,7 +17,7 @@ func (r *mutationResolver) PhoneNumberVerificationCode(ctx context.Context, to s
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	verificationCode, err := r.usecases.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
+	verificationCode, err := r.infra.PhoneNumberVerificationCode(ctx, to, code, marketingMessage)
 	if err != nil {
 		return false, fmt.Errorf("failed to send a verification code: %v", err)
 	}

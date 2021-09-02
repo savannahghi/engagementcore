@@ -32,7 +32,7 @@ func TestNewService(t *testing.T) {
 	service := mail.NewService(repo)
 	tests := []struct {
 		name string
-		want *mail.Service
+		want *mail.ServiceMailImpl
 	}{
 		{
 			name: "default case",
@@ -63,7 +63,7 @@ func TestService_SendEmail(t *testing.T) {
 	service := mail.NewService(fr)
 	tests := []struct {
 		name    string
-		service *mail.Service
+		service *mail.ServiceMailImpl
 		subject string
 		text    string
 		to      []string
@@ -206,7 +206,7 @@ func TestService_CheckPreconditions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := mail.Service{
+			s := mail.ServiceMailImpl{
 				Mg:                tt.fields.Mg,
 				From:              tt.fields.From,
 				SendInBlueEnabled: tt.fields.SendInBlueEnabled,
