@@ -8,6 +8,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/savannahghi/firebasetools"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 )
 
@@ -19,16 +20,19 @@ import (
 
 // Resolver sets up a GraphQL resolver with all necessary dependencies
 type Resolver struct {
-	usecases usecases.Usecases
+	usecases usecases.Interactor
+	infra    infrastructure.Interactor
 }
 
 // NewResolver sets up the dependencies needed for query and mutation resolvers to work
 func NewResolver(
 	ctx context.Context,
-	usecases usecases.Usecases,
+	usecases usecases.Interactor,
+	infra infrastructure.Interactor,
 ) (*Resolver, error) {
 	return &Resolver{
 		usecases: usecases,
+		infra:    infra,
 	}, nil
 }
 

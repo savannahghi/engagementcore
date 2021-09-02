@@ -56,8 +56,8 @@ type ServiceSMS interface {
 	) (*dto.SendMessageResponse, error)
 }
 
-// Service defines a sms service struct
-type Service struct {
+// ServiceSMSImpl defines a sms service struct
+type ServiceSMSImpl struct {
 	Env        string
 	Repository database.Repository
 	PubSub     messaging.NotificationService
@@ -88,13 +88,13 @@ func getHost(env, service string) string {
 func NewService(
 	repository database.Repository,
 	pubsub messaging.NotificationService,
-) *Service {
+) *ServiceSMSImpl {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository, pubsub}
+	return &ServiceSMSImpl{env, repository, pubsub}
 }
 
 // SendToMany is a utility method to send to many recipients at the same time
-func (s Service) SendToMany(
+func (s ServiceSMSImpl) SendToMany(
 	ctx context.Context,
 	message string,
 	to []string,
@@ -105,7 +105,7 @@ func (s Service) SendToMany(
 }
 
 // Send is a method used to send to a single recipient
-func (s Service) Send(
+func (s ServiceSMSImpl) Send(
 	ctx context.Context,
 	to, message string,
 	from enumutils.SenderID,
@@ -135,7 +135,7 @@ func (s Service) Send(
 }
 
 // SendSMS is a method used to send SMS
-func (s Service) SendSMS(
+func (s ServiceSMSImpl) SendSMS(
 	ctx context.Context,
 	to, message string,
 	from string,
@@ -193,7 +193,7 @@ func (s Service) SendSMS(
 	return smsMessageResponse, nil
 }
 
-func (s Service) newPostRequest(
+func (s ServiceSMSImpl) newPostRequest(
 	ctx context.Context,
 	url string,
 	values url.Values,

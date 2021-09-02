@@ -56,14 +56,14 @@ const (
 	agentHelpRequest
 )
 
-// NewLibraryService creates a new library Service
+// NewLibraryService creates a new library ServiceLibraryImpl
 func NewLibraryService(
 	onboarding onboarding.ProfileService,
-) *Service {
+) *ServiceLibraryImpl {
 	e := serverutils.MustGetEnvVar(ghostCMSAPIEndpoint)
 	a := serverutils.MustGetEnvVar(ghostCMSAPIKey)
 
-	srv := &Service{
+	srv := &ServiceLibraryImpl{
 		APIEndpoint:  e,
 		APIKey:       a,
 		PostsAPIRoot: fmt.Sprintf("%v%vkey=%v", e, apiRoot, a),
@@ -73,16 +73,16 @@ func NewLibraryService(
 	return srv
 }
 
-// Service organizes library functionality
+// ServiceLibraryImpl organizes library functionality
 // APIEndpoint should be of the form https://<name>.ghost.io
-type Service struct {
+type ServiceLibraryImpl struct {
 	APIEndpoint  string
 	APIKey       string
 	PostsAPIRoot string
 	onboarding   onboarding.ProfileService
 }
 
-func (s Service) checkPreconditions() {
+func (s ServiceLibraryImpl) checkPreconditions() {
 	if s.APIEndpoint == "" {
 		log.Panicf("Ghost API endpoint must be set")
 	}
@@ -96,7 +96,7 @@ func (s Service) checkPreconditions() {
 	}
 }
 
-func (s Service) composeRequest(reqType requestType) string {
+func (s ServiceLibraryImpl) composeRequest(reqType requestType) string {
 	var urlRequest string
 	switch reqType {
 	case feedRequestConsumer:
@@ -167,7 +167,7 @@ func (s Service) composeRequest(reqType requestType) string {
 	return urlRequest
 }
 
-func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*domain.GhostCMSPost, error) {
+func (s ServiceLibraryImpl) getCMSPosts(ctx context.Context, requestType requestType) ([]*domain.GhostCMSPost, error) {
 	_, span := tracer.Start(ctx, "getCMSPosts")
 	defer span.End()
 	s.checkPreconditions()
@@ -195,7 +195,7 @@ func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*d
 }
 
 // GetFeedContent fetches posts that should be added to the feed.
-func (s Service) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
+func (s ServiceLibraryImpl) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	var request requestType
 
 	switch flavour {
@@ -210,7 +210,7 @@ func (s Service) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([
 }
 
 // GetFaqsContent fetches posts tagged as FAQs.
-func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
+func (s ServiceLibraryImpl) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	ctx, span := tracer.Start(ctx, "GetFaqsContent")
 	defer span.End()
 	if !feedlib.FlavourConsumer.IsValid() {
@@ -246,6 +246,6 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([
 }
 
 // GetLibraryContent gets library content to be show under library section of the app.
-func (s Service) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
+func (s ServiceLibraryImpl) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	return s.getCMSPosts(ctx, libraryRequest)
 }

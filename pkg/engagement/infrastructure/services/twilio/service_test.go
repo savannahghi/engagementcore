@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTwilioService(ctx context.Context) (*twilio.Service, error) {
+func newTwilioService(ctx context.Context) (*twilio.ServiceTwilioImpl, error) {
 	var repo database.Repository
 	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
@@ -33,7 +33,7 @@ func newTwilioService(ctx context.Context) (*twilio.Service, error) {
 
 	sms := sms.NewService(repo, ns)
 
-	return twilio.NewService(sms, repo), nil
+	return twilio.NewService(*sms, repo), nil
 }
 
 func TestNewService(t *testing.T) {

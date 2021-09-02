@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 func TestPublishFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	uid := ksuid.New().String()
 	testItem := testItem()
@@ -244,7 +244,7 @@ func TestPublishFeedItem(t *testing.T) {
 func TestDeleteFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	uid := ksuid.New().String()
 
@@ -430,7 +430,7 @@ func TestDeleteFeedItem(t *testing.T) {
 func TestResolveFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -653,7 +653,7 @@ func TestResolveFeedItem(t *testing.T) {
 func TestPinFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -923,7 +923,7 @@ func TestPinFeedItem(t *testing.T) {
 func TestUnpinFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -1194,7 +1194,7 @@ func TestUnpinFeedItem(t *testing.T) {
 func TestUnresolveFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -1436,7 +1436,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 func TestHideFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -1659,7 +1659,7 @@ func TestHideFeedItem(t *testing.T) {
 func TestShowFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -1905,7 +1905,7 @@ func TestShowFeedItem(t *testing.T) {
 func TestLabels(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -1989,7 +1989,7 @@ func TestLabels(t *testing.T) {
 func TestSaveLabel(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -2071,7 +2071,7 @@ func TestSaveLabel(t *testing.T) {
 func TestUnreadPersistentItems(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -2149,7 +2149,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -2228,7 +2228,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 func TestPublishNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -2463,7 +2463,7 @@ func TestPublishNudge(t *testing.T) {
 func TestResolveNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 
@@ -2699,7 +2699,7 @@ func TestResolveNudge(t *testing.T) {
 func TestUnresolveNudge(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
-	i := infrastructure.NewInfrastructureInteractor()
+	i := infrastructure.NewInteractor()
 
 	fe := feed.NewFeed(i)
 

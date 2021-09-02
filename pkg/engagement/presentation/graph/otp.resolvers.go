@@ -17,7 +17,7 @@ func (r *mutationResolver) VerifyOtp(ctx context.Context, msisdn string, otp str
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	verifyOTP, err := r.usecases.VerifyOtp(ctx, msisdn, otp)
+	verifyOTP, err := r.infra.VerifyOtp(ctx, &msisdn, &otp)
 	if err != nil {
 		return false, fmt.Errorf("failed to check for the validity of the supplied OTP")
 	}
@@ -38,7 +38,7 @@ func (r *mutationResolver) VerifyEmailOtp(ctx context.Context, email string, otp
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	verifyEmailOTP, err := r.usecases.VerifyEmailOtp(ctx, email, otp)
+	verifyEmailOTP, err := r.infra.VerifyEmailOtp(ctx, &email, &otp)
 	if err != nil {
 		return false, fmt.Errorf("failed to check for the validity of the supplied OTP")
 	}
@@ -59,7 +59,7 @@ func (r *queryResolver) GenerateOtp(ctx context.Context, msisdn string, appID *s
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	otp, err := r.usecases.GenerateAndSendOTP(ctx, msisdn, appID)
+	otp, err := r.infra.GenerateAndSendOTP(ctx, msisdn, appID)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate OTP")
 	}
@@ -80,7 +80,7 @@ func (r *queryResolver) GenerateAndEmailOtp(ctx context.Context, msisdn string, 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	otp, err := r.usecases.SendOTPToEmail(ctx, msisdn, email, appID)
+	otp, err := r.infra.SendOTPToEmail(ctx, &msisdn, email, appID)
 	if err != nil {
 		return "", fmt.Errorf("failed to send the generated OTP to the provided email address")
 	}
@@ -100,7 +100,7 @@ func (r *queryResolver) GenerateRetryOtp(ctx context.Context, msisdn string, ret
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	otp, err := r.usecases.GenerateRetryOTP(ctx, msisdn, retryStep, appID)
+	otp, err := r.infra.GenerateRetryOTP(ctx, &msisdn, retryStep, appID)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate fallback OTPs")
 	}
@@ -120,7 +120,7 @@ func (r *queryResolver) EmailVerificationOtp(ctx context.Context, email string) 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	otp, err := r.usecases.EmailVerificationOtp(ctx, email)
+	otp, err := r.infra.EmailVerificationOtp(ctx, &email)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate an OTP to the supplied email for verification")
 	}

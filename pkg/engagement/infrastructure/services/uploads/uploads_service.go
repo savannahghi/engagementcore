@@ -88,7 +88,7 @@ func GCSClient(ctx context.Context) (*storage.Client, error) {
 }
 
 // NewUploadsService initializes an upload service
-func NewUploadsService() *Service {
+func NewUploadsService() *ServiceUploadImpl {
 	ctx := context.Background()
 	client, err := GCSClient(ctx)
 	if err != nil {
@@ -108,7 +108,7 @@ func NewUploadsService() *Service {
 			"unable to initialize Firestore client for upload service: %s", err)
 	}
 
-	return &Service{
+	return &ServiceUploadImpl{
 		storageClient: client,
 		contentTypeMap: map[string]string{
 			"PNG": "image/png",
@@ -119,41 +119,41 @@ func NewUploadsService() *Service {
 	}
 }
 
-// Service is an upload service
-type Service struct {
+// ServiceUploadImpl is an upload service
+type ServiceUploadImpl struct {
 	storageClient   *storage.Client
 	firestoreClient *firestore.Client
 	contentTypeMap  map[string]string
 }
 
-func (s Service) enforcePreconditions() {
+func (s ServiceUploadImpl) enforcePreconditions() {
 	if s.storageClient == nil {
-		log.Panicf("uploads.Service *storage.Client is nil")
+		log.Panicf("uploads.ServiceUploadImpl *storage.Client is nil")
 	}
 
 	if s.firestoreClient == nil {
-		log.Panicf("uploads.Service *firestore.Client is nil")
+		log.Panicf("uploads.ServiceUploadImpl *firestore.Client is nil")
 	}
 
 	if s.contentTypeMap == nil {
-		log.Panicf("uploads.Service contentTypeMap is nil")
+		log.Panicf("uploads.ServiceUploadImpl contentTypeMap is nil")
 	}
 }
 
 // StorageClient returns the upload service's Google Cloud Storage Client
-func (s Service) StorageClient() *storage.Client {
+func (s ServiceUploadImpl) StorageClient() *storage.Client {
 	s.enforcePreconditions()
 	return s.storageClient
 }
 
 // FirestoreClient returns the upload service's Firebase Firestore client
-func (s Service) FirestoreClient() *firestore.Client {
+func (s ServiceUploadImpl) FirestoreClient() *firestore.Client {
 	s.enforcePreconditions()
 	return s.firestoreClient
 }
 
 // Upload uploads the file to cloud storage
-func (s Service) Upload(
+func (s ServiceUploadImpl) Upload(
 	ctx context.Context,
 	inp profileutils.UploadInput,
 ) (*profileutils.Upload, error) {
@@ -221,7 +221,7 @@ func (s Service) Upload(
 }
 
 // FindUploadByID retrieves an upload by it's ID
-func (s Service) FindUploadByID(
+func (s ServiceUploadImpl) FindUploadByID(
 	ctx context.Context,
 	id string,
 ) (*profileutils.Upload, error) {

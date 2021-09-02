@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func initializeTestService(ctx context.Context, t *testing.T) (*fcm.Service, error) {
+func initializeTestService(ctx context.Context, t *testing.T) (*fcm.ServiceFCMImpl, error) {
 	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
@@ -59,7 +59,7 @@ func TestNewService(t *testing.T) {
 
 	tests := []struct {
 		name string
-		want *fcm.Service
+		want *fcm.ServiceFCMImpl
 	}{
 		{
 			name: "good case",

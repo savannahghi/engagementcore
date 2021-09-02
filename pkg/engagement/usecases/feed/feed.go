@@ -237,12 +237,12 @@ type Usecases interface {
 
 // UseCaseImpl represents the feed usecase implementation
 type UseCaseImpl struct {
-	infrastructure infrastructure.Infrastructure
+	infrastructure infrastructure.Interactor
 }
 
 // NewFeed initializes a user feed
 func NewFeed(
-	infrastructure infrastructure.Infrastructure,
+	infrastructure infrastructure.Interactor,
 ) *UseCaseImpl {
 	return &UseCaseImpl{
 		infrastructure: infrastructure,

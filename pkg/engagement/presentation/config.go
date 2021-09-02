@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/engagement/pkg/engagement/usecases"
@@ -102,9 +103,10 @@ func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 
 // GQLHandler sets up a GraphQL resolver
 func GQLHandler(ctx context.Context,
-	usecases usecases.Usecases,
+	usecases usecases.Interactor,
+	infra infrastructure.Interactor,
 ) http.HandlerFunc {
-	resolver, err := graph.NewResolver(ctx, usecases)
+	resolver, err := graph.NewResolver(ctx, usecases, infra)
 	if err != nil {
 		serverutils.LogStartupError(ctx, err)
 	}
