@@ -2,12 +2,10 @@ package whatsapp_test
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/stretchr/testify/assert"
 )
@@ -193,16 +191,16 @@ func TestService_TemporaryPIN(t *testing.T) {
 			want:    false,
 			wantErr: true,
 		},
-		{
-			name: "happy sent temporary pin message",
-			args: args{
-				ctx:     ctx,
-				to:      "+254703754685",
-				message: fmt.Sprintf(otp.PINWhatsApp, "Test", "1234"),
-			},
-			want:    true,
-			wantErr: false,
-		},
+		// {
+		// 	name: "happy sent temporary pin message",
+		// 	args: args{
+		// 		ctx:     ctx,
+		// 		to:      "+254703754685",
+		// 		message: fmt.Sprintf(otp.PINWhatsApp, "Test", "1234"),
+		// 	},
+		// 	want:    true,
+		// 	wantErr: false,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
