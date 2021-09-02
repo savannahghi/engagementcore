@@ -3,20 +3,28 @@ package feed_test
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
-	mockInfra "github.com/savannahghi/engagement/pkg/engagement/infrastructure/mock"
-
+	mockRepo "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/mock"
+	mockMessaging "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging/mock"
 	"github.com/savannahghi/engagement/pkg/engagement/usecases/feed"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/segmentio/ksuid"
 )
 
-var fakeInfrastructure mockInfra.FakeInfrastructure
+var fakeEngagement mockRepo.FakeEngagementRepository
+var fakeMessaging mockMessaging.FakeServiceMessaging
+
+func TestMain(m *testing.M) {
+	os.Setenv("ROOT_COLLECTION_SUFFIX", "staging")
+	os.Setenv("ENVIRONMENT", "staging")
+	os.Exit(m.Run())
+}
 
 func TestPublishFeedItem(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
@@ -102,7 +110,7 @@ func TestPublishFeedItem(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:publish_feed_item" {
-				fakeInfrastructure.SaveFeedItemFn = func(
+				fakeEngagement.SaveFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -113,7 +121,7 @@ func TestPublishFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -126,7 +134,7 @@ func TestPublishFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_save_feed_item" {
-				fakeInfrastructure.SaveFeedItemFn = func(
+				fakeEngagement.SaveFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -139,7 +147,7 @@ func TestPublishFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_a_notification" {
-				fakeInfrastructure.SaveFeedItemFn = func(
+				fakeEngagement.SaveFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -150,7 +158,7 @@ func TestPublishFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -162,7 +170,7 @@ func TestPublishFeedItem(t *testing.T) {
 				}
 
 				if tt.name == "invalid:use_a_nil_item" {
-					fakeInfrastructure.SaveFeedItemFn = func(
+					fakeEngagement.SaveFeedItemFn = func(
 						ctx context.Context,
 						uid string,
 						flavour feedlib.Flavour,
@@ -173,7 +181,7 @@ func TestPublishFeedItem(t *testing.T) {
 				}
 
 				if tt.name == "invalid:use_an_invalid_item" {
-					fakeInfrastructure.SaveFeedItemFn = func(
+					fakeEngagement.SaveFeedItemFn = func(
 						ctx context.Context,
 						uid string,
 						flavour feedlib.Flavour,
@@ -184,7 +192,7 @@ func TestPublishFeedItem(t *testing.T) {
 				}
 
 				if tt.name == "invalid:use_an_invalid_action_type" {
-					fakeInfrastructure.SaveFeedItemFn = func(
+					fakeEngagement.SaveFeedItemFn = func(
 						ctx context.Context,
 						uid string,
 						flavour feedlib.Flavour,
@@ -299,7 +307,7 @@ func TestDeleteFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:delete_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -310,7 +318,7 @@ func TestDeleteFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.DeleteFeedItemFn = func(
+				fakeEngagement.DeleteFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -319,7 +327,7 @@ func TestDeleteFeedItem(t *testing.T) {
 					return nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -332,7 +340,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -343,7 +351,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_delete_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -354,7 +362,7 @@ func TestDeleteFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.DeleteFeedItemFn = func(
+				fakeEngagement.DeleteFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -365,7 +373,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -376,7 +384,7 @@ func TestDeleteFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.DeleteFeedItemFn = func(
+				fakeEngagement.DeleteFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -385,7 +393,7 @@ func TestDeleteFeedItem(t *testing.T) {
 					return nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -496,7 +504,7 @@ func TestResolveFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:successfully_resolve_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -518,7 +526,7 @@ func TestResolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -529,7 +537,7 @@ func TestResolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -542,7 +550,7 @@ func TestResolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -553,7 +561,7 @@ func TestResolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -564,7 +572,7 @@ func TestResolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -575,7 +583,7 @@ func TestResolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -586,7 +594,7 @@ func TestResolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -597,7 +605,7 @@ func TestResolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -735,7 +743,7 @@ func TestPinFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:successfully_pin_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -757,7 +765,7 @@ func TestPinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -768,7 +776,7 @@ func TestPinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -781,7 +789,7 @@ func TestPinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -794,7 +802,7 @@ func TestPinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -805,7 +813,7 @@ func TestPinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -816,7 +824,7 @@ func TestPinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -838,7 +846,7 @@ func TestPinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -849,7 +857,7 @@ func TestPinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -862,7 +870,7 @@ func TestPinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:nil_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -871,7 +879,7 @@ func TestPinFeedItem(t *testing.T) {
 					return nil, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1005,7 +1013,7 @@ func TestUnpinFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:successfully_unpin_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1027,7 +1035,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1038,7 +1046,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1051,7 +1059,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1064,7 +1072,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1075,7 +1083,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1086,7 +1094,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1108,7 +1116,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1119,7 +1127,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1132,7 +1140,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:nil_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1141,7 +1149,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					return nil, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1269,7 +1277,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:successfully_unresolve_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1291,7 +1299,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1302,7 +1310,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1315,7 +1323,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1326,7 +1334,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1337,7 +1345,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1348,7 +1356,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1359,7 +1367,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1370,7 +1378,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1383,7 +1391,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:nil_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1504,7 +1512,7 @@ func TestHideFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:successfully_hide_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1526,7 +1534,7 @@ func TestHideFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1537,7 +1545,7 @@ func TestHideFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1550,7 +1558,7 @@ func TestHideFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1561,7 +1569,7 @@ func TestHideFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1572,7 +1580,7 @@ func TestHideFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1583,7 +1591,7 @@ func TestHideFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1594,7 +1602,7 @@ func TestHideFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1605,7 +1613,7 @@ func TestHideFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1727,7 +1735,7 @@ func TestShowFeedItem(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			if tt.name == "valid:successfully_show_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1749,7 +1757,7 @@ func TestShowFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1760,7 +1768,7 @@ func TestShowFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1773,7 +1781,7 @@ func TestShowFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1784,7 +1792,7 @@ func TestShowFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_feed_item" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1806,7 +1814,7 @@ func TestShowFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1817,7 +1825,7 @@ func TestShowFeedItem(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetFeedItemFn = func(
+				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1839,7 +1847,7 @@ func TestShowFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateFeedItemFn = func(
+				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -1850,7 +1858,7 @@ func TestShowFeedItem(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -1939,7 +1947,7 @@ func TestLabels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_return_valid_labels" {
-				fakeInfrastructure.LabelsFn = func(
+				fakeEngagement.LabelsFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2025,7 +2033,7 @@ func TestSaveLabel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_save_valid_label" {
-				fakeInfrastructure.SaveLabelFn = func(
+				fakeEngagement.SaveLabelFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2104,7 +2112,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_return_no_of_unread_inboxItems" {
-				fakeInfrastructure.UnreadPersistentItemsFn = func(
+				fakeEngagement.UnreadPersistentItemsFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2183,7 +2191,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_update_no_of_unread_inboxItems" {
-				fakeInfrastructure.UpdateUnreadPersistentItemsCountFn = func(
+				fakeEngagement.UpdateUnreadPersistentItemsCountFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2319,7 +2327,7 @@ func TestPublishNudge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_publish_nudge" {
-				fakeInfrastructure.SaveNudgeFn = func(
+				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2331,7 +2339,7 @@ func TestPublishNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -2344,7 +2352,7 @@ func TestPublishNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:nil_nudge" {
-				fakeInfrastructure.SaveNudgeFn = func(
+				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2355,7 +2363,7 @@ func TestPublishNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_save_nudge" {
-				fakeInfrastructure.SaveNudgeFn = func(
+				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2366,7 +2374,7 @@ func TestPublishNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.SaveNudgeFn = func(
+				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2378,7 +2386,7 @@ func TestPublishNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -2391,7 +2399,7 @@ func TestPublishNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:invalid_nudge" {
-				fakeInfrastructure.SaveNudgeFn = func(
+				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2401,7 +2409,7 @@ func TestPublishNudge(t *testing.T) {
 				}
 			}
 			if tt.name == "invalid:invalid_nudgeActionType" {
-				fakeInfrastructure.SaveNudgeFn = func(
+				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2535,7 +2543,7 @@ func TestResolveNudge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_resolve_nudge" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2553,7 +2561,7 @@ func TestResolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateNudgeFn = func(
+				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2564,7 +2572,7 @@ func TestResolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -2577,7 +2585,7 @@ func TestResolveNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_nudge" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2588,7 +2596,7 @@ func TestResolveNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_nudge" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2606,7 +2614,7 @@ func TestResolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateNudgeFn = func(
+				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2617,7 +2625,7 @@ func TestResolveNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2635,7 +2643,7 @@ func TestResolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateNudgeFn = func(
+				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2646,7 +2654,7 @@ func TestResolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -2769,7 +2777,7 @@ func TestUnresolveNudge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "valid:successfully_Unresolve_nudge" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2787,7 +2795,7 @@ func TestUnresolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateNudgeFn = func(
+				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2798,7 +2806,7 @@ func TestUnresolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
@@ -2811,7 +2819,7 @@ func TestUnresolveNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_get_nudge" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2822,7 +2830,7 @@ func TestUnresolveNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_update_nudge" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2840,7 +2848,7 @@ func TestUnresolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateNudgeFn = func(
+				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2851,7 +2859,7 @@ func TestUnresolveNudge(t *testing.T) {
 			}
 
 			if tt.name == "invalid:fail_to_send_notification" {
-				fakeInfrastructure.GetNudgeFn = func(
+				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2869,7 +2877,7 @@ func TestUnresolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.UpdateNudgeFn = func(
+				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
 					flavour feedlib.Flavour,
@@ -2880,7 +2888,7 @@ func TestUnresolveNudge(t *testing.T) {
 					}, nil
 				}
 
-				fakeInfrastructure.NotifyFn = func(
+				fakeMessaging.NotifyFn = func(
 					ctx context.Context,
 					topicID string,
 					uid string,
