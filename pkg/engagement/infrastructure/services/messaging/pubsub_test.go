@@ -5,12 +5,34 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rs/xid"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 )
+
+func getNotificationPayload(t *testing.T) firebasetools.SendNotificationPayload {
+	imgURL := "https://example.com/img.png"
+	return firebasetools.SendNotificationPayload{
+		RegistrationTokens: []string{xid.New().String(), xid.New().String()},
+		Data: map[string]string{
+			xid.New().String(): xid.New().String(),
+			xid.New().String(): xid.New().String(),
+		},
+		Notification: &firebasetools.FirebaseSimpleNotificationInput{
+			Title:    xid.New().String(),
+			Body:     xid.New().String(),
+			ImageURL: &imgURL,
+			Data: map[string]interface{}{
+				xid.New().String(): xid.New().String(),
+				xid.New().String(): xid.New().String(),
+			},
+		},
+	}
+}
 
 func TestNewPubSubNotificationService(t *testing.T) {
 	ctx := context.Background()
@@ -121,6 +143,48 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 					err,
 					tt.wantErr,
 				)
+			}
+		})
+	}
+}
+
+func TestRemotePushService_Push(t *testing.T) {
+	ctx := context.Background()
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
+	srv, err := messaging.NewPubSubNotificationService(ctx, projectID)
+	if err != nil {
+		t.Errorf("can't initialize pubsub notification service: %s", err)
+		return
+	}
+	if srv == nil {
+		t.Errorf("nil remote FCM push service")
+		return
+	}
+
+	type args struct {
+		ctx                 context.Context
+		sender              string
+		notificationPayload firebasetools.SendNotificationPayload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid send - won't actually push but won't error",
+			args: args{
+				ctx:                 ctx,
+				sender:              "test",
+				notificationPayload: getNotificationPayload(t),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := srv.Push(tt.args.ctx, tt.args.sender, tt.args.notificationPayload); (err != nil) != tt.wantErr {
+				t.Errorf("RemotePushService.Push() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

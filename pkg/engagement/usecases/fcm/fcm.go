@@ -1,16 +1,17 @@
-package mock
+package fcm
 
 import (
 	"context"
 	"time"
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 	"github.com/savannahghi/firebasetools"
 )
 
-// FakeServiceFcm simulates the behavior of our FCM push implementation
-type FakeServiceFcm struct {
-	SendNotificationFn func(
+// UsecaseFCM defines FCM service usecases interface
+type UsecaseFCM interface {
+	SendNotification(
 		ctx context.Context,
 		registrationTokens []string,
 		data map[string]string,
@@ -20,14 +21,14 @@ type FakeServiceFcm struct {
 		web *firebasetools.FirebaseWebpushConfigInput,
 	) (bool, error)
 
-	NotificationsFn func(
+	Notifications(
 		ctx context.Context,
 		registrationToken string,
 		newerThan time.Time,
 		limit int,
 	) ([]*dto.SavedNotification, error)
 
-	SendFCMByPhoneOrEmailFn func(
+	SendFCMByPhoneOrEmail(
 		ctx context.Context,
 		phoneNumber *string,
 		email *string,
@@ -39,8 +40,20 @@ type FakeServiceFcm struct {
 	) (bool, error)
 }
 
-// SendNotification is a mock of the SendNotification method
-func (f *FakeServiceFcm) SendNotification(
+// ImplFCM is the FCM service implementation
+type ImplFCM struct {
+	infrastructure infrastructure.Interactor
+}
+
+// NewFCM initializes a FCM service instance
+func NewFCM(infrastructure infrastructure.Interactor) *ImplFCM {
+	return &ImplFCM{
+		infrastructure: infrastructure,
+	}
+}
+
+// SendNotification sends a notification to ios, android, web users
+func (f *ImplFCM) SendNotification(
 	ctx context.Context,
 	registrationTokens []string,
 	data map[string]string,
@@ -49,7 +62,8 @@ func (f *FakeServiceFcm) SendNotification(
 	ios *firebasetools.FirebaseAPNSConfigInput,
 	web *firebasetools.FirebaseWebpushConfigInput,
 ) (bool, error) {
-	return f.SendNotificationFn(
+	i := f.infrastructure.ServiceFCMImpl
+	return i.SendNotification(
 		ctx,
 		registrationTokens,
 		data,
@@ -60,14 +74,15 @@ func (f *FakeServiceFcm) SendNotification(
 	)
 }
 
-// Notifications is a mock of the Notifications method
-func (f *FakeServiceFcm) Notifications(
+// Notifications gets notifications with the defined limit and set date
+func (f *ImplFCM) Notifications(
 	ctx context.Context,
 	registrationToken string,
 	newerThan time.Time,
 	limit int,
 ) ([]*dto.SavedNotification, error) {
-	return f.NotificationsFn(
+	i := f.infrastructure.ServiceFCMImpl
+	return i.Notifications(
 		ctx,
 		registrationToken,
 		newerThan,
@@ -75,8 +90,8 @@ func (f *FakeServiceFcm) Notifications(
 	)
 }
 
-// SendFCMByPhoneOrEmail is a mock of the SendFCMByPhoneOrEmail method
-func (f *FakeServiceFcm) SendFCMByPhoneOrEmail(
+// SendFCMByPhoneOrEmail sends fcm by phone or email
+func (f *ImplFCM) SendFCMByPhoneOrEmail(
 	ctx context.Context,
 	phoneNumber *string,
 	email *string,
@@ -86,7 +101,8 @@ func (f *FakeServiceFcm) SendFCMByPhoneOrEmail(
 	ios *firebasetools.FirebaseAPNSConfigInput,
 	web *firebasetools.FirebaseWebpushConfigInput,
 ) (bool, error) {
-	return f.SendFCMByPhoneOrEmailFn(
+	i := f.infrastructure.ServiceFCMImpl
+	return i.SendFCMByPhoneOrEmail(
 		ctx,
 		phoneNumber,
 		email,

@@ -21,7 +21,7 @@ import (
 
 func newPresentationHandlers() rest.PresentationHandlers {
 	infrastructure := infrastructure.NewInteractor()
-	usecases := usecases.NewInteractor(infrastructure)
+	usecases := usecases.NewUsecasesInteractor(infrastructure)
 	return rest.NewPresentationHandlers(infrastructure, usecases)
 }
 
@@ -311,7 +311,7 @@ func AuthenticatedGraphQLRoute(ctx context.Context, r *mux.Router) {
 	}
 
 	infrastructure := infrastructure.NewInteractor()
-	usecases := usecases.NewInteractor(infrastructure)
+	usecases := usecases.NewUsecasesInteractor(infrastructure)
 
 	authR := r.Path("/graphql").Subrouter()
 	authR.Use(firebasetools.AuthenticationMiddleware(firebaseApp))
