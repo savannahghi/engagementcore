@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -14,11 +13,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
@@ -45,8 +42,6 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	Dummy() DummyResolver
-	Entity() EntityResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -115,17 +110,6 @@ type ComplexityRoot struct {
 		OrganizationID func(childComplexity int) int
 		Timestamp      func(childComplexity int) int
 		UserID         func(childComplexity int) int
-	}
-
-	Dummy struct {
-		ID func(childComplexity int) int
-	}
-
-	Entity struct {
-		FindAccessTokenByJwt      func(childComplexity int, jwt string) int
-		FindDummyByID             func(childComplexity int, id *string) int
-		FindFeedByID              func(childComplexity int, id string) int
-		FindSavedNotificationByID func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -286,36 +270,27 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		BillNotification                func(childComplexity int, to string, productName string, billingPeriod string, billAmount string, paymentInstruction string, marketingMessage string) int
-		ClaimNotification               func(childComplexity int, to string, claimReference string, claimTypeParenthesized string, provider string, visitType string, claimTime string, marketingMessage string) int
-		DeleteMessage                   func(childComplexity int, flavour feedlib.Flavour, itemID string, messageID string) int
-		HideFeedItem                    func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		HideNudge                       func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
-		PhoneNumberVerificationCode     func(childComplexity int, to string, code string, marketingMessage string) int
-		PinFeedItem                     func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		PostMessage                     func(childComplexity int, flavour feedlib.Flavour, itemID string, message feedlib.Message) int
-		PreauthApproval                 func(childComplexity int, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) int
-		PreauthRequest                  func(childComplexity int, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) int
-		ProcessEvent                    func(childComplexity int, flavour feedlib.Flavour, event feedlib.Event) int
-		RecordNPSResponse               func(childComplexity int, input dto.NPSInput) int
-		ResolveFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		Send                            func(childComplexity int, to string, message string) int
-		SendFCMByPhoneOrEmail           func(childComplexity int, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
-		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
-		SendToMany                      func(childComplexity int, message string, to []string) int
-		ShowFeedItem                    func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		ShowNudge                       func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
-		SimpleEmail                     func(childComplexity int, subject string, text string, to []string) int
-		SladeOtp                        func(childComplexity int, to string, name string, otp string, marketingMessage string) int
-		UnpinFeedItem                   func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		UnresolveFeedItem               func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		Upload                          func(childComplexity int, input profileutils.UploadInput) int
-		VerifyEmailOtp                  func(childComplexity int, email string, otp string) int
-		VerifyOtp                       func(childComplexity int, msisdn string, otp string) int
-		VirtualCards                    func(childComplexity int, to string, wellnessCardFamily string, virtualCardLink string, marketingMessage string) int
-		VisitStart                      func(childComplexity int, to string, memberName string, benefitName string, locationName string, startTime string, balance string, marketingMessage string) int
-		WellnessCardActivationDependant func(childComplexity int, to string, memberName string, cardName string, marketingMessage string) int
-		WellnessCardActivationPrincipal func(childComplexity int, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) int
+		DeleteMessage               func(childComplexity int, flavour feedlib.Flavour, itemID string, messageID string) int
+		HideFeedItem                func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		HideNudge                   func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
+		PhoneNumberVerificationCode func(childComplexity int, to string, code string, marketingMessage string) int
+		PinFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		PostMessage                 func(childComplexity int, flavour feedlib.Flavour, itemID string, message feedlib.Message) int
+		ProcessEvent                func(childComplexity int, flavour feedlib.Flavour, event feedlib.Event) int
+		RecordNPSResponse           func(childComplexity int, input dto.NPSInput) int
+		ResolveFeedItem             func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		Send                        func(childComplexity int, to string, message string) int
+		SendFCMByPhoneOrEmail       func(childComplexity int, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
+		SendNotification            func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
+		SendToMany                  func(childComplexity int, message string, to []string) int
+		ShowFeedItem                func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		ShowNudge                   func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
+		SimpleEmail                 func(childComplexity int, subject string, text string, to []string) int
+		UnpinFeedItem               func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		UnresolveFeedItem           func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		Upload                      func(childComplexity int, input profileutils.UploadInput) int
+		VerifyEmailOtp              func(childComplexity int, email string, otp string) int
+		VerifyOtp                   func(childComplexity int, msisdn string, otp string) int
 	}
 
 	NPSResponse struct {
@@ -371,8 +346,6 @@ type ComplexityRoot struct {
 		Notifications         func(childComplexity int, registrationToken string, newerThan time.Time, limit int) int
 		TwilioAccessToken     func(childComplexity int) int
 		UnreadPersistentItems func(childComplexity int, flavour feedlib.Flavour) int
-		__resolve__service    func(childComplexity int) int
-		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	Recipient struct {
@@ -413,21 +386,8 @@ type ComplexityRoot struct {
 		Title       func(childComplexity int) int
 		URL         func(childComplexity int) int
 	}
-
-	Service struct {
-		SDL func(childComplexity int) int
-	}
 }
 
-type DummyResolver interface {
-	ID(ctx context.Context, obj *dto.Dummy) (*string, error)
-}
-type EntityResolver interface {
-	FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error)
-	FindDummyByID(ctx context.Context, id *string) (*dto.Dummy, error)
-	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
-	FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error)
-}
 type MutationResolver interface {
 	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error)
 	SendFCMByPhoneOrEmail(ctx context.Context, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error)
@@ -450,19 +410,10 @@ type MutationResolver interface {
 	RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error)
 	Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error)
 	PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error)
-	WellnessCardActivationDependant(ctx context.Context, to string, memberName string, cardName string, marketingMessage string) (bool, error)
-	WellnessCardActivationPrincipal(ctx context.Context, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) (bool, error)
-	BillNotification(ctx context.Context, to string, productName string, billingPeriod string, billAmount string, paymentInstruction string, marketingMessage string) (bool, error)
-	VirtualCards(ctx context.Context, to string, wellnessCardFamily string, virtualCardLink string, marketingMessage string) (bool, error)
-	VisitStart(ctx context.Context, to string, memberName string, benefitName string, locationName string, startTime string, balance string, marketingMessage string) (bool, error)
-	ClaimNotification(ctx context.Context, to string, claimReference string, claimTypeParenthesized string, provider string, visitType string, claimTime string, marketingMessage string) (bool, error)
-	PreauthApproval(ctx context.Context, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) (bool, error)
-	PreauthRequest(ctx context.Context, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) (bool, error)
-	SladeOtp(ctx context.Context, to string, name string, otp string, marketingMessage string) (bool, error)
 }
 type QueryResolver interface {
-	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*library.GhostCMSPost, error)
+	GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
 	GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error)
@@ -840,61 +791,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Context.UserID(childComplexity), true
-
-	case "Dummy.id":
-		if e.complexity.Dummy.ID == nil {
-			break
-		}
-
-		return e.complexity.Dummy.ID(childComplexity), true
-
-	case "Entity.findAccessTokenByJwt":
-		if e.complexity.Entity.FindAccessTokenByJwt == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findAccessTokenByJwt_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindAccessTokenByJwt(childComplexity, args["jwt"].(string)), true
-
-	case "Entity.findDummyByID":
-		if e.complexity.Entity.FindDummyByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findDummyByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindDummyByID(childComplexity, args["id"].(*string)), true
-
-	case "Entity.findFeedByID":
-		if e.complexity.Entity.FindFeedByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findFeedByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
-
-	case "Entity.findSavedNotificationByID":
-		if e.complexity.Entity.FindSavedNotificationByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findSavedNotificationByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindSavedNotificationByID(childComplexity, args["id"].(string)), true
 
 	case "Event.context":
 		if e.complexity.Event.Context == nil {
@@ -1638,30 +1534,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Msg.Timestamp(childComplexity), true
 
-	case "Mutation.billNotification":
-		if e.complexity.Mutation.BillNotification == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_billNotification_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.BillNotification(childComplexity, args["to"].(string), args["productName"].(string), args["billingPeriod"].(string), args["billAmount"].(string), args["paymentInstruction"].(string), args["marketingMessage"].(string)), true
-
-	case "Mutation.claimNotification":
-		if e.complexity.Mutation.ClaimNotification == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_claimNotification_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.ClaimNotification(childComplexity, args["to"].(string), args["claimReference"].(string), args["claimTypeParenthesized"].(string), args["provider"].(string), args["visitType"].(string), args["claimTime"].(string), args["marketingMessage"].(string)), true
-
 	case "Mutation.deleteMessage":
 		if e.complexity.Mutation.DeleteMessage == nil {
 			break
@@ -1733,30 +1605,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.PostMessage(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string), args["message"].(feedlib.Message)), true
-
-	case "Mutation.preauthApproval":
-		if e.complexity.Mutation.PreauthApproval == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_preauthApproval_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.PreauthApproval(childComplexity, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string)), true
-
-	case "Mutation.preauthRequest":
-		if e.complexity.Mutation.PreauthRequest == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_preauthRequest_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.PreauthRequest(childComplexity, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["requestTime"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string)), true
 
 	case "Mutation.processEvent":
 		if e.complexity.Mutation.ProcessEvent == nil {
@@ -1878,18 +1726,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SimpleEmail(childComplexity, args["subject"].(string), args["text"].(string), args["to"].([]string)), true
 
-	case "Mutation.sladeOTP":
-		if e.complexity.Mutation.SladeOtp == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_sladeOTP_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.SladeOtp(childComplexity, args["to"].(string), args["name"].(string), args["otp"].(string), args["marketingMessage"].(string)), true
-
 	case "Mutation.unpinFeedItem":
 		if e.complexity.Mutation.UnpinFeedItem == nil {
 			break
@@ -1949,54 +1785,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.VerifyOtp(childComplexity, args["msisdn"].(string), args["otp"].(string)), true
-
-	case "Mutation.virtualCards":
-		if e.complexity.Mutation.VirtualCards == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_virtualCards_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.VirtualCards(childComplexity, args["to"].(string), args["wellnessCardFamily"].(string), args["virtualCardLink"].(string), args["marketingMessage"].(string)), true
-
-	case "Mutation.visitStart":
-		if e.complexity.Mutation.VisitStart == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_visitStart_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.VisitStart(childComplexity, args["to"].(string), args["memberName"].(string), args["benefitName"].(string), args["locationName"].(string), args["startTime"].(string), args["balance"].(string), args["marketingMessage"].(string)), true
-
-	case "Mutation.wellnessCardActivationDependant":
-		if e.complexity.Mutation.WellnessCardActivationDependant == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_wellnessCardActivationDependant_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.WellnessCardActivationDependant(childComplexity, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["marketingMessage"].(string)), true
-
-	case "Mutation.wellnessCardActivationPrincipal":
-		if e.complexity.Mutation.WellnessCardActivationPrincipal == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_wellnessCardActivationPrincipal_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.WellnessCardActivationPrincipal(childComplexity, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["minorAgeThreshold"].(string), args["marketingMessage"].(string)), true
 
 	case "NPSResponse.email":
 		if e.complexity.NPSResponse.Email == nil {
@@ -2328,25 +2116,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.UnreadPersistentItems(childComplexity, args["flavour"].(feedlib.Flavour)), true
 
-	case "Query._service":
-		if e.complexity.Query.__resolve__service == nil {
-			break
-		}
-
-		return e.complexity.Query.__resolve__service(childComplexity), true
-
-	case "Query._entities":
-		if e.complexity.Query.__resolve_entities == nil {
-			break
-		}
-
-		args, err := ec.field_Query__entities_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
-
 	case "Recipient.cost":
 		if e.complexity.Recipient.Cost == nil {
 			break
@@ -2514,13 +2283,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Upload.URL(childComplexity), true
-
-	case "_Service.sdl":
-		if e.complexity.Service.SDL == nil {
-			break
-		}
-
-		return e.complexity.Service.SDL(childComplexity), true
 
 	}
 	return 0, false
@@ -2766,7 +2528,7 @@ enum TextType {
 }
 
 # Feed is the top level access point for a user's feed.
-type Feed @key(fields: "id") {
+type Feed {
   id: String!
   sequenceNumber: Int!
   uid: String!
@@ -3012,11 +2774,7 @@ type Query {
 	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `extend type Mutation {
   simpleEmail(subject: String!, text: String!, to: [String!]!): String!
 }`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/otp.graphql", Input: `type Dummy @key(fields: "id") {
-  id: ID
-}
-
-extend type Query {
+	{Name: "pkg/engagement/presentation/graph/otp.graphql", Input: `extend type Query {
   # the msisdn should be a fully qualified phone number
   # e.g +254723002959
   generateOTP(msisdn: String!, appId: String): String!
@@ -3105,7 +2863,7 @@ extend type Query {
 AccessToken is used to return the credentials that are needed in order
 to access a Twilio video room.
 """
-type AccessToken @key(fields: "jwt") @key(fields: "uniqueName") {
+type AccessToken {
   jwt: String!
   uniqueName: String!
   sid: String!
@@ -3139,7 +2897,7 @@ type FirebaseAPNSConfig {
   headers: Map
 }
 
-type SavedNotification @key(fields: "id") {
+type SavedNotification {
   id: String!
   registrationToken: String!
   messageID: String!
@@ -3190,325 +2948,14 @@ extend type Mutation {
     code: String!
     marketingMessage: String!
   ): Boolean!
-
-  # Dear {{1}}, your {{2}} card has been activated. {{3}}
-  wellnessCardActivationDependant(
-    to: String!
-    memberName: String!
-    cardName: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Dear {{1}}, your {{2}} card has been activated. Cards for minors under {{3}} years have also been activated. {{4}}
-  wellnessCardActivationPrincipal(
-    to: String!
-    memberName: String!
-    cardName: String!
-    minorAgeThreshold: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Hello your {{1}} bill for {{2}} of {{3}} is ready. Make payment via {{4}} to continue enjoying the platform. {{5}}
-  billNotification(
-    to: String!
-    productName: String!
-    billingPeriod: String!
-    billAmount: String!
-    paymentInstruction: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Slade 360 virtual Wellness Cards for {{1}} have been created. You can access the virtual cards at {{2}}. {{3}}
-  virtualCards(
-    to: String!
-    wellnessCardFamily: String!
-    virtualCardLink: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Dear {{1}} {{2}} visit has been started at {{3}} on {{4}}.  Your balance is {{5}}. {{6}}
-  visitStart(
-    to: String!
-    memberName: String!
-    benefitName: String!
-    locationName: String!
-    startTime: String!
-    balance: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # A claim of {{1}} {{2}} was lodged by {{3}} for {{4}} visit on {{5}}. {{6}}
-  claimNotification(
-    to: String!
-    claimReference: String!
-    claimTypeParenthesized: String!
-    provider: String!
-    visitType: String!
-    claimTime: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Preauth approval of {{1}} {{2}} for {{3}} benefit at {{4}} for {{5}} has been granted. Contact your care manager at {{6}} for any queries. {{7}}
-  preauthApproval(
-    to: String!
-    currency: String!
-    amount: String!
-    benefit: String!
-    provider: String!
-    member: String!
-    careContact: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Preauth request of {{1}} {{2}} for {{3}} benefit was lodged by {{4}} on {{5}} for the visit by {{6}}. Contact your care manager at {{7}} for any queries. {{8}}
-  preauthRequest(
-    to: String!
-    currency: String!
-    amount: String!
-    benefit: String!
-    provider: String!
-    requestTime: String!
-    member: String!
-    careContact: String!
-    marketingMessage: String!
-  ): Boolean!
-
-  # Dear {{1}}, your SladeID OTP is {{2}}. {{3}}
-  sladeOTP(
-    to: String!
-    name: String!
-    otp: String!
-    marketingMessage: String!
-  ): Boolean!
 }
 `, BuiltIn: false},
-	{Name: "federation/directives.graphql", Input: `
-scalar _Any
-scalar _FieldSet
-
-directive @external on FIELD_DEFINITION
-directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
-directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
-directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
-directive @extends on OBJECT
-`, BuiltIn: true},
-	{Name: "federation/entity.graphql", Input: `
-# a union of all types that use the @key directive
-union _Entity = AccessToken | Dummy | Feed | SavedNotification
-
-# fake type to build resolver interfaces for users to implement
-type Entity {
-		findAccessTokenByJwt(jwt: String!,): AccessToken!
-	findDummyByID(id: ID,): Dummy!
-	findFeedByID(id: String!,): Feed!
-	findSavedNotificationByID(id: String!,): SavedNotification!
-
-}
-
-type _Service {
-  sdl: String
-}
-
-extend type Query {
-  _entities(representations: [_Any!]!): [_Entity]!
-  _service: _Service!
-}
-`, BuiltIn: true},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Entity_findAccessTokenByJwt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["jwt"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwt"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["jwt"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findSavedNotificationByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_billNotification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["productName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("productName"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["productName"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["billingPeriod"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("billingPeriod"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["billingPeriod"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["billAmount"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("billAmount"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["billAmount"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["paymentInstruction"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentInstruction"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["paymentInstruction"] = arg4
-	var arg5 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg5, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg5
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_claimNotification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["claimReference"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("claimReference"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["claimReference"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["claimTypeParenthesized"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("claimTypeParenthesized"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["claimTypeParenthesized"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["provider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["provider"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["visitType"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visitType"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["visitType"] = arg4
-	var arg5 string
-	if tmp, ok := rawArgs["claimTime"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("claimTime"))
-		arg5, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["claimTime"] = arg5
-	var arg6 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg6, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg6
-	return args, nil
-}
 
 func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -3678,171 +3125,6 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 		}
 	}
 	args["message"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_preauthApproval_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["currency"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currency"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["currency"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["amount"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["amount"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["benefit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benefit"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["benefit"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["provider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["provider"] = arg4
-	var arg5 string
-	if tmp, ok := rawArgs["member"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("member"))
-		arg5, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["member"] = arg5
-	var arg6 string
-	if tmp, ok := rawArgs["careContact"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("careContact"))
-		arg6, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["careContact"] = arg6
-	var arg7 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg7, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg7
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_preauthRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["currency"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currency"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["currency"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["amount"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["amount"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["benefit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benefit"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["benefit"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["provider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["provider"] = arg4
-	var arg5 string
-	if tmp, ok := rawArgs["requestTime"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("requestTime"))
-		arg5, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["requestTime"] = arg5
-	var arg6 string
-	if tmp, ok := rawArgs["member"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("member"))
-		arg6, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["member"] = arg6
-	var arg7 string
-	if tmp, ok := rawArgs["careContact"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("careContact"))
-		arg7, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["careContact"] = arg7
-	var arg8 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg8, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg8
 	return args, nil
 }
 
@@ -4167,48 +3449,6 @@ func (ec *executionContext) field_Mutation_simpleEmail_args(ctx context.Context,
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_sladeOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["name"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["otp"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("otp"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["otp"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg3
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_unpinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4320,210 +3560,6 @@ func (ec *executionContext) field_Mutation_verifyOTP_args(ctx context.Context, r
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_virtualCards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["wellnessCardFamily"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("wellnessCardFamily"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["wellnessCardFamily"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["virtualCardLink"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("virtualCardLink"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["virtualCardLink"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_visitStart_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["memberName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberName"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["memberName"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["benefitName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benefitName"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["benefitName"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["locationName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationName"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["locationName"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["startTime"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["startTime"] = arg4
-	var arg5 string
-	if tmp, ok := rawArgs["balance"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("balance"))
-		arg5, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["balance"] = arg5
-	var arg6 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg6, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg6
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_wellnessCardActivationDependant_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["memberName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberName"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["memberName"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["cardName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cardName"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["cardName"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_wellnessCardActivationPrincipal_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["to"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["to"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["memberName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberName"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["memberName"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["cardName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cardName"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["cardName"] = arg2
-	var arg3 string
-	if tmp, ok := rawArgs["minorAgeThreshold"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minorAgeThreshold"))
-		arg3, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["minorAgeThreshold"] = arg3
-	var arg4 string
-	if tmp, ok := rawArgs["marketingMessage"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["marketingMessage"] = arg4
-	return args, nil
-}
-
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4536,21 +3572,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 []map[string]interface{}
-	if tmp, ok := rawArgs["representations"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("representations"))
-		arg0, err = ec.unmarshalN_Any2ᚕmapᚄ(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["representations"] = arg0
 	return args, nil
 }
 
@@ -6591,206 +5612,6 @@ func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphq
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *dto.Dummy) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Dummy",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Dummy().ID(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findAccessTokenByJwt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findAccessTokenByJwt_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindAccessTokenByJwt(rctx, args["jwt"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*dto.AccessToken)
-	fc.Result = res
-	return ec.marshalNAccessToken2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐAccessToken(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findDummyByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindDummyByID(rctx, args["id"].(*string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*dto.Dummy)
-	fc.Result = res
-	return ec.marshalNDummy2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findFeedByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindFeedByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*domain.Feed)
-	fc.Result = res
-	return ec.marshalNFeed2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐFeed(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findSavedNotificationByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findSavedNotificationByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindSavedNotificationByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*dto.SavedNotification)
-	fc.Result = res
-	return ec.marshalNSavedNotification2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8304,7 +7125,7 @@ func (ec *executionContext) _FirebaseWebpushConfig_data(ctx context.Context, fie
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8339,7 +7160,7 @@ func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphq
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_name(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_name(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8374,7 +7195,7 @@ func (ec *executionContext) _GhostCMSAuthor_name(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_slug(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_slug(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8409,7 +7230,7 @@ func (ec *executionContext) _GhostCMSAuthor_slug(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_url(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_url(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8444,7 +7265,7 @@ func (ec *executionContext) _GhostCMSAuthor_url(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_profileImage(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_profileImage(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8476,7 +7297,7 @@ func (ec *executionContext) _GhostCMSAuthor_profileImage(ctx context.Context, fi
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_website(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_website(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8508,7 +7329,7 @@ func (ec *executionContext) _GhostCMSAuthor_website(ctx context.Context, field g
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_location(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_location(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8540,7 +7361,7 @@ func (ec *executionContext) _GhostCMSAuthor_location(ctx context.Context, field 
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_facebook(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_facebook(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8572,7 +7393,7 @@ func (ec *executionContext) _GhostCMSAuthor_facebook(ctx context.Context, field 
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSAuthor_twitter(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSAuthor_twitter(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSAuthor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8604,7 +7425,7 @@ func (ec *executionContext) _GhostCMSAuthor_twitter(ctx context.Context, field g
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8639,7 +7460,7 @@ func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8674,7 +7495,7 @@ func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_uuid(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_uuid(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8709,7 +7530,7 @@ func (ec *executionContext) _GhostCMSPost_uuid(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8744,7 +7565,7 @@ func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8779,7 +7600,7 @@ func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8814,7 +7635,7 @@ func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_url(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_url(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8849,7 +7670,7 @@ func (ec *executionContext) _GhostCMSPost_url(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8884,7 +7705,7 @@ func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8919,7 +7740,7 @@ func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8949,12 +7770,12 @@ func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]library.GhostCMSTag)
+	res := resTmp.([]domain.GhostCMSTag)
 	fc.Result = res
-	return ec.marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTagᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8989,7 +7810,7 @@ func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field g
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9024,7 +7845,7 @@ func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_updatedAt(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_updatedAt(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9059,7 +7880,7 @@ func (ec *executionContext) _GhostCMSPost_updatedAt(ctx context.Context, field g
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSPost_commentID(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSPost) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_commentID(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9094,7 +7915,7 @@ func (ec *executionContext) _GhostCMSPost_commentID(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9129,7 +7950,7 @@ func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.C
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9164,7 +7985,7 @@ func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9199,7 +8020,7 @@ func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_description(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_description(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9231,7 +8052,7 @@ func (ec *executionContext) _GhostCMSTag_description(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_visibility(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_visibility(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9266,7 +8087,7 @@ func (ec *executionContext) _GhostCMSTag_visibility(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _GhostCMSTag_url(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSTag) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSTag_url(ctx context.Context, field graphql.CollectedField, obj *domain.GhostCMSTag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11317,384 +10138,6 @@ func (ec *executionContext) _Mutation_phoneNumberVerificationCode(ctx context.Co
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_wellnessCardActivationDependant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_wellnessCardActivationDependant_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().WellnessCardActivationDependant(rctx, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_wellnessCardActivationPrincipal(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_wellnessCardActivationPrincipal_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().WellnessCardActivationPrincipal(rctx, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["minorAgeThreshold"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_billNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_billNotification_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().BillNotification(rctx, args["to"].(string), args["productName"].(string), args["billingPeriod"].(string), args["billAmount"].(string), args["paymentInstruction"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_virtualCards(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_virtualCards_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().VirtualCards(rctx, args["to"].(string), args["wellnessCardFamily"].(string), args["virtualCardLink"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_visitStart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_visitStart_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().VisitStart(rctx, args["to"].(string), args["memberName"].(string), args["benefitName"].(string), args["locationName"].(string), args["startTime"].(string), args["balance"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_claimNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_claimNotification_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ClaimNotification(rctx, args["to"].(string), args["claimReference"].(string), args["claimTypeParenthesized"].(string), args["provider"].(string), args["visitType"].(string), args["claimTime"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_preauthApproval(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_preauthApproval_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PreauthApproval(rctx, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_preauthRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_preauthRequest_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PreauthRequest(rctx, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["requestTime"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_sladeOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_sladeOTP_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SladeOtp(rctx, args["to"].(string), args["name"].(string), args["otp"].(string), args["marketingMessage"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _NPSResponse_id(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12640,9 +11083,9 @@ func (ec *executionContext) _Query_getLibraryContent(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*library.GhostCMSPost)
+	res := resTmp.([]*domain.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12682,9 +11125,9 @@ func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*library.GhostCMSPost)
+	res := resTmp.([]*domain.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_notifications(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -13133,83 +11576,6 @@ func (ec *executionContext) _Query_findUploadByID(ctx context.Context, field gra
 	res := resTmp.(*profileutils.Upload)
 	fc.Result = res
 	return ec.marshalNUpload2ᚖgithubᚗcomᚋsavannahghiᚋprofileutilsᚐUpload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query__entities_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.__resolve_entities(ctx, args["representations"].([]map[string]interface{}))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]fedruntime.Entity)
-	fc.Result = res
-	return ec.marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query__service(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.__resolve__service(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(fedruntime.Service)
-	fc.Result = res
-	return ec.marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -14106,38 +12472,6 @@ func (ec *executionContext) _Upload_base64data(ctx context.Context, field graphq
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.CollectedField, obj *fedruntime.Service) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "_Service",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.SDL, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -15695,48 +14029,11 @@ func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj i
 
 // region    ************************** interface.gotpl ***************************
 
-func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, obj fedruntime.Entity) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case dto.AccessToken:
-		return ec._AccessToken(ctx, sel, &obj)
-	case *dto.AccessToken:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._AccessToken(ctx, sel, obj)
-	case dto.Dummy:
-		return ec._Dummy(ctx, sel, &obj)
-	case *dto.Dummy:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Dummy(ctx, sel, obj)
-	case domain.Feed:
-		return ec._Feed(ctx, sel, &obj)
-	case *domain.Feed:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Feed(ctx, sel, obj)
-	case dto.SavedNotification:
-		return ec._SavedNotification(ctx, sel, &obj)
-	case *dto.SavedNotification:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._SavedNotification(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
 
-var accessTokenImplementors = []string{"AccessToken", "_Entity"}
+var accessTokenImplementors = []string{"AccessToken"}
 
 func (ec *executionContext) _AccessToken(ctx context.Context, sel ast.SelectionSet, obj *dto.AccessToken) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, accessTokenImplementors)
@@ -16056,121 +14353,6 @@ func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
-var dummyImplementors = []string{"Dummy", "_Entity"}
-
-func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *dto.Dummy) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, dummyImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Dummy")
-		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Dummy_id(ctx, field, obj)
-				return res
-			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var entityImplementors = []string{"Entity"}
-
-func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, entityImplementors)
-
-	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
-		Object: "Entity",
-	})
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Entity")
-		case "findAccessTokenByJwt":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findAccessTokenByJwt(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findDummyByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findDummyByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findFeedByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findFeedByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findSavedNotificationByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findSavedNotificationByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Event) graphql.Marshaler {
@@ -16363,7 +14545,7 @@ func (ec *executionContext) _EventDateTime(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var feedImplementors = []string{"Feed", "_Entity"}
+var feedImplementors = []string{"Feed"}
 
 func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj *domain.Feed) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, feedImplementors)
@@ -16608,7 +14790,7 @@ func (ec *executionContext) _FirebaseWebpushConfig(ctx context.Context, sel ast.
 
 var ghostCMSAuthorImplementors = []string{"GhostCMSAuthor"}
 
-func (ec *executionContext) _GhostCMSAuthor(ctx context.Context, sel ast.SelectionSet, obj *library.GhostCMSAuthor) graphql.Marshaler {
+func (ec *executionContext) _GhostCMSAuthor(ctx context.Context, sel ast.SelectionSet, obj *domain.GhostCMSAuthor) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSAuthorImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16660,7 +14842,7 @@ func (ec *executionContext) _GhostCMSAuthor(ctx context.Context, sel ast.Selecti
 
 var ghostCMSPostImplementors = []string{"GhostCMSPost"}
 
-func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.SelectionSet, obj *library.GhostCMSPost) graphql.Marshaler {
+func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.SelectionSet, obj *domain.GhostCMSPost) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSPostImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16752,7 +14934,7 @@ func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.Selection
 
 var ghostCMSTagImplementors = []string{"GhostCMSTag"}
 
-func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionSet, obj *library.GhostCMSTag) graphql.Marshaler {
+func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionSet, obj *domain.GhostCMSTag) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSTagImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17126,51 +15308,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "phoneNumberVerificationCode":
 			out.Values[i] = ec._Mutation_phoneNumberVerificationCode(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "wellnessCardActivationDependant":
-			out.Values[i] = ec._Mutation_wellnessCardActivationDependant(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "wellnessCardActivationPrincipal":
-			out.Values[i] = ec._Mutation_wellnessCardActivationPrincipal(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "billNotification":
-			out.Values[i] = ec._Mutation_billNotification(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "virtualCards":
-			out.Values[i] = ec._Mutation_virtualCards(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "visitStart":
-			out.Values[i] = ec._Mutation_visitStart(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "claimNotification":
-			out.Values[i] = ec._Mutation_claimNotification(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "preauthApproval":
-			out.Values[i] = ec._Mutation_preauthApproval(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "preauthRequest":
-			out.Values[i] = ec._Mutation_preauthRequest(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "sladeOTP":
-			out.Values[i] = ec._Mutation_sladeOTP(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -17575,34 +15712,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "_entities":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query__entities(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "_service":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query__service(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -17687,7 +15796,7 @@ func (ec *executionContext) _SMS(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
-var savedNotificationImplementors = []string{"SavedNotification", "_Entity"}
+var savedNotificationImplementors = []string{"SavedNotification"}
 
 func (ec *executionContext) _SavedNotification(ctx context.Context, sel ast.SelectionSet, obj *dto.SavedNotification) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, savedNotificationImplementors)
@@ -17822,30 +15931,6 @@ func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var _ServiceImplementors = []string{"_Service"}
-
-func (ec *executionContext) __Service(ctx context.Context, sel ast.SelectionSet, obj *fedruntime.Service) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, _ServiceImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("_Service")
-		case "sdl":
-			out.Values[i] = ec.__Service_sdl(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18218,20 +16303,6 @@ func (ec *executionContext) unmarshalNContextInput2githubᚗcomᚋsavannahghiᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDummy2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx context.Context, sel ast.SelectionSet, v dto.Dummy) graphql.Marshaler {
-	return ec._Dummy(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNDummy2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx context.Context, sel ast.SelectionSet, v *dto.Dummy) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Dummy(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNEventAttachment2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachmentᚄ(ctx context.Context, sel ast.SelectionSet, v []*calendar.EventAttachment) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -18360,7 +16431,7 @@ func (ec *executionContext) marshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlib
 	return v
 }
 
-func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*library.GhostCMSPost) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*domain.GhostCMSPost) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18384,7 +16455,7 @@ func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahgh
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPost(ctx, sel, v[i])
+			ret[i] = ec.marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18397,7 +16468,7 @@ func (ec *executionContext) marshalNGhostCMSPost2ᚕᚖgithubᚗcomᚋsavannahgh
 	return ret
 }
 
-func (ec *executionContext) marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v *library.GhostCMSPost) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v *domain.GhostCMSPost) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18407,11 +16478,11 @@ func (ec *executionContext) marshalNGhostCMSPost2ᚖgithubᚗcomᚋsavannahghi�
 	return ec._GhostCMSPost(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v library.GhostCMSTag) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v domain.GhostCMSTag) graphql.Marshaler {
 	return ec._GhostCMSTag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTagᚄ(ctx context.Context, sel ast.SelectionSet, v []library.GhostCMSTag) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTagᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.GhostCMSTag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18435,7 +16506,7 @@ func (ec *executionContext) marshalNGhostCMSTag2ᚕgithubᚗcomᚋsavannahghiᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNGhostCMSTag2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐGhostCMSTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18767,10 +16838,6 @@ func (ec *executionContext) marshalNSMS2ᚖgithubᚗcomᚋsavannahghiᚋengageme
 	return ec._SMS(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSavedNotification2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v dto.SavedNotification) graphql.Marshaler {
-	return ec._SavedNotification(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNSavedNotification2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*dto.SavedNotification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -18960,113 +17027,6 @@ func (ec *executionContext) unmarshalNVisibility2githubᚗcomᚋsavannahghiᚋfe
 
 func (ec *executionContext) marshalNVisibility2githubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx context.Context, sel ast.SelectionSet, v feedlib.Visibility) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) unmarshalN_Any2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
-	res, err := graphql.UnmarshalMap(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalN_Any2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := graphql.MarshalMap(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalN_Any2ᚕmapᚄ(ctx context.Context, v interface{}) ([]map[string]interface{}, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]map[string]interface{}, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalN_Any2map(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalN_Any2ᚕmapᚄ(ctx context.Context, sel ast.SelectionSet, v []map[string]interface{}) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalN_Any2map(ctx, sel, v[i])
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v []fedruntime.Entity) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) unmarshalN_FieldSet2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalN_FieldSet2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx context.Context, sel ast.SelectionSet, v fedruntime.Service) graphql.Marshaler {
-	return ec.__Service(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -19603,21 +17563,6 @@ func (ec *executionContext) unmarshalOFirebaseWebpushConfigInput2ᚖgithubᚗcom
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return graphql.MarshalID(*v)
-}
-
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -19843,13 +17788,6 @@ func (ec *executionContext) marshalOVisibility2ᚖgithubᚗcomᚋsavannahghiᚋf
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec.__Entity(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
@@ -20,8 +20,8 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func initializeTestService(ctx context.Context, t *testing.T) (*fcm.Service, error) {
-	fr, err := database.NewFirebaseRepository(ctx)
+func initializeTestService(ctx context.Context, t *testing.T) (*fcm.ServiceFCMImpl, error) {
+	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
 		return nil, err
@@ -59,7 +59,7 @@ func TestNewService(t *testing.T) {
 
 	tests := []struct {
 		name string
-		want *fcm.Service
+		want *fcm.ServiceFCMImpl
 	}{
 		{
 			name: "good case",

@@ -21,7 +21,7 @@ func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feedlib.
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	item, err := r.interactor.Feed.ResolveFeedItem(ctx, uid, flavour, itemID)
+	item, err := r.usecases.ResolveFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to resolve a Feed item: %v", err)
 	}
@@ -38,7 +38,7 @@ func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour feedli
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	item, err := r.interactor.Feed.UnresolveFeedItem(ctx, uid, flavour, itemID)
+	item, err := r.usecases.UnresolveFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unresolve Feed item: %v", err)
 	}
@@ -55,7 +55,7 @@ func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour feedlib.Flav
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	item, err := r.interactor.Feed.PinFeedItem(ctx, uid, flavour, itemID)
+	item, err := r.usecases.PinFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to pin Feed item: %v", err)
 	}
@@ -72,7 +72,7 @@ func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour feedlib.Fl
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	item, err := r.interactor.Feed.UnpinFeedItem(ctx, uid, flavour, itemID)
+	item, err := r.usecases.UnpinFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unpin Feed item: %v", err)
 	}
@@ -89,7 +89,7 @@ func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour feedlib.Fla
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	item, err := r.interactor.Feed.HideFeedItem(ctx, uid, flavour, itemID)
+	item, err := r.usecases.HideFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to hide Feed item: %v", err)
 	}
@@ -106,7 +106,7 @@ func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour feedlib.Fla
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	item, err := r.interactor.Feed.ShowFeedItem(ctx, uid, flavour, itemID)
+	item, err := r.usecases.ShowFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to show Feed item: %v", err)
 	}
@@ -123,7 +123,7 @@ func (r *mutationResolver) HideNudge(ctx context.Context, flavour feedlib.Flavou
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	nudge, err := r.interactor.Feed.HideNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := r.usecases.HideNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to hide nudge: %v", err)
 	}
@@ -140,7 +140,7 @@ func (r *mutationResolver) ShowNudge(ctx context.Context, flavour feedlib.Flavou
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	nudge, err := r.interactor.Feed.ShowNudge(ctx, uid, flavour, nudgeID)
+	nudge, err := r.usecases.ShowNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to show nudge: %v", err)
 	}
@@ -157,7 +157,7 @@ func (r *mutationResolver) PostMessage(ctx context.Context, flavour feedlib.Flav
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	msg, err := r.interactor.Feed.PostMessage(ctx, uid, flavour, itemID, &message)
+	msg, err := r.usecases.PostMessage(ctx, uid, flavour, itemID, &message)
 	if err != nil {
 		return nil, fmt.Errorf("unable to post a message: %v", err)
 	}
@@ -174,7 +174,7 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour feedlib.Fl
 	if err != nil {
 		return false, fmt.Errorf("can't get logged in user UID")
 	}
-	err = r.interactor.Feed.DeleteMessage(ctx, uid, flavour, itemID, messageID)
+	err = r.usecases.DeleteMessage(ctx, uid, flavour, itemID, messageID)
 	if err != nil {
 		return false, fmt.Errorf("can't delete message: %w", err)
 	}
@@ -191,7 +191,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feedlib.Fla
 	if err != nil {
 		return false, fmt.Errorf("can't get logged in user UID")
 	}
-	err = r.interactor.Feed.ProcessEvent(ctx, uid, flavour, &event)
+	err = r.usecases.ProcessEvent(ctx, uid, flavour, &event)
 	if err != nil {
 		return false, fmt.Errorf("can't process event: %w", err)
 	}
@@ -208,7 +208,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, is
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	feed, err := r.interactor.Feed.GetFeed(
+	feed, err := r.usecases.GetFeed(
 		ctx,
 		&uid,
 		&isAnonymous,
@@ -235,7 +235,7 @@ func (r *queryResolver) Labels(ctx context.Context, flavour feedlib.Flavour) ([]
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
 	}
-	labels, err := r.interactor.Feed.Labels(ctx, uid, flavour)
+	labels, err := r.usecases.Labels(ctx, uid, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get Labels count: %v", err)
 	}
@@ -252,7 +252,7 @@ func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour feedl
 	if err != nil {
 		return -1, fmt.Errorf("can't get logged in user UID")
 	}
-	count, err := r.interactor.Feed.UnreadPersistentItems(ctx, uid, flavour)
+	count, err := r.usecases.UnreadPersistentItems(ctx, uid, flavour)
 	if err != nil {
 		return -1, fmt.Errorf("unable to count unread persistent items: %v", err)
 	}

@@ -34,6 +34,12 @@ const (
 	whatsappStep = 1
 	twilioStep   = 2
 	otpMsg       = "%s is your Be.Well verification code %s"
+
+	//PINSMS is the sms formart to be send
+	PINSMS = "You have been successfully registered on Be.Well. Please use this One Time PIN: %s to log in using your phone number and set a new PIN on login."
+
+	//PINWhatsApp is the whatsapp formart to be send
+	PINWhatsApp = "Hi %s, welcome to Be.Well. Please use this One Time PIN: %s to log in using your phone number. You will be prompted to set a new PIN on login."
 )
 
 // These constants are here to support Integration Testing
@@ -55,10 +61,11 @@ type ServiceOTP interface {
 	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int, appID *string) (string, error)
 	EmailVerificationOtp(ctx context.Context, email *string) (string, error)
 	GenerateOTP(ctx context.Context) (string, error)
+	SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error
 }
 
-// Service is an OTP generation and validation service
-type Service struct {
+// ServiceOTPImpl is an OTP generation and validation service
+type ServiceOTPImpl struct {
 	whatsapp whatsapp.ServiceWhatsapp
 	mail     mail.ServiceMail
 	sms      sms.ServiceSMS
@@ -78,7 +85,7 @@ func NewService(
 	mail mail.ServiceMail,
 	sms sms.ServiceSMS,
 	twilio twilio.ServiceTwilio,
-) *Service {
+) *ServiceOTPImpl {
 	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
@@ -99,7 +106,7 @@ func NewService(
 		os.Exit(1)
 	}
 
-	return &Service{
+	return &ServiceOTPImpl{
 		totpOpts: totp.GenerateOpts{
 			Issuer:      issuer,
 			AccountName: accountName,
@@ -113,7 +120,7 @@ func NewService(
 	}
 }
 
-func (s Service) checkPreconditions() {
+func (s ServiceOTPImpl) checkPreconditions() {
 	if s.firestoreClient == nil {
 		log.Panicf("OTP service has a nil firestore client")
 	}
@@ -124,7 +131,7 @@ func (s Service) checkPreconditions() {
 
 }
 
-func (s Service) getOTPCollectionName() string {
+func (s ServiceOTPImpl) getOTPCollectionName() string {
 	return firebasetools.SuffixCollection(converterandformatter.OTPCollectionName)
 }
 
@@ -133,7 +140,7 @@ func cleanITPhoneNumber() (*string, error) {
 }
 
 // SendOTP sends otp code message to specified number
-func (s Service) SendOTP(
+func (s ServiceOTPImpl) SendOTP(
 	ctx context.Context,
 	normalizedPhoneNumber string,
 	code string,
@@ -168,7 +175,7 @@ func (s Service) SendOTP(
 
 // GenerateAndSendOTP creates an OTP and sends it to the
 // supplied phone number as a text message
-func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
+func (s ServiceOTPImpl) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
 	cleanNo, err := converterandformatter.NormalizeMSISDN(msisdn)
 	if err != nil {
 
@@ -223,7 +230,7 @@ func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *s
 
 //SendOTPToEmail is a companion to GenerateAndSendOTP function
 //It will send the generated OTP to the provided email address
-func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string, appID *string) (string, error) {
+func (s ServiceOTPImpl) SendOTPToEmail(ctx context.Context, msisdn, email *string, appID *string) (string, error) {
 	_, span := tracer.Start(ctx, "SendOTPToEmail")
 	defer span.End()
 	code, err := s.GenerateAndSendOTP(ctx, *msisdn, appID)
@@ -261,14 +268,14 @@ func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string, appI
 }
 
 // SaveOTPToFirestore persists the supplied OTP
-func (s Service) SaveOTPToFirestore(otp dto.OTP) error {
+func (s ServiceOTPImpl) SaveOTPToFirestore(otp dto.OTP) error {
 	ctx := context.Background()
 	_, _, err := s.firestoreClient.Collection(s.getOTPCollectionName()).Add(ctx, otp)
 	return err
 }
 
 // VerifyOtp checks for the validity of the supplied OTP but does not invalidate it
-func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error) {
+func (s ServiceOTPImpl) VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error) {
 	ctx, span := tracer.Start(ctx, "VerifyOtp")
 	defer span.End()
 	s.checkPreconditions()
@@ -325,7 +332,7 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 }
 
 // VerifyEmailOtp checks for the validity of the supplied OTP but does not invalidate it
-func (s Service) VerifyEmailOtp(
+func (s ServiceOTPImpl) VerifyEmailOtp(
 	ctx context.Context,
 	email, verificationCode *string,
 ) (bool, error) {
@@ -372,7 +379,7 @@ func (s Service) VerifyEmailOtp(
 }
 
 // GenerateRetryOTP generates fallback OTPs when Africa is talking sms fails
-func (s Service) GenerateRetryOTP(
+func (s ServiceOTPImpl) GenerateRetryOTP(
 	ctx context.Context,
 	msisdn *string,
 	retryStep int,
@@ -460,7 +467,7 @@ func (s Service) GenerateRetryOTP(
 }
 
 // EmailVerificationOtp generates an OTP to the supplied email for verification
-func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (string, error) {
+func (s ServiceOTPImpl) EmailVerificationOtp(ctx context.Context, email *string) (string, error) {
 	_, span := tracer.Start(ctx, "EmailVerificationOtp")
 	defer span.End()
 	// This is an alternate path that checks for the Constant
@@ -507,7 +514,7 @@ func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (strin
 }
 
 //GenerateOTP generates an OTP
-func (s Service) GenerateOTP(ctx context.Context) (string, error) {
+func (s ServiceOTPImpl) GenerateOTP(ctx context.Context) (string, error) {
 	_, span := tracer.Start(ctx, "GenerateOTP")
 	defer span.End()
 	key, err := totp.Generate(s.totpOpts)
@@ -522,4 +529,43 @@ func (s Service) GenerateOTP(ctx context.Context) (string, error) {
 		return "", errors.Wrap(err, "generateOTP > GenerateCode")
 	}
 	return code, nil
+}
+
+// SendTemporaryPIN sends a temporary PIN message to user via whatsapp and SMS
+func (s ServiceOTPImpl) SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error {
+	ctx, span := tracer.Start(ctx, "SendTemporaryPIN")
+	defer span.End()
+	cleanNo, err := converterandformatter.NormalizeMSISDN(input.PhoneNumber)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return errors.Wrap(err, "unable to normalize the recipient phone number")
+	}
+
+	if input.Channel == whatsappStep {
+		msg := fmt.Sprintf(PINWhatsApp, input.FirstName, input.PIN)
+
+		sent, err := s.whatsapp.TemporaryPIN(ctx, *cleanNo, msg)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return fmt.Errorf("unable to send otp via whatsapp: %w", err)
+		}
+
+		if !sent {
+			return fmt.Errorf("otp message not sent: %w", err)
+		}
+
+		return nil
+
+	} else if input.Channel == twilioStep {
+		msg := fmt.Sprintf(PINSMS, input.PIN)
+		err := s.twilio.SendSMS(ctx, *cleanNo, msg)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return fmt.Errorf("unable to send otp via sms: %w", err)
+		}
+		return nil
+
+	} else {
+		return fmt.Errorf("invalid messaging channel")
+	}
 }

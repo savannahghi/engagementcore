@@ -17,8 +17,8 @@ import (
 	"github.com/kevinburke/twilio-go/token"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -46,19 +46,13 @@ const (
 
 // ServiceTwilio defines the interaction with the twilio service
 type ServiceTwilio interface {
-	MakeTwilioRequest(
-		method string,
-		urlPath string,
-		content url.Values,
-		target interface{},
-	) error
-
 	Room(ctx context.Context) (*dto.Room, error)
 
 	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
 
 	SendSMS(ctx context.Context, to string, msg string) error
 
+	// TODO: Remove db call
 	SaveTwilioVideoCallbackStatus(
 		ctx context.Context,
 		data dto.CallbackData,
@@ -66,7 +60,7 @@ type ServiceTwilio interface {
 }
 
 // NewService initializes a service to interact with Twilio
-func NewService(sms sms.ServiceSMS, repo repository.Repository) *Service {
+func NewService(sms sms.ServiceSMS, repo database.Repository) *ServiceTwilioImpl {
 	region := serverutils.MustGetEnvVar(TwilioRegionEnvVarName)
 	videoBaseURL := serverutils.MustGetEnvVar(TwilioVideoAPIURLEnvVarName)
 	videoAPIKeySID := serverutils.MustGetEnvVar(TwilioVideoAPIKeySIDEnvVarName)
@@ -80,7 +74,7 @@ func NewService(sms sms.ServiceSMS, repo repository.Repository) *Service {
 	callbackURL := publicDomain + TwilioCallbackPath
 	smsNumber := serverutils.MustGetEnvVar(TwilioSMSNumberEnvVarName)
 
-	srv := &Service{
+	srv := &ServiceTwilioImpl{
 		region:            region,
 		videoBaseURL:      videoBaseURL,
 		videoAPIKeySID:    videoAPIKeySID,
@@ -98,9 +92,9 @@ func NewService(sms sms.ServiceSMS, repo repository.Repository) *Service {
 	return srv
 }
 
-// Service organizes methods needed to interact with Twilio for video, voice
+// ServiceTwilioImpl organizes methods needed to interact with Twilio for video, voice
 // and text
-type Service struct {
+type ServiceTwilioImpl struct {
 	region            string
 	videoBaseURL      string
 	videoAPIKeySID    string
@@ -112,10 +106,10 @@ type Service struct {
 	callbackURL       string
 	smsNumber         string
 	sms               sms.ServiceSMS
-	repository        repository.Repository
+	repository        database.Repository
 }
 
-func (s Service) checkPreconditions() {
+func (s ServiceTwilioImpl) checkPreconditions() {
 	if s.region == "" {
 		log.Panicf("Twilio region not set")
 	}
@@ -158,7 +152,7 @@ func (s Service) checkPreconditions() {
 }
 
 // MakeTwilioRequest makes a twilio request
-func (s Service) MakeTwilioRequest(
+func (s ServiceTwilioImpl) MakeTwilioRequest(
 	method string,
 	urlPath string,
 	content url.Values,
@@ -234,7 +228,7 @@ func (s Service) MakeTwilioRequest(
 //
 // Because of confidentiality issues in healthcare, we do not enable recording
 // for these meetings.
-func (s Service) Room(ctx context.Context) (*dto.Room, error) {
+func (s ServiceTwilioImpl) Room(ctx context.Context) (*dto.Room, error) {
 	_, span := tracer.Start(ctx, "Room")
 	defer span.End()
 	s.checkPreconditions()
@@ -264,7 +258,7 @@ func (s Service) Room(ctx context.Context) (*dto.Room, error) {
 // to connect only to the room specified in the token.
 //
 // Access tokens are JSON Web Tokens (JWTs).
-func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
+func (s ServiceTwilioImpl) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	ctx, span := tracer.Start(ctx, "TwilioAccessToken")
 	defer span.End()
 	s.checkPreconditions()
@@ -305,7 +299,7 @@ func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error
 }
 
 // SendSMS sends a text message through Twilio's programmable SMS
-func (s Service) SendSMS(ctx context.Context, to string, msg string) error {
+func (s ServiceTwilioImpl) SendSMS(ctx context.Context, to string, msg string) error {
 	_, span := tracer.Start(ctx, "SendSMS")
 	defer span.End()
 	s.checkPreconditions()
@@ -325,7 +319,7 @@ func (s Service) SendSMS(ctx context.Context, to string, msg string) error {
 }
 
 // SaveTwilioVideoCallbackStatus saves status callback data
-func (s Service) SaveTwilioVideoCallbackStatus(
+func (s ServiceTwilioImpl) SaveTwilioVideoCallbackStatus(
 	ctx context.Context,
 	data dto.CallbackData,
 ) error {

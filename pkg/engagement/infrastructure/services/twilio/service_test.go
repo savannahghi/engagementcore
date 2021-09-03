@@ -7,19 +7,12 @@ import (
 	"testing"
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"github.com/stretchr/testify/assert"
-	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 )
 
 func TestMain(m *testing.M) {
@@ -27,8 +20,8 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTwilioService(ctx context.Context) (*twilio.Service, error) {
-	var repo repository.Repository
+func newTwilioService(ctx context.Context) (*twilio.ServiceTwilioImpl, error) {
+	var repo database.Repository
 	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
@@ -37,22 +30,10 @@ func newTwilioService(ctx context.Context) (*twilio.Service, error) {
 			err,
 		)
 	}
-	hubspotService := hubspot.NewHubSpotService()
-	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize hubspot crm repository: %w", err)
-	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
-	fr, err := database.NewFirebaseRepository(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
-	}
-	mail := mail.NewService(fr)
-	edi := edi.NewEdiService(edi.NewEDIClient())
-	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(repo, crmExt, ns, edi)
 
-	return twilio.NewService(sms, repo), nil
+	sms := sms.NewService(repo, ns)
+
+	return twilio.NewService(*sms, repo), nil
 }
 
 func TestNewService(t *testing.T) {

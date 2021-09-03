@@ -14,7 +14,7 @@ import (
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -38,14 +38,14 @@ const (
 )
 
 // NewService initializes a properly set up WhatsApp service
-func NewService() *Service {
+func NewService() *ServiceWhatsappImpl {
 	sid := serverutils.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
 	authToken := serverutils.MustGetEnvVar(TwilioWhatsappAuthTokenEnvVarName)
 	sender := serverutils.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
 	httpClient := &http.Client{
 		Timeout: time.Second * TwilioHTTPClientTimeoutSeconds,
 	}
-	return &Service{
+	return &ServiceWhatsappImpl{
 		BaseURL:          twilioWhatsappBaseURL,
 		AccountSID:       sid,
 		AccountAuthToken: authToken,
@@ -63,114 +63,31 @@ type ServiceWhatsapp interface {
 		marketingMessage string,
 	) (bool, error)
 
-	WellnessCardActivationDependant(
-		ctx context.Context,
-		to string,
-		memberName string,
-		cardName string,
-		marketingMessage string,
-	) (bool, error)
-
-	WellnessCardActivationPrincipal(
-		ctx context.Context,
-		to string,
-		memberName string,
-		cardName string,
-		minorAgeThreshold string,
-		marketingMessage string,
-	) (bool, error)
-
-	BillNotification(
-		ctx context.Context,
-		to string,
-		productName string,
-		billingPeriod string,
-		billAmount string,
-		paymentInstruction string,
-		marketingMessage string,
-	) (bool, error)
-
-	VirtualCards(
-		ctx context.Context,
-		to string,
-		wellnessCardFamily string,
-		virtualCardLink string,
-		marketingMessage string,
-	) (bool, error)
-
-	VisitStart(
-		ctx context.Context,
-		to string,
-		memberName string,
-		benefitName string,
-		locationName string,
-		startTime string,
-		balance string,
-		marketingMessage string,
-	) (bool, error)
-
-	ClaimNotification(
-		ctx context.Context,
-		to string,
-		claimReference string,
-		claimTypeParenthesized string,
-		provider string,
-		visitType string,
-		claimTime string,
-		marketingMessage string,
-	) (bool, error)
-
-	PreauthApproval(
-		ctx context.Context,
-		to string,
-		currency string,
-		amount string,
-		benefit string,
-		provider string,
-		member string,
-		careContact string,
-		marketingMessage string,
-	) (bool, error)
-
-	PreauthRequest(
-		ctx context.Context,
-		to string,
-		currency string,
-		amount string,
-		benefit string,
-		provider string,
-		requestTime string,
-		member string,
-		careContact string,
-		marketingMessage string,
-	) (bool, error)
-
-	SladeOTP(
-		ctx context.Context,
-		to string,
-		name string,
-		otp string,
-		marketingMessage string,
-	) (bool, error)
-
+	// TODO: Remove db implementation
 	SaveTwilioCallbackResponse(
 		ctx context.Context,
 		data dto.Message,
 	) error
+
+	TemporaryPIN(
+		ctx context.Context,
+		to string,
+		message string,
+	) (bool, error)
 }
 
-// Service is a WhatsApp service. The receivers implement the query and mutation resolvers.
-type Service struct {
+// ServiceWhatsappImpl is a WhatsApp service. The receivers implement the query and mutation resolvers.
+type ServiceWhatsappImpl struct {
 	BaseURL          string
 	AccountSID       string
 	AccountAuthToken string
 	Sender           string
 	HTTPClient       *http.Client
-	Repository       repository.Repository
+	Repository       database.Repository
 }
 
 // CheckPreconditions ...
-func (s Service) CheckPreconditions() {
+func (s ServiceWhatsappImpl) CheckPreconditions() {
 	if s.HTTPClient == nil {
 		log.Panicf("nil http client in Twilio WhatsApp service")
 	}
@@ -193,7 +110,7 @@ func (s Service) CheckPreconditions() {
 }
 
 // MakeTwilioRequest makes a twilio request
-func (s Service) MakeTwilioRequest(
+func (s ServiceWhatsappImpl) MakeTwilioRequest(
 	ctx context.Context,
 	method string,
 	urlPath string,
@@ -247,7 +164,7 @@ func (s Service) MakeTwilioRequest(
 }
 
 // PhoneNumberVerificationCode sends Phone Number verification codes via WhatsApp
-func (s Service) PhoneNumberVerificationCode(
+func (s ServiceWhatsappImpl) PhoneNumberVerificationCode(
 	ctx context.Context,
 	to string,
 	code string,
@@ -297,148 +214,54 @@ func (s Service) PhoneNumberVerificationCode(
 	return true, nil
 }
 
-// WellnessCardActivationDependant sends wellness card activation messages via WhatsApp
-func (s Service) WellnessCardActivationDependant(
-	ctx context.Context,
-	to string,
-	memberName string,
-	cardName string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Create a common path for Twilio messages
-	// TODO Implement wellness card activation message
-	return false, nil
-}
-
-// WellnessCardActivationPrincipal sends wellness card activation messages to principals via WhatsApp
-func (s Service) WellnessCardActivationPrincipal(
-	ctx context.Context,
-	to string,
-	memberName string,
-	cardName string,
-	minorAgeThreshold string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement wellness card activation message for principals
-	return false, nil
-}
-
-// BillNotification sends bill notification messages via WhatsApp
-func (s Service) BillNotification(
-	ctx context.Context,
-	to string,
-	productName string,
-	billingPeriod string,
-	billAmount string,
-	paymentInstruction string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement bill notification message
-	return false, nil
-}
-
-// VirtualCards sends virtual card setup notifications
-func (s Service) VirtualCards(
-	ctx context.Context,
-	to string,
-	wellnessCardFamily string,
-	virtualCardLink string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement virtual card notification message
-	return false, nil
-}
-
-// VisitStart sends visit start SMS messages to members
-func (s Service) VisitStart(
-	ctx context.Context,
-	to string,
-	memberName string,
-	benefitName string,
-	locationName string,
-	startTime string,
-	balance string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement virtual card notification message
-	return false, nil
-}
-
-// ClaimNotification sends a claim notification message via WhatsApp
-func (s Service) ClaimNotification(
-	ctx context.Context,
-	to string,
-	claimReference string,
-	claimTypeParenthesized string,
-	provider string,
-	visitType string,
-	claimTime string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement claim notification message
-	return false, nil
-}
-
-// PreauthApproval sends a pre-authorization approval message via WhatsApp
-func (s Service) PreauthApproval(
-	ctx context.Context,
-	to string,
-	currency string,
-	amount string,
-	benefit string,
-	provider string,
-	member string,
-	careContact string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement preauth approval message
-	return false, nil
-}
-
-// PreauthRequest sends a pre-authorization request message via WhatsApp
-func (s Service) PreauthRequest(
-	ctx context.Context,
-	to string,
-	currency string,
-	amount string,
-	benefit string,
-	provider string,
-	requestTime string,
-	member string,
-	careContact string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-	// TODO Implement preauth request message
-	return false, nil
-}
-
-// SladeOTP sends Slade ID OTP messages
-func (s Service) SladeOTP(
-	ctx context.Context,
-	to string,
-	name string,
-	otp string,
-	marketingMessage string,
-) (bool, error) {
-	s.CheckPreconditions()
-
-	// TODO Implement Slade OTP
-	return false, nil
-}
-
 // SaveTwilioCallbackResponse saves the twilio callback response for future
 // analysis
-func (s Service) SaveTwilioCallbackResponse(
+func (s ServiceWhatsappImpl) SaveTwilioCallbackResponse(
 	ctx context.Context,
 	data dto.Message,
 ) error {
 	return s.Repository.SaveTwilioResponse(ctx, data)
+}
+
+//TemporaryPIN send PIN via whatsapp to user
+func (s ServiceWhatsappImpl) TemporaryPIN(
+	ctx context.Context,
+	to string,
+	message string,
+) (bool, error) {
+	ctx, span := tracer.Start(ctx, "TemporaryPIN")
+	defer span.End()
+
+	s.CheckPreconditions()
+
+	normalizedPhoneNo, err := converterandformatter.NormalizeMSISDN(to)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("%s is not a valid E164 phone number: %w", to, err)
+	}
+
+	msgFrom := fmt.Sprintf("whatsapp:%s", s.Sender)
+	msgTo := fmt.Sprintf("whatsapp:%s", *normalizedPhoneNo)
+
+	payload := url.Values{}
+	payload.Add("From", msgFrom)
+	payload.Add("Body", message)
+	payload.Add("To", msgTo)
+
+	target := dto.Message{}
+	path := fmt.Sprintf("%s/Messages.json", s.AccountSID)
+
+	err = s.MakeTwilioRequest(ctx, http.MethodPost, path, payload, &target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("error from Twilio: %w", err)
+	}
+
+	// save Twilio response for audit purposes
+	_, _, err = firebasetools.CreateNode(ctx, &target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("unable to save Twilio response: %w", err)
+	}
+	return true, nil
 }

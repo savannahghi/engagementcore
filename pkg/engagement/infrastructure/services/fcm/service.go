@@ -13,19 +13,19 @@ import (
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"go.opentelemetry.io/otel"
 )
 
 var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/fcm")
 
-// Service provides methods for sending Firebase Cloud Messaging notifications
-type Service struct {
+// ServiceFCMImpl provides methods for sending Firebase Cloud Messaging notifications
+type ServiceFCMImpl struct {
 	fcmClient       *messaging.Client
 	firestoreClient *firestore.Client
-	Repository      repository.Repository
+	Repository      database.Repository
 	onboarding      onboarding.ProfileService
 }
 
@@ -92,7 +92,7 @@ type ServiceFCM interface {
 }
 
 // NewService initializes a service to interact with Firebase Cloud Messaging
-func NewService(repository repository.Repository, onboarding onboarding.ProfileService) *Service {
+func NewService(repository database.Repository, onboarding onboarding.ProfileService) *ServiceFCMImpl {
 	fcmClient, err := initializeFCMClient()
 	if err != nil {
 		log.Panicf("error getting Messaging client: %v\n", err)
@@ -103,7 +103,7 @@ func NewService(repository repository.Repository, onboarding onboarding.ProfileS
 		log.Panicf("error getting Firestore client: %v\n", err)
 	}
 
-	srv := &Service{
+	srv := &ServiceFCMImpl{
 		fcmClient:       fcmClient,
 		firestoreClient: firestoreClient,
 		Repository:      repository,
@@ -113,7 +113,7 @@ func NewService(repository repository.Repository, onboarding onboarding.ProfileS
 	return srv
 }
 
-func (s Service) checkPreconditions() {
+func (s ServiceFCMImpl) checkPreconditions() {
 	if s.fcmClient == nil {
 		log.Panicf("nil messaging client in FCM service")
 	}
@@ -151,7 +151,7 @@ func (s Service) checkPreconditions() {
 //
 // The callers of this method should implement retries and exponential backoff,
 // if necessary.
-func (s Service) SendNotification(
+func (s ServiceFCMImpl) SendNotification(
 	ctx context.Context,
 	registrationTokens []string,
 	data map[string]string,
@@ -277,7 +277,7 @@ func (s Service) SendNotification(
 }
 
 // Notifications is used to query a user's priorities
-func (s Service) Notifications(
+func (s ServiceFCMImpl) Notifications(
 	ctx context.Context,
 	registrationToken string,
 	newerThan time.Time,
@@ -288,7 +288,7 @@ func (s Service) Notifications(
 }
 
 // SendFCMByPhoneOrEmail is used to send FCM notification by phone or email
-func (s Service) SendFCMByPhoneOrEmail(
+func (s ServiceFCMImpl) SendFCMByPhoneOrEmail(
 	ctx context.Context,
 	phoneNumber *string,
 	email *string,

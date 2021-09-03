@@ -11,7 +11,8 @@ import (
 	"github.com/savannahghi/feedlib"
 )
 
-// Repository defines methods for persistence and retrieval of feeds
+// Repository is the interface to be implemented by the database(s)
+// The method signatures are should be database independent
 type Repository interface {
 	// getting a feed...create a default feed if it does not exist
 	// return: feed, matching count, total count, optional error
@@ -217,26 +218,6 @@ type Repository interface {
 		flavour feedlib.Flavour,
 		title string,
 	) (*feedlib.Nudge, error)
-
-	SaveMarketingMessage(
-		ctx context.Context,
-		data dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
-
-	GetMarketingSMSByID(
-		ctx context.Context,
-		id string,
-	) (*dto.MarketingSMS, error)
-
-	GetMarketingSMSByPhone(
-		ctx context.Context,
-		phoneNumber string,
-	) (*dto.MarketingSMS, error)
-
-	UpdateMarketingMessage(
-		ctx context.Context,
-		data *dto.MarketingSMS,
-	) (*dto.MarketingSMS, error)
 
 	SaveTwilioResponse(
 		ctx context.Context,

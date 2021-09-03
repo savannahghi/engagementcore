@@ -76,22 +76,6 @@ func (c *Message) SetID(id string) {
 	c.ID = id
 }
 
-// Dummy ..
-type Dummy struct {
-	id string
-}
-
-//IsEntity ...
-func (d Dummy) IsEntity() {}
-
-// IsNode ..
-func (d *Dummy) IsNode() {}
-
-// SetID sets the trace's ID
-func (d *Dummy) SetID(id string) {
-	d.id = id
-}
-
 // OTP is used to persist and verify authorization codes
 // (single use 'One Time PIN's)
 type OTP struct {
@@ -256,28 +240,6 @@ func NewOKResp(rawResponse interface{}) *OKResp {
 		Status:   "OK",
 		Response: rawResponse,
 	}
-}
-
-// MarketingDataLoadOutput ...
-type MarketingDataLoadOutput struct {
-	LoadingError                  error                            `json:"loading_error"`
-	StartedAt                     time.Time                        `json:"started_at"`
-	StoppedAt                     time.Time                        `json:"stopped_at"`
-	HoursTaken                    float64                          `json:"hours_taken"`
-	EntriesUniqueLoadedOnFirebase int                              `json:"entries_unique_loaded_on_firebase"`
-	EntriesUniqueLoadedOnCRM      int                              `json:"entries_unique_loaded_on_crm"`
-	TotalEntriesFoundOnFile       int                              `json:"total_entries_found_on_file"`
-	Entries                       []MarketingDataLoadEntriesOutput `json:"marketing_data_load_entries_output"`
-}
-
-// MarketingDataLoadEntriesOutput ...
-type MarketingDataLoadEntriesOutput struct {
-	Identifier                  string `json:"identifier"`
-	HasLoadedToFirebase         bool   `json:"has_loaded_to_firebase"`
-	HasBeenRollBackFromFirebase bool   `json:"has_been_rolled_back_from_firebase"`
-	HasLoadedToCRM              bool   `json:"has_loaded_to_crm"`
-	FirebaseLoadError           error  `json:"firebase_load_error"`
-	CRMLoadError                error  `json:"crm_load_error"`
 }
 
 // MailgunEventOutput represents the MailGun's event name and delivery time in standardized time

@@ -18,7 +18,7 @@ func (r *queryResolver) TwilioAccessToken(ctx context.Context) (*dto.AccessToken
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	accessToken, err := r.interactor.Twilio.TwilioAccessToken(ctx)
+	accessToken, err := r.infra.TwilioAccessToken(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate access token: %w", err)
 	}

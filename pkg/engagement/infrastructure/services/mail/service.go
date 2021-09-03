@@ -17,7 +17,7 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 )
@@ -61,16 +61,17 @@ type ServiceMail interface {
 		body *string,
 		to ...string,
 	) (string, error)
-	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
+
 	UpdateMailgunDeliveryStatus(
 		ctx context.Context,
 		payload *dto.MailgunEvent,
 	) (*dto.OutgoingEmailsLog, error)
+
 	GenerateEmailTemplate(name string, templateName string) string
 }
 
 // NewService initializes a new MailGun service
-func NewService(repository repository.Repository) *Service {
+func NewService(repository database.Repository) *ServiceMailImpl {
 	apiKey := serverutils.MustGetEnvVar(MailGunAPIKeyEnvVarName)
 	domain := serverutils.MustGetEnvVar(MailGunDomainEnvVarName)
 	from := serverutils.MustGetEnvVar(MailGunFromEnvVarName)
@@ -88,7 +89,7 @@ func NewService(repository repository.Repository) *Service {
 		sendInBlueEnabled = true
 	}
 
-	return &Service{
+	return &ServiceMailImpl{
 		Mg:                mg,
 		From:              from,
 		SendInBlueAPIKey:  serverutils.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
@@ -97,17 +98,17 @@ func NewService(repository repository.Repository) *Service {
 	}
 }
 
-// Service is an email sending service
-type Service struct {
+// ServiceMailImpl is an email sending service
+type ServiceMailImpl struct {
 	Mg                *mailgun.MailgunImpl
 	From              string
 	SendInBlueEnabled bool
 	SendInBlueAPIKey  string
-	Repository        repository.Repository
+	Repository        database.Repository
 }
 
 // CheckPreconditions checks that all the required preconditions are satisfied
-func (s Service) CheckPreconditions() {
+func (s ServiceMailImpl) CheckPreconditions() {
 	if s.Mg == nil {
 		log.Panicf("uninitialized MailGun")
 	}
@@ -123,7 +124,7 @@ func (s Service) CheckPreconditions() {
 }
 
 // MakeSendInBlueRequest makes a request to SendInBlue
-func (s Service) MakeSendInBlueRequest(
+func (s ServiceMailImpl) MakeSendInBlueRequest(
 	ctx context.Context,
 	data map[string]interface{},
 	target interface{},
@@ -175,7 +176,7 @@ func (s Service) MakeSendInBlueRequest(
 }
 
 // SendInBlue sends email via the SendInBlue service
-func (s Service) SendInBlue(
+func (s ServiceMailImpl) SendInBlue(
 	ctx context.Context,
 	subject, text string,
 	to ...string,
@@ -221,7 +222,7 @@ func (s Service) SendInBlue(
 }
 
 // SendMailgun sends email via MailGun
-func (s Service) SendMailgun(
+func (s ServiceMailImpl) SendMailgun(
 	ctx context.Context,
 	subject, text string,
 	body *string,
@@ -270,7 +271,7 @@ func (s Service) SendMailgun(
 
 // SendEmail sends the specified email to the recipient(s) specified in `to`
 // and returns the status
-func (s Service) SendEmail(
+func (s ServiceMailImpl) SendEmail(
 	ctx context.Context,
 	subject, text string,
 	body *string,
@@ -289,7 +290,7 @@ func (s Service) SendEmail(
 
 // SimpleEmail is a simplified API to send email.
 // It returns only a status or error.
-func (s Service) SimpleEmail(
+func (s ServiceMailImpl) SimpleEmail(
 	ctx context.Context,
 	subject, text string,
 	body *string,
@@ -306,7 +307,7 @@ func (s Service) SimpleEmail(
 }
 
 // SaveOutgoingEmails saves all the outgoing emails
-func (s Service) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+func (s ServiceMailImpl) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
 	ctx, span := tracer.Start(ctx, "SaveOutgoingEmails")
 	defer span.End()
 
@@ -314,7 +315,7 @@ func (s Service) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEm
 }
 
 // UpdateMailgunDeliveryStatus updates the status and delivery time of the sent email message
-func (s Service) UpdateMailgunDeliveryStatus(
+func (s ServiceMailImpl) UpdateMailgunDeliveryStatus(
 	ctx context.Context,
 	payload *dto.MailgunEvent,
 ) (*dto.OutgoingEmailsLog, error) {
@@ -325,7 +326,7 @@ func (s Service) UpdateMailgunDeliveryStatus(
 }
 
 //GenerateEmailTemplate generates custom emails to be sent to the users
-func (s Service) GenerateEmailTemplate(name string, templateName string) string {
+func (s ServiceMailImpl) GenerateEmailTemplate(name string, templateName string) string {
 	t := template.Must(template.New("Be.WellEmailTemplate").Parse(templateName))
 	buf := new(bytes.Buffer)
 	_ = t.Execute(buf, name)

@@ -8,18 +8,19 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail/mock"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
+
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
 )
 
 var fakeFakeServiceMail = mock.FakeServiceMail{}
 
 func TestSendInBlue(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -119,7 +120,7 @@ func TestSendInBlue(t *testing.T) {
 
 func TestSendMailgun(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -223,7 +224,7 @@ func TestSendMailgun(t *testing.T) {
 
 func TestSendEmail(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -327,7 +328,7 @@ func TestSendEmail(t *testing.T) {
 
 func TestSimpleEmail(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -435,7 +436,7 @@ func TestSimpleEmail(t *testing.T) {
 
 func TestSaveOutgoingEmails(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -523,7 +524,7 @@ func TestSaveOutgoingEmails(t *testing.T) {
 
 func TestUpdateMailgunDeliveryStatus(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
@@ -614,7 +615,7 @@ func TestUpdateMailgunDeliveryStatus(t *testing.T) {
 
 func TestGenerateEmailTemplate(t *testing.T) {
 	ctx := context.Background()
-	repo, err := database.NewFirebaseRepository(ctx)
+	repo, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("error initializing new firebase repo:%v", err)
 		return
