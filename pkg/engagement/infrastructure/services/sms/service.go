@@ -14,16 +14,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/sms")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/services/sms")
 
 // AIT environment variables names
 const (

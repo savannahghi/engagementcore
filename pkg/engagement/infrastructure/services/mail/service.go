@@ -15,14 +15,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/mail")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/services/mail")
 
 // Mail configuration constants
 const (

@@ -12,15 +12,15 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/whatsapp")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/services/whatsapp")
 
 // Twilio Whatsapp API contants
 const (

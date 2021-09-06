@@ -1,4 +1,4 @@
-module github.com/savannahghi/engagement
+module github.com/savannahghi/engagementcore
 
 go 1.16
 

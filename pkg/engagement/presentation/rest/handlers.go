@@ -9,10 +9,10 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/otp"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases"
 
 	"net/http"
 
@@ -25,15 +25,15 @@ import (
 
 	errorcode "github.com/savannahghi/errorcodeutil"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/exceptions"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
 )
 
 const (
 	// StaticDir is the directory that contains schemata, default images etc
-	StaticDir = "github.com/savannahghi/engagement:/static/"
+	StaticDir = "github.com/savannahghi/engagementcore:/static/"
 
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120

@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/enumutils"
 )
 

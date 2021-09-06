@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/surveys"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestService_RecordNPSResponse(t *testing.T) {

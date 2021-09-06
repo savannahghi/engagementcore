@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail/mock"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail/mock"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
 
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 )
 
 var fakeFakeServiceMail = mock.FakeServiceMail{}

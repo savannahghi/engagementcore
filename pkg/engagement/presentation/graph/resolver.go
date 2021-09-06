@@ -8,8 +8,8 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/savannahghi/firebasetools"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases"
 )
 
 // This file will not be regenerated automatically.

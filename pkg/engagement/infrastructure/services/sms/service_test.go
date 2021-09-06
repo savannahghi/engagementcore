@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
 )
