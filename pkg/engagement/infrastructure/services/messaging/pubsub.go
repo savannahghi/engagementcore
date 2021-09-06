@@ -5,20 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
 
 	"cloud.google.com/go/pubsub"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/messaging")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/services/messaging")
 
 // messaging related constants
 const (

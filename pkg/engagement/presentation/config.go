@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagementcore/pkg/engagement/presentation/graph"
+	"github.com/savannahghi/engagementcore/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases"
 
 	"github.com/savannahghi/serverutils"
 

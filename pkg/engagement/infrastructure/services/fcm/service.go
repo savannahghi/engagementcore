@@ -11,15 +11,15 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/google/uuid"
 	"github.com/savannahghi/converterandformatter"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/fcm")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/services/fcm")
 
 // ServiceFCMImpl provides methods for sending Firebase Cloud Messaging notifications
 type ServiceFCMImpl struct {

@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/serverutils"
@@ -18,7 +18,7 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/library")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/services/library")
 
 // Library service constants
 const (

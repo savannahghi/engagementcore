@@ -5,24 +5,24 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/authorization"
-	"github.com/savannahghi/engagement/pkg/engagement/application/authorization/permission"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/authorization"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/authorization/permission"
 	"go.opentelemetry.io/otel"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/profileutils"
 	"github.com/segmentio/ksuid"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/exceptions"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/usecases/feed")
+var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/usecases/feed")
 
 // Usecases represents all the profile business logic
 type Usecases interface {

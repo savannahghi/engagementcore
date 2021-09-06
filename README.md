@@ -3,8 +3,8 @@
 [![Maintained](https://img.shields.io/badge/Maintained-Actively-informational.svg?style=for-the-badge)](https://shields.io/) 
 
 
-[![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) ![Linting and Tests](https://github.com/savannahghi/engagement/actions/workflows/ci.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/savannahghi/engagement/badge.svg?branch=develop)](https://coveralls.io/github/savannahghi/engagement?branch=develop)
+[![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) ![Linting and Tests](https://github.com/savannahghi/engagementcore/actions/workflows/ci.yml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/savannahghi/engagementcore/badge.svg?branch=develop)](https://coveralls.io/github/savannahghi/engagementcore?branch=develop)
 
 A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
 
@@ -88,31 +88,9 @@ For more information, see:
 - [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1/) by Jeffrey Palermo
 - [Implementing Domain-Driven Design](http://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577)
 
-## Interservice API
-
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/d023a368982c38ed7c66)
-
-## GraphQL API
-
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/0f20d40221953b0b6708)
-
 ## JSON Schema Files
 
 This project uses JSON Schema to validate inputs and outputs.
-
-### Schema file hosting
-
-In order for module references to work, the schema files in
-`graph/feed/schema` need to be hosted. We use
-https://firebase.google.com/docs/hosting for that.
-
-The schema files are hosted at https://schema.healthcloud.co.ke/
-e.g https://schema.healthcloud.co.ke//event.schema.json .
-
-This is in the `bewell-app` project. You need to
-`npm install -g firebase-tools` and `firebase login` first. After that,
-any time the schema files change, run from the root `cd static && firebase deploy && cd ..` to host the
-updated files.
 
 ## Environment variables
 

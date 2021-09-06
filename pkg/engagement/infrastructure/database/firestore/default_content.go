@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/onboarding"
 
 	"github.com/markbates/pkger"
 	"github.com/savannahghi/feedlib"

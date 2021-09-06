@@ -7,12 +7,12 @@ import (
 	"testing"
 
 	"github.com/mailgun/mailgun-go/v4"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
 
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestMain(m *testing.M) {

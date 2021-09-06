@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
+	"github.com/savannahghi/engagementcore/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 )

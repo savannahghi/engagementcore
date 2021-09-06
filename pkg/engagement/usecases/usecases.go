@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases/feed"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/feed"
 )
 
 // Interactor is an implementation of the usecases interface

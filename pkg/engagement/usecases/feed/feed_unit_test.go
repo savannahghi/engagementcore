@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure"
-	mockInfra "github.com/savannahghi/engagement/pkg/engagement/infrastructure/mock"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	mockInfra "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/mock"
 
-	"github.com/savannahghi/engagement/pkg/engagement/usecases/feed"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/feed"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/segmentio/ksuid"

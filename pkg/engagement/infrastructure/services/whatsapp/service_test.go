@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/otp"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/stretchr/testify/assert"
 )
 

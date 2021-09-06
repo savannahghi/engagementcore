@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 )
 
 // FakeServiceWhatsapp defines the interactions with the whatsapp service

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	fb "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
+	fb "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/feedlib"
 )
 

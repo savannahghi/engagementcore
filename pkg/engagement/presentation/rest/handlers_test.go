@@ -29,13 +29,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/idtoken"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/rest"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
+	"github.com/savannahghi/engagementcore/pkg/engagement/presentation"
+	"github.com/savannahghi/engagementcore/pkg/engagement/presentation/rest"
 	"github.com/savannahghi/interserviceclient"
 )
 

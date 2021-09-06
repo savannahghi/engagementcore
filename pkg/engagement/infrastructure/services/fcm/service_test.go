@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database/firestore"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
