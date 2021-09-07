@@ -197,7 +197,7 @@ func TestService_TemporaryPIN(t *testing.T) {
 			name: "happy sent temporary pin message",
 			args: args{
 				ctx:     ctx,
-				to:      "+254703754685",
+				to:      "+25423002959",
 				message: fmt.Sprintf(otp.PINWhatsApp, "Test", "1234"),
 			},
 			want:    true,
