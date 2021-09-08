@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 )
 
 // FakeServiceMessaging is a mock implementation of the "messaging" service
@@ -23,6 +24,11 @@ type FakeServiceMessaging struct {
 	SubscriptionIDsFn func() map[string]string
 
 	ReverseSubscriptionIDsFn func() map[string]string
+	PushFn                   func(
+		ctx context.Context,
+		sender string,
+		payload firebasetools.SendNotificationPayload,
+	) error
 }
 
 // Notify Sends a message to a topic
@@ -37,17 +43,26 @@ func (f *FakeServiceMessaging) Notify(
 	return f.NotifyFn(ctx, topicID, uid, flavour, payload, metadata)
 }
 
-// TopicIDs ...
+// TopicIDs gets topic IDs
 func (f *FakeServiceMessaging) TopicIDs() []string {
 	return f.TopicIDsFn()
 }
 
-// SubscriptionIDs ...
+// SubscriptionIDs gets subscription IDs
 func (f *FakeServiceMessaging) SubscriptionIDs() map[string]string {
 	return f.SubscriptionIDsFn()
 }
 
-// ReverseSubscriptionIDs ...
+// ReverseSubscriptionIDs get Reverse Subscription IDs
 func (f *FakeServiceMessaging) ReverseSubscriptionIDs() map[string]string {
 	return f.ReverseSubscriptionIDsFn()
+}
+
+// Push sends push notifications
+func (f *FakeServiceMessaging) Push(
+	ctx context.Context,
+	sender string,
+	payload firebasetools.SendNotificationPayload,
+) error {
+	return f.PushFn(ctx, sender, payload)
 }

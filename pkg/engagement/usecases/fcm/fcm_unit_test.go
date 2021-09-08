@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/fcm"
 	fcmMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/fcm/mock"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/fcm"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 )
@@ -28,7 +28,7 @@ func TestUnit_SendNotification(t *testing.T) {
 	ios := firebasetools.FirebaseAPNSConfigInput{}
 	web := firebasetools.FirebaseWebpushConfigInput{}
 
-	var f fcm.ServiceFCM = &fakeFCMService
+	var f fcm.UsecaseFCM = &fakeFCMService
 
 	type args struct {
 		ctx                context.Context
@@ -116,7 +116,7 @@ func TestUnit_Notifications(t *testing.T) {
 
 	notification := []*dto.SavedNotification{}
 
-	var f fcm.ServiceFCM = &fakeFCMService
+	var f fcm.UsecaseFCM = &fakeFCMService
 
 	type args struct {
 		ctx               context.Context
@@ -198,7 +198,7 @@ func TestUnit_SendFCMByPhoneOrEmail(t *testing.T) {
 	ios := firebasetools.FirebaseAPNSConfigInput{}
 	web := firebasetools.FirebaseWebpushConfigInput{}
 
-	var f fcm.ServiceFCM = &fakeFCMService
+	var f fcm.UsecaseFCM = &fakeFCMService
 
 	type args struct {
 		ctx          context.Context

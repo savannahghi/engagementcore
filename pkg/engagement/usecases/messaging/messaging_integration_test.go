@@ -2,17 +2,23 @@ package messaging_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/rs/xid"
-	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/messaging"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
-	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
-	"github.com/stretchr/testify/assert"
 )
+
+func InitializeTestNewMessaging(ctx context.Context) (*messaging.ImplNotification, infrastructure.Interactor, error) {
+	infra := infrastructure.NewInteractor()
+	messaging := messaging.NewNotification(infra)
+	return messaging, infra, nil
+}
 
 func getNotificationPayload(t *testing.T) firebasetools.SendNotificationPayload {
 	imgURL := "https://example.com/img.png"
@@ -36,29 +42,31 @@ func getNotificationPayload(t *testing.T) firebasetools.SendNotificationPayload 
 
 func TestNewPubSubNotificationService(t *testing.T) {
 	ctx := context.Background()
-	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
+	f, i, err := InitializeTestNewMessaging(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize new Messaging: %v", err)
+	}
 
+	type args struct {
+		infrastructure infrastructure.Interactor
+	}
 	tests := []struct {
-		name    string
-		wantErr bool
+		name string
+		args args
+		want *messaging.ImplNotification
 	}{
 		{
 			name: "default case",
+			args: args{
+				infrastructure: i,
+			},
+			want: f,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := messaging.NewPubSubNotificationService(ctx, projectID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf(
-					"NewPubSubNotificationService() error = %v, wantErr %v",
-					err,
-					tt.wantErr,
-				)
-				return
-			}
-			if !tt.wantErr {
-				assert.NotNil(t, got)
+			if got := messaging.NewNotification(tt.args.infrastructure); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMessaging() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -66,14 +74,13 @@ func TestNewPubSubNotificationService(t *testing.T) {
 
 func TestPubSubNotificationService_Notify(t *testing.T) {
 	ctx := context.Background()
-	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
-	srv, err := messaging.NewPubSubNotificationService(ctx, projectID)
+	_, i, err := InitializeTestNewMessaging(ctx)
 	if err != nil {
-		t.Errorf("can't initialize pubsub notification service: %s", err)
-		return
+		t.Errorf("failed to initialize new Messaging: %v", err)
 	}
 
-	if srv == nil {
+	s := messaging.NewNotification(i)
+	if s == nil {
 		t.Errorf("nil pubsub notification service")
 		return
 	}
@@ -87,12 +94,12 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		pubsub  messaging.NotificationService
+		pubsub  messaging.UsecaseNotification
 		args    args
 		wantErr bool
 	}{
 		{
-			pubsub: srv,
+			pubsub: s,
 			args: args{
 				channel: "message.post",
 				el: &feedlib.Message{
@@ -112,7 +119,7 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 		},
 		{
 			name:   "invalid message, missing posted by info",
-			pubsub: srv,
+			pubsub: s,
 			args: args{
 				channel: "message.post",
 				el: &feedlib.Message{
@@ -148,16 +155,91 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 	}
 }
 
+func TestImplNotification_TopicIDs(t *testing.T) {
+	ctx := context.Background()
+	f, _, err := InitializeTestNewMessaging(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize new Messaging: %v", err)
+	}
+	tests := []struct {
+		name    string
+		wantNil bool
+	}{
+		{
+			name:    "default case",
+			wantNil: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := f.TopicIDs()
+			if !tt.wantNil && got == nil {
+				t.Errorf("PubSubNotificationService.TopicIDs() did not expect nil, got %v", got)
+			}
+		})
+	}
+}
+
+func TestPubSubNotificationService_SubscriptionIDs(t *testing.T) {
+	ctx := context.Background()
+	f, _, err := InitializeTestNewMessaging(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize new Messaging: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		want map[string]string
+	}{
+		{
+			name: "default case",
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := f.SubscriptionIDs(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PubSubNotificationService.ReverseSubscriptionIDs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPubSubNotificationService_ReverseSubscriptionIDs(t *testing.T) {
+	ctx := context.Background()
+	f, _, err := InitializeTestNewMessaging(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize new Messaging: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		want map[string]string
+	}{
+		{
+			name: "default case",
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := f.ReverseSubscriptionIDs(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PubSubNotificationService.ReverseSubscriptionIDs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRemotePushService_Push(t *testing.T) {
 	ctx := context.Background()
-	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
-	srv, err := messaging.NewPubSubNotificationService(ctx, projectID)
+	_, i, err := InitializeTestNewMessaging(ctx)
 	if err != nil {
-		t.Errorf("can't initialize pubsub notification service: %s", err)
-		return
+		t.Errorf("failed to initialize new Messaging: %v", err)
 	}
-	if srv == nil {
-		t.Errorf("nil remote FCM push service")
+
+	s := messaging.NewNotification(i)
+	if s == nil {
+		t.Errorf("nil remote Messaging push service")
 		return
 	}
 
@@ -183,7 +265,7 @@ func TestRemotePushService_Push(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := srv.Push(tt.args.ctx, tt.args.sender, tt.args.notificationPayload); (err != nil) != tt.wantErr {
+			if err := s.Push(tt.args.ctx, tt.args.sender, tt.args.notificationPayload); (err != nil) != tt.wantErr {
 				t.Errorf("RemotePushService.Push() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
