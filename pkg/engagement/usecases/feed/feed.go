@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savannahghi/engagementcore/pkg/engagement/application/authorization"
-	"github.com/savannahghi/engagementcore/pkg/engagement/application/authorization/permission"
 	"go.opentelemetry.io/otel"
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
@@ -14,7 +12,6 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 
 	"github.com/savannahghi/feedlib"
-	"github.com/savannahghi/profileutils"
 	"github.com/segmentio/ksuid"
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/exceptions"
@@ -263,19 +260,6 @@ func (fe UseCaseImpl) GetFeed(
 ) (*domain.Feed, error) {
 	ctx, span := tracer.Start(ctx, "GetFeed")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.FeedView)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 
 	feed, err := fe.infrastructure.GetFeed(
 		ctx,
@@ -311,22 +295,8 @@ func (fe UseCaseImpl) GetThinFeed(
 	isAnonymous *bool,
 	flavour feedlib.Flavour,
 ) (*domain.Feed, error) {
-	ctx, span := tracer.Start(ctx, "GetThinFeed")
+	_, span := tracer.Start(ctx, "GetThinFeed")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ThinFeedView)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	feed := &domain.Feed{
 		UID:         *uid,
 		Flavour:     flavour,
@@ -352,20 +322,6 @@ func (fe UseCaseImpl) GetFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "GetFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.FeedItemView)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -389,19 +345,6 @@ func (fe UseCaseImpl) GetNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.NudgeView)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -424,20 +367,6 @@ func (fe UseCaseImpl) GetAction(
 ) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "GetAction")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ActionView)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	action, err := fe.infrastructure.GetAction(ctx, uid, flavour, actionID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -461,19 +390,6 @@ func (fe UseCaseImpl) PublishFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "PublishFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 
 	if item == nil {
 		return nil, fmt.Errorf("can't publish nil feed item")
@@ -483,7 +399,7 @@ func (fe UseCaseImpl) PublishFeedItem(
 		item.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err = helpers.ValidateElement(item)
+	err := helpers.ValidateElement(item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid item: %w", err)
@@ -528,19 +444,6 @@ func (fe UseCaseImpl) DeleteFeedItem(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
 
 	item, err := fe.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil || item == nil {
@@ -580,20 +483,6 @@ func (fe UseCaseImpl) ResolveFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "ResolveFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -647,20 +536,6 @@ func (fe UseCaseImpl) PinFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "PinFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PinItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -714,20 +589,6 @@ func (fe UseCaseImpl) UnpinFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UnpinFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UnpinItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -781,20 +642,6 @@ func (fe UseCaseImpl) UnresolveFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UnresolveFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -848,20 +695,6 @@ func (fe UseCaseImpl) HideFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "HideFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -915,19 +748,6 @@ func (fe UseCaseImpl) ShowFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "ShowFeedItem")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 
 	item, err := fe.infrastructure.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
@@ -980,19 +800,6 @@ func (fe UseCaseImpl) Labels(
 ) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "Labels")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.GetLabel)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 
 	return fe.infrastructure.Labels(ctx, uid, flavour)
 }
@@ -1006,19 +813,6 @@ func (fe UseCaseImpl) SaveLabel(
 ) error {
 	ctx, span := tracer.Start(ctx, "SaveLabel")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.CreateLabel)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
 
 	return fe.infrastructure.SaveLabel(ctx, uid, flavour, label)
 }
@@ -1031,20 +825,6 @@ func (fe UseCaseImpl) UnreadPersistentItems(
 ) (int, error) {
 	ctx, span := tracer.Start(ctx, "UnreadPersistentItems")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return 0, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UnreadPersistentItems)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return 0, err
-	}
-	if !isAuthorized {
-		return 0, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	return fe.infrastructure.UnreadPersistentItems(ctx, uid, flavour)
 }
 
@@ -1056,19 +836,6 @@ func (fe UseCaseImpl) UpdateUnreadPersistentItemsCount(
 ) error {
 	ctx, span := tracer.Start(ctx, "UpdateUnreadPersistentItemsCount")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UpdateUnreadPersistentItems)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
 	return fe.infrastructure.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 }
 
@@ -1094,19 +861,6 @@ func (fe UseCaseImpl) PublishNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "PublishNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 
 	if nudge == nil {
 		return nil, fmt.Errorf("can't publish nil nudge")
@@ -1116,7 +870,7 @@ func (fe UseCaseImpl) PublishNudge(
 		nudge.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err = helpers.ValidateElement(nudge)
+	err := helpers.ValidateElement(nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid nudge: %w", err)
@@ -1160,20 +914,6 @@ func (fe UseCaseImpl) ResolveNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "ResolveNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1226,20 +966,6 @@ func (fe UseCaseImpl) UnresolveNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "UnresolveNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1292,20 +1018,6 @@ func (fe UseCaseImpl) HideNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "HideNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1357,19 +1069,6 @@ func (fe UseCaseImpl) ShowNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "ShowNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
 
 	nudge, err := fe.infrastructure.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
@@ -1423,20 +1122,6 @@ func (fe UseCaseImpl) DeleteNudge(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteNudge")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
-
 	nudge, err := fe.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil || nudge == nil {
 		return nil // no error, "re-deleting" a nudge should not cause an error
@@ -1488,20 +1173,6 @@ func (fe UseCaseImpl) PublishAction(
 ) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "PublishAction")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	if action == nil {
 		return nil, fmt.Errorf("can't publish nil nudge")
 	}
@@ -1510,7 +1181,7 @@ func (fe UseCaseImpl) PublishAction(
 		action.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err = helpers.ValidateElement(action)
+	err := helpers.ValidateElement(action)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid action: %w", err)
@@ -1549,20 +1220,6 @@ func (fe UseCaseImpl) DeleteAction(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteAction")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
-
 	action, err := fe.GetAction(ctx, uid, flavour, actionID)
 	if err != nil || action == nil {
 		return nil // no harm "re-deleting" an already deleted action
@@ -1601,20 +1258,6 @@ func (fe UseCaseImpl) PostMessage(
 ) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "PostMessage")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PostMessage)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	if message == nil {
 		return nil, fmt.Errorf("can't post nil message")
 	}
@@ -1627,7 +1270,7 @@ func (fe UseCaseImpl) PostMessage(
 		message.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err = helpers.ValidateElement(message)
+	err := helpers.ValidateElement(message)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid message: %w", err)
@@ -1673,20 +1316,6 @@ func (fe UseCaseImpl) DeleteMessage(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteMessage")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteMessage)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
-
 	message, err := fe.infrastructure.GetMessage(
 		ctx,
 		uid,
@@ -1745,20 +1374,6 @@ func (fe UseCaseImpl) ProcessEvent(
 ) error {
 	ctx, span := tracer.Start(ctx, "ProcessEvent")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ProcessEvent)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
-	}
-
 	if event == nil {
 		return fmt.Errorf("can't process nil event")
 	}
@@ -1775,7 +1390,7 @@ func (fe UseCaseImpl) ProcessEvent(
 		event.Context.UserID = uid
 	}
 
-	err = helpers.ValidateElement(event)
+	err := helpers.ValidateElement(event)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("invalid event: %w", err)
@@ -1822,20 +1437,6 @@ func (fe UseCaseImpl) GetDefaultNudgeByTitle(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetDefaultNudgeByTitle")
 	defer span.End()
-	user, err := profileutils.GetLoggedInUser(ctx)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("unable to get user: %w", err)
-	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.NudgeView)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, err
-	}
-	if !isAuthorized {
-		return nil, fmt.Errorf("user not authorized to access this resource")
-	}
-
 	nudge, err := fe.infrastructure.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 	if err != nil {
 		helpers.RecordSpanError(span, err)

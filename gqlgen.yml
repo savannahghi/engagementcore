@@ -21,7 +21,6 @@ resolver:
 autobind:
   - "github.com/savannahghi/engagementcore/pkg/engagement/domain"
   - "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/library"
-  - "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/scheduling"
   - "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/uploads"
   - "github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
   - "github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
