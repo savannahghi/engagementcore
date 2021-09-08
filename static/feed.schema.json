@@ -19,6 +19,9 @@
     "isAnonymous": {
       "type": "boolean"
     },
+    "feature_image": {
+      "type": "string"
+    },
     "flavour": {
       "type": "string",
       "$ref": "https://schema.healthcloud.co.ke/flavour.schema.json#/definitions/flavour"
