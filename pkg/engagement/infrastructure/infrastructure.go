@@ -25,7 +25,6 @@ import (
 type Interactor struct {
 	repository.Repository
 	*fcm.ServiceFCMImpl
-	*fcm.RemotePushService
 	*library.ServiceLibraryImpl
 	*mail.ServiceMailImpl
 	messaging.NotificationService
@@ -52,10 +51,6 @@ func NewInteractor() Interactor {
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 
 	fcmOne := fcm.NewService(db, onboarding)
-	push, err := fcm.NewRemotePushService(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	lib := library.NewLibraryService(onboarding)
 
@@ -79,7 +74,6 @@ func NewInteractor() Interactor {
 	return Interactor{
 		db,
 		fcmOne,
-		push,
 		lib,
 		mail,
 		pubsub,

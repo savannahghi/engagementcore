@@ -1,4 +1,4 @@
-# Engagement service
+# Engagement Library
 
 [![Maintained](https://img.shields.io/badge/Maintained-Actively-informational.svg?style=for-the-badge)](https://shields.io/) 
 
@@ -6,7 +6,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) ![Linting and Tests](https://github.com/savannahghi/engagementcore/actions/workflows/ci.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/savannahghi/engagementcore/badge.svg?branch=develop)](https://coveralls.io/github/savannahghi/engagementcore?branch=develop)
 
-A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
+A helper library for the [engagement-service](https://github.com/savannahghi/engagementcore-service) and other services that will contain some common functionalities used by these services
 
 ## Description
 
@@ -36,6 +36,21 @@ A cleanly architected project should be:
 - _Independent of any external agency_: In fact your business rules simply
   don’t know anything at all about the outside world.
 
+## How to use this library
+
+This project uses [semantic versioning](https://semver.org/) and can be imported as a package in the (engagement-service)[https://github.com/savannahghi/engagementcore-service] or any other service. 
+
+after importing the package, you can create a new instance from the `usecases`, and use the functionality exposed
+
+## How to deploy changes for this projects
+
+This is a library that uses semantic versioning hence every change made to the library, after approval and release, it must be tagged, then upgrade the (engagement-service)[https://github.com/savannahghi/engagementcore-service] with the latest tag version.
+
+tagging 
+```sh
+  git tag -m "v0.0.n" "v0.0.n"
+  git push --tags
+ ```
 ## This project has 5 layers:
 
 ### Domain Layer

@@ -7,6 +7,7 @@ import (
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -23,6 +24,8 @@ var tracer = otel.Tracer("github.com/savannahghi/engagementcore/pkg/engagement/s
 // messaging related constants
 const (
 	hostNameEnvVarName = "SERVICE_HOST" // host at which this service is deployed
+	fcmServiceName     = "fcm"
+	fcmVersion         = ""
 )
 
 // NotificationService represents logic required to communicate with pubsub
@@ -45,6 +48,12 @@ type NotificationService interface {
 	SubscriptionIDs() map[string]string
 
 	ReverseSubscriptionIDs() map[string]string
+
+	Push(
+		ctx context.Context,
+		sender string,
+		payload firebasetools.SendNotificationPayload,
+	) error
 }
 
 // NewPubSubNotificationService initializes a live notification service
@@ -56,7 +65,6 @@ func NewPubSubNotificationService(
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize pubsub client: %w", err)
 	}
-
 	environment, err := serverutils.GetEnvVar(serverutils.Environment)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get the environment variable `%s`: %w", serverutils.Environment, err)
@@ -207,5 +215,44 @@ func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
 // ReverseSubscriptionIDs ...
 // TODO implement this
 func (ps PubSubNotificationService) ReverseSubscriptionIDs() map[string]string {
+	return nil
+}
+
+// Push instructs a remote FCM service to send a push notification.
+//
+// This is done over Google Cloud Pub-Sub.
+func (ps PubSubNotificationService) Push(
+	ctx context.Context,
+	sender string,
+	notificationPayload firebasetools.SendNotificationPayload,
+) error {
+	ctx, span := tracer.Start(ctx, "Push")
+	defer span.End()
+	if err := ps.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf(
+			"pubsub service precondition check failed when notifying: %w", err)
+	}
+	env := serverutils.GetRunningEnvironment()
+	payload, err := json.Marshal(notificationPayload)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("can't marshal notification payload: %w", err)
+	}
+
+	err = pubsubtools.PublishToPubsub(
+		ctx,
+		ps.client,
+		helpers.AddPubSubNamespace(common.FcmPublishTopic),
+		env,
+		fcmServiceName,
+		fcmVersion,
+		payload,
+	)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("can't publish FCM message to pubsub: %w", err)
+	}
+
 	return nil
 }
