@@ -7,6 +7,7 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/library"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/mail"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/messaging"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/onboarding"
 )
 
 // Interactor is an implementation of the usecases interface
@@ -17,6 +18,7 @@ type Interactor struct {
 	*library.ImplLibrary
 	*mail.ImplMail
 	*messaging.ImplNotification
+	*onboarding.ImplOnboarding
 }
 
 // NewUsecasesInteractor initializes a new usecases interactor
@@ -28,6 +30,7 @@ func NewUsecasesInteractor(infrastructure infrastructure.Interactor) Interactor 
 	library := library.NewLibrary(infrastructure)
 	mail := mail.NewMail(infrastructure)
 	messaging := messaging.NewNotification(infrastructure)
+	onboarding := onboarding.NewOnboarding(infrastructure)
 
 	return Interactor{
 		feed,
@@ -36,5 +39,6 @@ func NewUsecasesInteractor(infrastructure infrastructure.Interactor) Interactor 
 		library,
 		mail,
 		messaging,
+		onboarding,
 	}
 }
