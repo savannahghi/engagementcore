@@ -118,7 +118,7 @@ jobs:
           misspell -error .
           gosec -exclude=G304,G101 ./...
           go-acc -o coverage.txt --ignore generated,cmd  ./... -- -timeout 60m
-          grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "mocks.go" | grep -v "mock.go" | grep -v "*resolver*go" | grep -v "server.go" > coverage.out
+          grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "mocks.go" | grep -v "*mocks.go" | grep -v "mock.go" | grep -v "*mock.go" | grep -v "*resolver*go" | grep -v "server.go" > coverage.out
           go tool cover -html=coverage.out -o coverage.html
           gocov convert coverage.out > coverage.json
           gocov report coverage.json > coverage_report.txt
@@ -135,6 +135,6 @@ jobs:
 
       - name: Quality Gate - Test coverage shall be above threshold
         env:
-            TESTCOVERAGE_THRESHOLD: 68
+            TESTCOVERAGE_THRESHOLD: 70.96
         run: |
           bash scripts/coverage.sh
