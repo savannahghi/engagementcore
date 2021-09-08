@@ -381,7 +381,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.SentEmailTopic):
-		err = p.usecases.SendEmail(ctx, m)
+		err = p.usecases.SendNotificationEmail(ctx, m)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,

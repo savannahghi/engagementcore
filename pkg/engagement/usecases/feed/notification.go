@@ -180,7 +180,7 @@ type NotificationUsecases interface {
 		m *pubsubtools.PubSubPayload,
 	) error
 
-	SendEmail(
+	SendNotificationEmail(
 		ctx context.Context,
 		m *pubsubtools.PubSubPayload,
 	) error
@@ -915,12 +915,12 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	return nil
 }
 
-// SendEmail sends an email
-func (n NotificationImpl) SendEmail(
+// SendNotificationEmail sends an email
+func (n NotificationImpl) SendNotificationEmail(
 	ctx context.Context,
 	m *pubsubtools.PubSubPayload,
 ) error {
-	ctx, span := tracer.Start(ctx, "SendEmail")
+	ctx, span := tracer.Start(ctx, "SendNotificationEmail")
 	defer span.End()
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")

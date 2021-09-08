@@ -1473,7 +1473,7 @@ func TestUpdateInbox(t *testing.T) {
 	}
 }
 
-func TestNotificationImpl_SendEmail(t *testing.T) {
+func TestNotificationImpl_SendNotificationEmail(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	notify, err := InitializeTestNewNotification(ctx)
@@ -1532,9 +1532,9 @@ func TestNotificationImpl_SendEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := notify.SendEmail(tt.args.ctx, tt.args.m)
+			err := notify.SendNotificationEmail(tt.args.ctx, tt.args.m)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NotificationImpl.SendEmail() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NotificationImpl.SendNotificationEmail() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantErr {
