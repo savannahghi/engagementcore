@@ -73,15 +73,6 @@ func SharedUnauthenticatedRoutes(ctx context.Context, r *mux.Router) {
 		http.MethodOptions,
 	).HandlerFunc(h.Upload())
 
-	// static files
-	schemaFileHandler, err := rest.SchemaHandler()
-	if err != nil {
-		log.Fatal(
-			"can't instantiate schema file handler: %w",
-			err,
-		)
-	}
-	r.PathPrefix("/schema/").Handler(schemaFileHandler)
 }
 
 // SharedAuthenticatedISCRoutes return ISC REST routes shared by open/closed engagement services
