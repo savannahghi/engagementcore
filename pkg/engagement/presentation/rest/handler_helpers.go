@@ -10,7 +10,6 @@ import (
 
 	"firebase.google.com/go/auth"
 	"github.com/gorilla/mux"
-	"github.com/markbates/pkger"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/exceptions"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/errorcodeutil"
@@ -255,17 +254,6 @@ func getStringVar(r *http.Request, varName string) (string, error) {
 		return "", fmt.Errorf("the request does not have a path var named `%s`", varName)
 	}
 	return pathVar, nil
-}
-
-// SchemaHandler ...
-func SchemaHandler() (http.Handler, error) {
-	f, err := pkger.Open("github.com/savannahghi/engagementcore:/static/")
-	if err != nil {
-		return nil, fmt.Errorf("can't open pkger schema dir: %w", err)
-	}
-	defer f.Close()
-
-	return http.StripPrefix("/schema", http.FileServer(f)), nil
 }
 
 func addUIDToContext(ctx context.Context, uid string) context.Context {
