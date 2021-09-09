@@ -153,7 +153,17 @@ func patchNudge(
 
 	respondWithJSON(w, http.StatusOK, marshalled)
 }
+func getplayMP4QueryParam(r *http.Request, paramName string) (bool, error) {
+	if r == nil {
+		return false, fmt.Errorf("can't get string var from a nil request")
+	}
 
+	val := r.FormValue(paramName)
+	if val == "true" {
+		return true, nil
+	}
+	return false, nil
+}
 func getOptionalBooleanFilterQueryParam(
 	r *http.Request,
 	paramName string,
@@ -175,6 +185,9 @@ func getRequiredBooleanFilterQueryParam(
 	r *http.Request,
 	paramName string,
 ) (feedlib.BooleanFilter, error) {
+	if r == nil {
+		return "", fmt.Errorf("request cannot be nil")
+	}
 	val := r.FormValue(paramName)
 	if val == "" {
 		return "", fmt.Errorf("required BooleanFilter `%s` not set", paramName)

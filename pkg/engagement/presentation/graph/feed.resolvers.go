@@ -201,7 +201,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feedlib.Fla
 	return true, nil
 }
 
-func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
+func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -213,6 +213,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, is
 		&uid,
 		&isAnonymous,
 		flavour,
+		playMp4,
 		persistent,
 		status,
 		visibility,

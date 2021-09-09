@@ -11,7 +11,7 @@ exec:
 
 # model:
 #   filename: pkg/engagement/domain/model/models_gen.go
-#   package: model
+#   package:  model
 
 resolver:
   layout: follow-schema

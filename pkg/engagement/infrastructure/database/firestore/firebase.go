@@ -127,6 +127,7 @@ func (fr Repository) GetFeed(
 	uid *string,
 	isAnonymous *bool,
 	flavour feedlib.Flavour,
+	playMP4 bool,
 	persistent feedlib.BooleanFilter,
 	status *feedlib.Status,
 	visibility *feedlib.Visibility,
@@ -201,6 +202,7 @@ func (fr Repository) GetFeed(
 			uid,
 			isAnonymous,
 			flavour,
+			playMP4,
 			persistent,
 			status,
 			visibility,
@@ -214,7 +216,7 @@ func (fr Repository) GetFeed(
 		Flavour:     flavour,
 		Actions:     actions,
 		Nudges:      nudges,
-		Items:       feedItemsFromCMSFeedTag(ctx, flavour),
+		Items:       feedItemsFromCMSFeedTag(ctx, flavour,playMP4),
 		IsAnonymous: isAnonymous,
 	}
 

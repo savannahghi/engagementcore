@@ -445,6 +445,12 @@ func (p PresentationHandlersImpl) GetFeed() http.HandlerFunc {
 			return
 		}
 
+		playMP4, err := getplayMP4QueryParam(r, "playMP4")
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
 		filterParams, err := getOptionalFilterParamsQueryParam(
 			r,
 			"filterParams",
@@ -459,6 +465,7 @@ func (p PresentationHandlersImpl) GetFeed() http.HandlerFunc {
 			uid,
 			anonymous,
 			*flavour,
+			playMP4,
 			persistent,
 			status,
 			visibility,
@@ -469,13 +476,14 @@ func (p PresentationHandlersImpl) GetFeed() http.HandlerFunc {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
-		marshalled, err := feed.ValidateAndMarshal()
+		bs, err := json.Marshal(feed)
+
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		respondWithJSON(w, http.StatusOK, marshalled)
+		respondWithJSON(w, http.StatusOK, bs)
 	}
 }
 

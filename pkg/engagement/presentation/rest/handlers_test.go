@@ -672,7 +672,7 @@ func TestGetFeed(t *testing.T) {
 			name: "successful fetch of a consumer feed",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%v/?persistent=BOTH",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&playMP4=false",
 					baseURL,
 					uid,
 					consumer,
@@ -689,7 +689,7 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with a status filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&playMP4=true",
 					baseURL,
 					uid,
 					consumer,
@@ -705,7 +705,7 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with a visibility filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW&playMP4=true",
 					baseURL,
 					uid,
 					consumer,
@@ -721,7 +721,7 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with an expired filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE&playMP4=true",
 					baseURL,
 					uid,
 					consumer,
@@ -737,7 +737,7 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with an expired filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE&filterParams=%s",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&playMP4=true&visibility=SHOW&expired=FALSE&filterParams=%s",
 					baseURL,
 					uid,
 					consumer,
@@ -759,6 +759,19 @@ func TestGetFeed(t *testing.T) {
 					uid,
 					invalidConsumer,
 					anonymous,
+				),
+				httpMethod: http.MethodGet,
+				body:       nil,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "invalid - invalid url",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/feed/invalidurl",
+					baseURL,
 				),
 				httpMethod: http.MethodGet,
 				body:       nil,
@@ -807,7 +820,7 @@ func TestGetFeed(t *testing.T) {
 
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				t.Errorf("can't read response body: %v", err)
+				t.Errorf("cannot read response body: %v", err)
 				return
 			}
 
@@ -6034,7 +6047,7 @@ func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 			}
 
 			if resp.StatusCode != tt.wantStatus {
-				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+				t.Errorf("expected status %d, got status %s", tt.wantStatus, resp.Status)
 				return
 			}
 		})

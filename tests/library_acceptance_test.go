@@ -22,12 +22,12 @@ func TestGraphQLGetFeed(t *testing.T) {
 	headers := getGraphQLHeaders(t)
 	gql := map[string]interface{}{}
 	gql["query"] = `
-	query getFeed($flavour: Flavour!,$isAnonymous: Boolean!,
+	query getFeed($flavour: Flavour!,$isAnonymous: Boolean!,$playMP4:Boolean!,
 		$persistent: BooleanFilter!,
 		$status: Status,
 		  $visibility: Visibility,
 		  $expired: BooleanFilter){
-	   getFeed(flavour:$flavour,isAnonymous:$isAnonymous,
+	   getFeed(flavour:$flavour,playMP4:$playMP4, isAnonymous:$isAnonymous,
 		persistent:$persistent, status:$status, 
 		visibility:$visibility, expired:$expired  ){
 		id
@@ -114,6 +114,7 @@ func TestGraphQLGetFeed(t *testing.T) {
 
 	gql["variables"] = map[string]interface{}{
 		"flavour":     "CONSUMER",
+		"playMP4":     true,
 		"isAnonymous": false,
 		"persistent":  "BOTH",
 		"status":      "PENDING",
@@ -148,6 +149,14 @@ func TestGraphQLGetFeed(t *testing.T) {
 				body: validQueryReader,
 			},
 			wantStatus: 200,
+			wantErr:    false,
+		},
+		{
+			name: "valid query",
+			args: args{
+				body: nil,
+			},
+			wantStatus: 400,
 			wantErr:    false,
 		},
 	}

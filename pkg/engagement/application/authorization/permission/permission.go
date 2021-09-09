@@ -46,7 +46,7 @@ var DeleteItem = profileutils.PermissionInput{
 	Action:   "delete",
 }
 
-// ResolveItem describes the resolve permissions on an item
+// ResolveItem describes the resolve permissions on a feed item
 var ResolveItem = profileutils.PermissionInput{
 	Resource: "resolve_item",
 	Action:   "resolve",
