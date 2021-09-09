@@ -210,6 +210,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
+    playMP4: Boolean!
     isAnonymous: Boolean!
     persistent: BooleanFilter!
     status: Status

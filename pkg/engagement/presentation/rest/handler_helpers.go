@@ -154,7 +154,20 @@ func patchNudge(
 
 	respondWithJSON(w, http.StatusOK, marshalled)
 }
-
+func getplayMP4QueryParam(r *http.Request, playMP4 string) (bool, error) {
+	if r == nil {
+		return false, fmt.Errorf("can't get string var from a nil request")
+	}
+	path := mux.Vars(r)
+	pathVar, found := path[playMP4]
+	if !found {
+		return false, nil
+	}
+	if pathVar == "true" {
+		return true, nil
+	}
+	return false, nil
+}
 func getOptionalBooleanFilterQueryParam(
 	r *http.Request,
 	paramName string,
