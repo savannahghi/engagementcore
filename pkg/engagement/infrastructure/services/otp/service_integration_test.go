@@ -12,7 +12,6 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/otp"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
@@ -32,7 +31,6 @@ func newTestOtpSService(t *testing.T) (*otp.ServiceOTPImpl, error) {
 		ctx,
 		serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName),
 	)
-	whatsapp := whatsapp.NewService()
 	mail := mail.NewService(fr)
 	sms := sms.NewService(fr, ps)
 	twilio := twilio.NewService(sms, fr)
@@ -44,7 +42,7 @@ func newTestOtpSService(t *testing.T) (*otp.ServiceOTPImpl, error) {
 		)
 		return nil, err
 	}
-	return otp.NewService(whatsapp, mail, sms, twilio), nil
+	return otp.NewService(mail, sms, twilio), nil
 }
 
 func TestNewRemoteOtpService(t *testing.T) {

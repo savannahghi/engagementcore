@@ -17,8 +17,7 @@ import (
 	smsMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms/mock"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
 	twilioMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio/mock"
-	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/whatsapp"
-	whatsappMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/whatsapp/mock"
+
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
@@ -26,9 +25,6 @@ import (
 
 var fakeMail mailMock.FakeServiceMail
 var mailSvc mail.ServiceMail = &fakeMail
-
-var fakeWhatsapp whatsappMock.FakeServiceWhatsapp
-var whatsappSvc whatsapp.ServiceWhatsapp = &fakeWhatsapp
 
 var fakeSMS smsMock.FakeServiceSMS
 var smsSvs sms.ServiceSMS = &fakeSMS
@@ -101,7 +97,7 @@ func TestNormalizeMSISDN(t *testing.T) {
 
 func TestService_GenerateAndSendOTP(t *testing.T) {
 	ctx := context.Background()
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 	appID := uuid.New().String()
 	type args struct {
 		ctx    context.Context
@@ -185,7 +181,7 @@ func TestService_GenerateAndSendOTP(t *testing.T) {
 
 func TestService_SendOTPToEmail(t *testing.T) {
 	ctx := context.Background()
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 	validEmail := ValidTestEmail
 	phoneNumber := interserviceclient.TestUserPhoneNumber
 	appID := uuid.New().String()
@@ -320,7 +316,7 @@ func TestService_SendOTPToEmail(t *testing.T) {
 
 func TestService_GenerateRetryOtp(t *testing.T) {
 	ctx := context.Background()
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 	phoneNumber := interserviceclient.TestUserPhoneNumber
 	invalidPhoneNumber := "this is definitely not a number"
 
@@ -396,7 +392,7 @@ func TestService_GenerateRetryOtp(t *testing.T) {
 					return nil
 				}
 
-				fakeWhatsapp.PhoneNumberVerificationCodeFn = func(
+				fakeTwilio.PhoneNumberVerificationCodeFn = func(
 					ctx context.Context,
 					to string,
 					code string,
@@ -415,7 +411,7 @@ func TestService_GenerateRetryOtp(t *testing.T) {
 					return nil
 				}
 
-				fakeWhatsapp.PhoneNumberVerificationCodeFn = func(
+				fakeTwilio.PhoneNumberVerificationCodeFn = func(
 					ctx context.Context,
 					to string,
 					code string,
@@ -467,7 +463,7 @@ func TestService_GenerateRetryOtp(t *testing.T) {
 
 func TestService_GenerateOTP(t *testing.T) {
 	ctx := context.Background()
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 
 	type args struct {
 		ctx context.Context
@@ -516,7 +512,7 @@ func TestService_EmailVerificationOtp(t *testing.T) {
 	invalidEmail := "not an email address"
 	integrationTestEmail := otp.ITEmail
 
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 	type args struct {
 		ctx   context.Context
 		email *string
@@ -814,7 +810,7 @@ func TestService_VerifyEmailOtp(t *testing.T) {
 
 func Test_sendOtp(t *testing.T) {
 	ctx := context.Background()
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 	appID := uuid.New().String()
 	type args struct {
 		ctx                   context.Context
@@ -919,7 +915,7 @@ func Test_sendOtp(t *testing.T) {
 
 func TestService_SendTemporaryPIN(t *testing.T) {
 	ctx := context.Background()
-	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	service := otp.NewService(mailSvc, smsSvs, twilioSvc)
 	phone := interserviceclient.TestUserPhoneNumber
 
 	type args struct {
@@ -1013,17 +1009,17 @@ func TestService_SendTemporaryPIN(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "sad: error when sending via whatsapp" {
-				fakeWhatsapp.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
+				fakeTwilio.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
 					return false, fmt.Errorf("unable to send whatsapp")
 				}
 			}
 			if tt.name == "sad: unable to send whatsapp" {
-				fakeWhatsapp.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
+				fakeTwilio.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
 					return false, nil
 				}
 			}
 			if tt.name == "happy: sent whatsapp" {
-				fakeWhatsapp.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
+				fakeTwilio.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
 					return true, nil
 				}
 			}

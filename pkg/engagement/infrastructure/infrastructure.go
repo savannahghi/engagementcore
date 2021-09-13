@@ -15,7 +15,6 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/surveys"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/uploads"
-	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/engagementcore/pkg/engagement/repository"
 	"github.com/savannahghi/serverutils"
 )
@@ -34,7 +33,6 @@ type Interactor struct {
 	*surveys.ServiceSurveyImpl
 	*twilio.ServiceTwilioImpl
 	*uploads.ServiceUploadImpl
-	*whatsapp.ServiceWhatsappImpl
 }
 
 // NewInteractor initializes a new infrastructure interactor
@@ -61,13 +59,12 @@ func NewInteractor() Interactor {
 		log.Fatal(err)
 	}
 
-	whatsapp := whatsapp.NewService()
 	sms := sms.NewService(db, pubsub)
 	twilio := twilio.NewService(*sms, db)
 
 	uploads := uploads.NewUploadsService()
 
-	otp := otp.NewService(*whatsapp, *mail, *sms, twilio)
+	otp := otp.NewService(*mail, *sms, twilio)
 
 	surveys := surveys.NewService(db)
 
@@ -83,6 +80,5 @@ func NewInteractor() Interactor {
 		surveys,
 		twilio,
 		uploads,
-		whatsapp,
 	}
 }
