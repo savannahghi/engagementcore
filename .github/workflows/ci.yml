@@ -62,6 +62,7 @@ env:
   TESTING_TWILIO_ACCOUNT_SID: ${{ secrets.TESTING_TWILIO_ACCOUNT_SID }}
   TEST_TWILIO_SMS_NUMBER: ${{ secrets.TEST_TWILIO_SMS_NUMBER }}
   SCHEMA_HOST: ${{ secrets.SCHEMA_HOST }}
+  JAEGER_URL: ${{ secrets.JAEGER_URL }}
 
   # Schema Registry CLI command version
   CLI_VERSION: v0.0.1
@@ -135,6 +136,6 @@ jobs:
 
       - name: Quality Gate - Test coverage shall be above threshold
         env:
-            TESTCOVERAGE_THRESHOLD: 71.80
+            TESTCOVERAGE_THRESHOLD: 71.60
         run: |
           bash scripts/coverage.sh
