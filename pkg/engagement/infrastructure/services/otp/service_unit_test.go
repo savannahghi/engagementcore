@@ -625,144 +625,192 @@ func TestService_EmailVerificationOtp(t *testing.T) {
 	}
 }
 
-// func TestService_VerifyOtp(t *testing.T) {
-// 	phoneNumber := profileutils.TestUserPhoneNumber
-// 	invalidNumber := "1111"
-// 	srv := otp.NewService()
-// 	assert.NotNil(t, srv, "service should not be bil")
-// 	ctx := context.Background()
-// 	// generate the otp
-// 	otp_code, err := srv.GenerateRetryOTP(ctx, &phoneNumber, 1)
-// 	if err == nil {
-// 		assert.NotNil(t, otp_code)
-// 	}
+func TestService_VerifyOtp(t *testing.T) {
+	phoneNumber := interserviceclient.TestUserPhoneNumber
+	invalidNumber := "1111"
+	var srv otp.ServiceOTP = &fakeOTP
+	assert.NotNil(t, srv, "service should not be bil")
+	ctx := context.Background()
 
-// 	testPhone := otp.ITPhoneNumber
-// 	testCode := otp.ITCode
+	otp_code := "123456"
+	testPhone := otp.ITPhoneNumber
+	testCode := otp.ITCode
 
-// 	type args struct {
-// 		ctx              context.Context
-// 		msisdn           *string
-// 		verificationCode *string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		want    bool
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "verify otp happy case",
-// 			args: args{
-// 				ctx:              ctx,
-// 				msisdn:           &phoneNumber,
-// 				verificationCode: &otp_code,
-// 			},
-// 			wantErr: false,
-// 			want:    true,
-// 		},
-// 		{
-// 			name: "verify otp invalid phonenumber",
-// 			args: args{
-// 				ctx:              ctx,
-// 				msisdn:           &invalidNumber,
-// 				verificationCode: &otp_code,
-// 			},
-// 			wantErr: true,
-// 			want:    false,
-// 		},
-// 		{
-// 			name: "verify otp I.T case",
-// 			args: args{
-// 				ctx:              ctx,
-// 				msisdn:           &testPhone,
-// 				verificationCode: &testCode,
-// 			},
-// 			wantErr: false,
-// 			want:    true,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got, err := srv.VerifyOtp(tt.args.ctx, tt.args.msisdn, tt.args.verificationCode)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("Service.VerifyOtp() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if got != tt.want {
-// 				t.Errorf("Service.VerifyOtp() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+	type args struct {
+		ctx              context.Context
+		msisdn           *string
+		verificationCode *string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "verify otp happy case",
+			args: args{
+				ctx:              ctx,
+				msisdn:           &phoneNumber,
+				verificationCode: &otp_code,
+			},
+			wantErr: false,
+			want:    true,
+		},
+		{
+			name: "verify otp invalid phonenumber",
+			args: args{
+				ctx:              ctx,
+				msisdn:           &invalidNumber,
+				verificationCode: &otp_code,
+			},
+			wantErr: true,
+			want:    false,
+		},
+		{
+			name: "verify otp I.T case",
+			args: args{
+				ctx:              ctx,
+				msisdn:           &testPhone,
+				verificationCode: &testCode,
+			},
+			wantErr: false,
+			want:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "verify otp happy case" {
+				fakeOTP.VerifyOtpFn = func(
+					ctx context.Context,
+					email *string,
+					verificationCode *string,
+				) (bool, error) {
+					return true, nil
+				}
+			}
+			if tt.name == "verify otp invalid phonenumber" {
+				fakeOTP.VerifyOtpFn = func(
+					ctx context.Context,
+					email *string,
+					verificationCode *string,
+				) (bool, error) {
+					return false, fmt.Errorf("test error")
+				}
+			}
+			if tt.name == "verify otp I.T case" {
+				fakeOTP.VerifyOtpFn = func(
+					ctx context.Context,
+					email *string,
+					verificationCode *string,
+				) (bool, error) {
+					return true, nil
+				}
+			}
+			got, err := srv.VerifyOtp(tt.args.ctx, tt.args.msisdn, tt.args.verificationCode)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.VerifyOtp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Service.VerifyOtp() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
-// func TestService_VerifyEmailOtp(t *testing.T) {
-// 	s := otp.NewService()
-// 	ctx := context.Background()
-// 	email := ValidTestEmail
-// 	testEmail := otp.ITEmail
-// 	testCode := otp.ITCode
-// 	randomCode := "random"
-// 	otp, err := s.EmailVerificationOtp(ctx, &email)
-// 	if err != nil {
-// 		t.Errorf("failed to send test email OTP")
-// 		return
-// 	}
-// 	type args struct {
-// 		ctx              context.Context
-// 		email            *string
-// 		verificationCode *string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		wantErr bool
-// 		want    bool
-// 	}{
-// 		{
-// 			name: "happy case",
-// 			args: args{
-// 				ctx:              ctx,
-// 				email:            &email,
-// 				verificationCode: &otp,
-// 			},
-// 			wantErr: false,
-// 			want:    true,
-// 		},
-// 		{
-// 			name: "happy case - integration tests",
-// 			args: args{
-// 				ctx:              ctx,
-// 				email:            &testEmail,
-// 				verificationCode: &testCode,
-// 			},
-// 			wantErr: false,
-// 			want:    true,
-// 		},
-// 		{
-// 			name: "sad case",
-// 			args: args{
-// 				ctx:              ctx,
-// 				email:            &testEmail,
-// 				verificationCode: &randomCode,
-// 			},
-// 			wantErr: true,
-// 			want:    false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			verify, err := s.VerifyEmailOtp(tt.args.ctx, tt.args.email, tt.args.verificationCode)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("Service.VerifyEmailOtp() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if verify != tt.want {
-// 				t.Errorf("Service.VerifyEmailOtp() = %v, want %v", verify, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestService_VerifyEmailOtp(t *testing.T) {
+	var s otp.ServiceOTP = &fakeOTP
+	ctx := context.Background()
+	email := ValidTestEmail
+	testEmail := otp.ITEmail
+	testCode := otp.ITCode
+	randomCode := "random"
+	otp := "123456"
+	type args struct {
+		ctx              context.Context
+		email            *string
+		verificationCode *string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    bool
+	}{
+		{
+			name: "happy case",
+			args: args{
+				ctx:              ctx,
+				email:            &email,
+				verificationCode: &otp,
+			},
+			wantErr: false,
+			want:    true,
+		},
+		{
+			name: "happy case - integration tests",
+			args: args{
+				ctx:              ctx,
+				email:            &testEmail,
+				verificationCode: &testCode,
+			},
+			wantErr: false,
+			want:    true,
+		},
+		{
+			name: "sad case",
+			args: args{
+				ctx:              ctx,
+				email:            &testEmail,
+				verificationCode: &randomCode,
+			},
+			wantErr: true,
+			want:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "happy case" {
+				fakeOTP.VerifyEmailOtpFn = func(
+					ctx context.Context,
+					email *string,
+					verificationCode *string,
+				) (bool, error) {
+					return true, nil
+				}
+			}
+
+			if tt.name == "happy case - integration tests" {
+				fakeOTP.VerifyEmailOtpFn = func(
+					ctx context.Context,
+					email *string,
+					verificationCode *string,
+				) (bool, error) {
+					return true, nil
+				}
+			}
+
+			if tt.name == "sad case" {
+				fakeOTP.VerifyEmailOtpFn = func(
+					ctx context.Context,
+					email *string,
+					verificationCode *string,
+				) (bool, error) {
+					return false, fmt.Errorf("test error")
+				}
+			}
+			verify, err := s.VerifyEmailOtp(tt.args.ctx, tt.args.email, tt.args.verificationCode)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.VerifyEmailOtp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if verify != tt.want {
+				t.Errorf("Service.VerifyEmailOtp() = %v, want %v", verify, tt.want)
+			}
+		})
+	}
+}
 
 func Test_sendOtp(t *testing.T) {
 	ctx := context.Background()
