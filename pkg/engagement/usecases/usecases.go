@@ -9,6 +9,7 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/messaging"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/onboarding"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/otp"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/sms"
 )
 
 // Interactor is an implementation of the usecases interface
@@ -21,6 +22,7 @@ type Interactor struct {
 	*messaging.ImplNotification
 	*onboarding.ImplOnboarding
 	*otp.ImplOTP
+	*sms.ImplSMS
 }
 
 // NewUsecasesInteractor initializes a new usecases interactor
@@ -34,6 +36,7 @@ func NewUsecasesInteractor(infrastructure infrastructure.Interactor) Interactor 
 	messaging := messaging.NewNotification(infrastructure)
 	onboarding := onboarding.NewOnboarding(infrastructure)
 	otp := otp.NewOTP(infrastructure)
+	sms := sms.NewSMS(infrastructure)
 
 	return Interactor{
 		feed,
@@ -44,5 +47,6 @@ func NewUsecasesInteractor(infrastructure infrastructure.Interactor) Interactor 
 		messaging,
 		onboarding,
 		otp,
+		sms,
 	}
 }
