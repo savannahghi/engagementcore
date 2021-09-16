@@ -66,6 +66,8 @@ func TestGraphQLSimpleEmail(t *testing.T) {
 			wantStatus: http.StatusUnprocessableEntity,
 			wantErr:    true,
 		},
+
+		
 	}
 
 	for _, tt := range tests {

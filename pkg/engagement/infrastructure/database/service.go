@@ -23,6 +23,7 @@ type Repository interface {
 		uid *string,
 		isAnonymous *bool,
 		flavour feedlib.Flavour,
+		playMP4 bool,
 		persistent feedlib.BooleanFilter,
 		status *feedlib.Status,
 		visibility *feedlib.Visibility,
@@ -293,13 +294,14 @@ func (d *DbService) GetFeed(
 	uid *string,
 	isAnonymous *bool,
 	flavour feedlib.Flavour,
+	playMP4 bool,
 	persistent feedlib.BooleanFilter,
 	status *feedlib.Status,
 	visibility *feedlib.Visibility,
 	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
-	return d.firestore.GetFeed(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
+	return d.firestore.GetFeed(ctx, uid, isAnonymous, flavour, playMP4, persistent, status, visibility, expired, filterParams)
 }
 
 // GetFeedItem ...

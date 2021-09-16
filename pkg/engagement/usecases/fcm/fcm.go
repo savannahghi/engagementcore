@@ -74,7 +74,7 @@ func (f *ImplFCM) SendNotification(
 	)
 }
 
-// Notifications gets notifications with the defined limit and set date
+// Notifications fetches notifications with the defined limit and set date
 func (f *ImplFCM) Notifications(
 	ctx context.Context,
 	registrationToken string,

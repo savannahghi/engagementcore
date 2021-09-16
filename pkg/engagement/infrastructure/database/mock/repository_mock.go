@@ -18,6 +18,7 @@ type FakeEngagementRepository struct {
 		uid *string,
 		isAnonymous *bool,
 		flavour feedlib.Flavour,
+		playMP4 bool,
 		persistent feedlib.BooleanFilter,
 		status *feedlib.Status,
 		visibility *feedlib.Visibility,
@@ -255,13 +256,14 @@ func (f *FakeEngagementRepository) GetFeed(
 	uid *string,
 	isAnonymous *bool,
 	flavour feedlib.Flavour,
+	playMP4 bool,
 	persistent feedlib.BooleanFilter,
 	status *feedlib.Status,
 	visibility *feedlib.Visibility,
 	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
-	return f.GetFeedFn(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
+	return f.GetFeedFn(ctx, uid, isAnonymous, flavour,playMP4, persistent, status, visibility, expired, filterParams)
 }
 
 // GetFeedItem ...

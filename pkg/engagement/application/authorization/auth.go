@@ -8,13 +8,11 @@ import (
 	"github.com/savannahghi/profileutils"
 )
 
-var (
-	enforcer *casbin.Enforcer
-)
+
 
 // CheckPemissions is used to check whether the permissions of a subject are set
 func CheckPemissions(subject string, input profileutils.PermissionInput) (bool, error) {
-
+	enforcer := &casbin.Enforcer{}
 	ok, err := enforcer.Enforce(subject, input.Resource, input.Action)
 	if err != nil {
 		return false, fmt.Errorf("unable to check permissions %w", err)
@@ -52,5 +50,5 @@ func IsAuthorized(user *profileutils.UserInfo, permission profileutils.Permissio
 		return CheckAuthorization(user.Email, permission)
 
 	}
-	return true, nil
+	return false, nil
 }

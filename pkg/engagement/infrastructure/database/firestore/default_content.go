@@ -34,12 +34,23 @@ const (
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
 	verifyEmailActionName         = "VERIFY_EMAIL"
 
-	defaultOrg           = "default-org-id-please-change"
-	defaultLocation      = "default-location-id-please-change"
-	defaultContentDir    = "/static/"
-	defaultAuthor        = "Be.Well Team"
-	defaultInsuranceText = "Insurance Simplified"
-	onboardingService    = "profile"
+	defaultOrg               = "default-org-id-please-change"
+	defaultLocation          = "default-location-id-please-change"
+	defaultContentDir        = "/static/"
+	defaultAuthor            = "Be.Well Team"
+	defaultInsuranceText     = "Insurance Simplified"
+	onboardingService        = "profile"
+	mp4Link1                 = "https://a.bewell.co.ke/videos/what_you_can_do.mp4"
+	mp4Link2                 = "https://a.bewell.co.ke/videos/how_to_add_cover.mp4"
+	youtubeLink1             = "https://youtu.be/-mlr9rjRXmc"
+	youtubeLink2             = "https://a.bewell.co.ke/videos/how_to_add_cover.mp4"
+	defaultTaglineorSummary  = "See what you can do on your Be.Well app."
+	defaultText              = "How to add your health insurance cover to your Be.Well app."
+	addCovertaglineorSummary = "Learn how to add your cover in 3 easy steps"
+	addCovertext             = "View your health insurance cover benefits on your Be.Well app."
+	sladeTagline             = "Learn what is Be.Well and how you can benefit from using it"
+	sladeSummary             = "Be.Well is a virtual and physical healthcare community."
+	sladeText                = "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -1198,7 +1209,7 @@ func getFeedWelcomeVideos(flavour feedlib.Flavour) []feedlib.Link {
 	return videos
 }
 
-func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []feedlib.Item {
+func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playMP4 bool) []feedlib.Item {
 	ctx, span := tracer.Start(ctx, "feedItemsFromCMSFeedTag")
 	defer span.End()
 	// Initialize ISC clients
@@ -1227,15 +1238,103 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []fee
 		text := ""
 		sequenceNumber := int(time.Now().Unix())
 
-		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
-			tagline = "See what you can do on your Be.Well app"
-			summary = "See what you can do on your Be.Well app"
-			text = "How to add your health insurance cover to your Be.Well app."
+		if playMP4 {
+			//Change urls MP4 videos
+			if videoLink.URL == mp4Link1 {
+				tagline = defaultTaglineorSummary
+				summary = defaultTaglineorSummary
+				text = defaultText
+			}
+			if videoLink.URL == mp4Link2 {
+				tagline = addCovertaglineorSummary
+				summary = addCovertaglineorSummary
+				text = addCovertext
+				sequenceNumber = int(time.Now().Unix()) + 1
+			}
+			items = append(items, feedlib.Item{
+				ID:             ksuid.New().String(),
+				SequenceNumber: sequenceNumber,
+				Expiry:         future,
+				Persistent:     false,
+				Status:         feedlib.StatusPending,
+				Visibility:     feedlib.VisibilityShow,
+				Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+				Author:         defaultAuthor,
+				Tagline:        tagline,
+				Label:          common.DefaultLabel,
+				Summary:        summary,
+				Timestamp:      time.Now(),
+				Text:           text,
+				TextType:       feedlib.TextTypeHTML,
+				Links: []feedlib.Link{
+					feedlib.GetMP4Link(
+						videoLink.URL,
+						videoLink.Title,
+						videoLink.Description,
+						videoLink.Thumbnail,
+					),
+				},
+				Actions:              []feedlib.Action{},
+				Conversations:        []feedlib.Message{},
+				Users:                []string{},
+				Groups:               []string{},
+				NotificationChannels: []feedlib.Channel{},
+			})
+
+			for _, post := range feedPosts {
+				if post == nil {
+					// non fatal, intentionally
+					log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
+					continue
+				}
+				items = append(items, feedItemFromCMSPost(*post))
+			}
+
+			// add the slade 360 video last
+			items = append(items, feedlib.Item{
+				ID:             ksuid.New().String(),
+				SequenceNumber: int(time.Now().Unix()),
+				Expiry:         future,
+				Persistent:     false,
+				Status:         feedlib.StatusPending,
+				Visibility:     feedlib.VisibilityShow,
+				Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+				Author:         defaultAuthor,
+				Tagline:        sladeTagline,
+				Label:          common.DefaultLabel,
+				Summary:        sladeSummary,
+				Timestamp:      time.Now(),
+				Text:           sladeText,
+				TextType:       feedlib.TextTypeHTML,
+				Links: []feedlib.Link{
+					feedlib.GetMP4Link(
+						"healthcare_simplified.mp4 ",
+						"Slade 360",
+						"Slade 360. HealthCare. Simplified.",
+						common.StaticBase+"/items/videos/thumbs/04_slade.png",
+					),
+				},
+				Actions:              []feedlib.Action{},
+				Conversations:        []feedlib.Message{},
+				Users:                []string{},
+				Groups:               []string{},
+				NotificationChannels: []feedlib.Channel{},
+			})
+
+			return items
+
 		}
-		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
-			tagline = "Learn how to add your cover in 3 easy steps"
-			summary = "Learn how to add your cover in 3 easy steps"
-			text = "View your health insurance cover benefits on your Be.Well app."
+
+		// play youTube videos
+		if videoLink.URL == youtubeLink1 {
+			tagline = defaultTaglineorSummary
+			summary = defaultTaglineorSummary
+			text = defaultText
+		}
+		if videoLink.URL == youtubeLink2 {
+			tagline = addCovertaglineorSummary
+			summary = addCovertaglineorSummary
+			text = addCovertext
 			sequenceNumber = int(time.Now().Unix()) + 1
 		}
 
@@ -1289,11 +1388,11 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []fee
 		Visibility:     feedlib.VisibilityShow,
 		Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
 		Author:         defaultAuthor,
-		Tagline:        "Learn what is Be.Well and how you can benefit from using it",
+		Tagline:        sladeTagline,
 		Label:          common.DefaultLabel,
-		Summary:        "Be.Well is a virtual and physical healthcare community.",
+		Summary:        sladeSummary,
 		Timestamp:      time.Now(),
-		Text:           "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person.",
+		Text:           sladeText,
 		TextType:       feedlib.TextTypeHTML,
 		Links: []feedlib.Link{
 			feedlib.GetYoutubeVideoLink(

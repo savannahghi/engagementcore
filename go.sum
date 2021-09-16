@@ -388,8 +388,8 @@ github.com/savannahghi/enumutils v0.0.2/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH
 github.com/savannahghi/errorcodeutil v0.0.1 h1:q5JYMrzXDAJ9/99fV7Mj2bFF1XOidlRgSlYHy73q2GA=
 github.com/savannahghi/errorcodeutil v0.0.1/go.mod h1:nNBaBjatvoRusnDr2aRoNr4Rpmz9Z779mjcL0tr/IXk=
 github.com/savannahghi/feedlib v0.0.0-20210628122532-ef88e353d4d6/go.mod h1:P6YHmWsa/TK/qTb2U1ryjuASotTQmbarArB0LYLjMo4=
-github.com/savannahghi/feedlib v0.0.1 h1:BixXDyfj1Kj+f8AOwd32A/xXr5CZxrOqLitp09xDQcg=
-github.com/savannahghi/feedlib v0.0.1/go.mod h1:P6YHmWsa/TK/qTb2U1ryjuASotTQmbarArB0LYLjMo4=
+github.com/savannahghi/feedlib v0.0.5 h1:LQRLQoWCLFjCp4mkQncCNHJ/v9tg2D3yyzvSCnk3xRY=
+github.com/savannahghi/feedlib v0.0.5/go.mod h1:PzEP7gw4w1Xuw36uIRr1H2ffd+kozWHyJCuGWO06AtQ=
 github.com/savannahghi/firebasetools v0.0.5/go.mod h1:obAxyBfPaGTx/g86LF19gSmmEh5x+Tbnziatk514mUQ=
 github.com/savannahghi/firebasetools v0.0.6/go.mod h1:obAxyBfPaGTx/g86LF19gSmmEh5x+Tbnziatk514mUQ=
 github.com/savannahghi/firebasetools v0.0.13 h1:2eBFwzsnmhRUzxfgQZxOjedlMuyef2dz4tvpw59pJkE=
@@ -404,11 +404,10 @@ github.com/savannahghi/pubsubtools v0.0.2/go.mod h1:FQ+BxO4uA1ZkcziY4dR0uT9CKHVH
 github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad/go.mod h1:Z+Dl3wc3vy5zKvthctHAtYzol1p8w27zEVRfOYueoks=
 github.com/savannahghi/scalarutils v0.0.2 h1:naX6Zhv/tDbwKAKVY4bksyhnE43f2583xWesAKHb1CU=
 github.com/savannahghi/scalarutils v0.0.2/go.mod h1:Z+Dl3wc3vy5zKvthctHAtYzol1p8w27zEVRfOYueoks=
-github.com/savannahghi/server_utils v0.0.1 h1:q6SL4BRvkpYJujXvWwCl4vU1U+VTzKRGfNXnl0H6tfw=
 github.com/savannahghi/server_utils v0.0.1/go.mod h1:Tldm4Op4ARxk8xaP3BA0V52XVZEJenkq0ck4FCdEp+I=
 github.com/savannahghi/serverutils v0.0.2/go.mod h1:sLX0El0i0DKN/9cUkB8xqm5cVMP79qCZvK60EzB7Pa4=
-github.com/savannahghi/serverutils v0.0.3 h1:1gX/zD6tt4tAEpcQFyzXBUp70BvUiqmJpjADqjdvFwI=
-github.com/savannahghi/serverutils v0.0.3/go.mod h1:3VCEJ8BTHf/DW3WFjLqV4SznzrXaul/As2RJ5eNOO7U=
+github.com/savannahghi/serverutils v0.0.4 h1:mQGAwhNgS1NPSBXqCeyywuGQFnvRxiOmHJEHPgzhWQE=
+github.com/savannahghi/serverutils v0.0.4/go.mod h1:3VCEJ8BTHf/DW3WFjLqV4SznzrXaul/As2RJ5eNOO7U=
 github.com/schollz/closestmatch v2.1.0+incompatible/go.mod h1:RtP1ddjLong6gTkbtmuhtR2uUrrJOpYzYRvbcPAid+g=
 github.com/segmentio/ksuid v1.0.3/go.mod h1:/XUiZBD3kVx5SmUOl55voK5yeAbBNNIed+2O73XgrPE=
 github.com/segmentio/ksuid v1.0.4 h1:sBo2BdShXjmcugAMwjugoGUdUV0pcxY5mW4xKRn3v4c=
