@@ -16,7 +16,6 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
@@ -66,10 +65,9 @@ type ServiceOTP interface {
 
 // ServiceOTPImpl is an OTP generation and validation service
 type ServiceOTPImpl struct {
-	whatsapp whatsapp.ServiceWhatsapp
-	mail     mail.ServiceMail
-	sms      sms.ServiceSMS
-	twilio   twilio.ServiceTwilio
+	mail   mail.ServiceMail
+	sms    sms.ServiceSMS
+	twilio twilio.ServiceTwilio
 
 	totpOpts             totp.GenerateOpts
 	firestoreClient      *firestore.Client
@@ -81,7 +79,6 @@ type ServiceOTPImpl struct {
 // of dependencies, the same dependecies defined in the yaml should be defined in the service
 // struct definition explicitly, No guess work.
 func NewService(
-	whatsapp whatsapp.ServiceWhatsapp,
 	mail mail.ServiceMail,
 	sms sms.ServiceSMS,
 	twilio twilio.ServiceTwilio,
@@ -113,7 +110,6 @@ func NewService(
 		},
 		firestoreClient:      firestoreClient,
 		rootCollectionSuffix: serverutils.MustGetEnvVar("ROOT_COLLECTION_SUFFIX"),
-		whatsapp:             whatsapp,
 		mail:                 mail,
 		sms:                  sms,
 		twilio:               twilio,
@@ -435,7 +431,7 @@ func (s ServiceOTPImpl) GenerateRetryOTP(
 
 	if retryStep == whatsappStep {
 
-		sent, err := s.whatsapp.PhoneNumberVerificationCode(
+		sent, err := s.twilio.PhoneNumberVerificationCode(
 			ctx,
 			otp.MSISDN,
 			otp.AuthorizationCode,
@@ -544,7 +540,7 @@ func (s ServiceOTPImpl) SendTemporaryPIN(ctx context.Context, input dto.Temporar
 	if input.Channel == whatsappStep {
 		msg := fmt.Sprintf(PINWhatsApp, input.FirstName, input.PIN)
 
-		sent, err := s.whatsapp.TemporaryPIN(ctx, *cleanNo, msg)
+		sent, err := s.twilio.TemporaryPIN(ctx, *cleanNo, msg)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return fmt.Errorf("unable to send otp via whatsapp: %w", err)

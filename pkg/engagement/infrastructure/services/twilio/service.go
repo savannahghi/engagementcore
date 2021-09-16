@@ -15,6 +15,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
@@ -42,6 +43,15 @@ const (
 	TwilioHTTPClientTimeoutSeconds    = 10
 	TwilioPeerToPeerMaxParticipants   = 3
 	TwilioAccessTokenTTL              = 14400
+
+	TwilioWhatsappSIDEnvVarName = "TWILIO_WHATSAPP_SID"
+
+	// gosec false positive
+	TwilioWhatsappAuthTokenEnvVarName = "TWILIO_WHATSAPP_AUTH_TOKEN" /* #nosec */
+
+	TwilioWhatsappSenderEnvVarName = "TWILIO_WHATSAPP_SENDER"
+
+	twilioWhatsappBaseURL = "https://api.twilio.com/2010-04-01/Accounts/"
 )
 
 // ServiceTwilio defines the interaction with the twilio service
@@ -57,6 +67,25 @@ type ServiceTwilio interface {
 		ctx context.Context,
 		data dto.CallbackData,
 	) error
+
+	PhoneNumberVerificationCode(
+		ctx context.Context,
+		to string,
+		code string,
+		marketingMessage string,
+	) (bool, error)
+
+	// TODO: Remove db implementation
+	SaveTwilioCallbackResponse(
+		ctx context.Context,
+		data dto.Message,
+	) error
+
+	TemporaryPIN(
+		ctx context.Context,
+		to string,
+		message string,
+	) (bool, error)
 }
 
 // NewService initializes a service to interact with Twilio
@@ -74,42 +103,54 @@ func NewService(sms sms.ServiceSMS, repo database.Repository) *ServiceTwilioImpl
 	callbackURL := publicDomain + TwilioCallbackPath
 	smsNumber := serverutils.MustGetEnvVar(TwilioSMSNumberEnvVarName)
 
+	sid := serverutils.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
+	authToken := serverutils.MustGetEnvVar(TwilioWhatsappAuthTokenEnvVarName)
+	sender := serverutils.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
+
 	srv := &ServiceTwilioImpl{
-		region:            region,
-		videoBaseURL:      videoBaseURL,
-		videoAPIKeySID:    videoAPIKeySID,
-		videoAPIKeySecret: videoAPIKeySecret,
-		accountSID:        accountSID,
-		accountAuthToken:  accountAuthToken,
-		httpClient:        httpClient,
-		twilioClient:      twilio.NewClient(accountSID, accountAuthToken, httpClient),
-		callbackURL:       callbackURL,
-		smsNumber:         smsNumber,
-		sms:               sms,
-		repository:        repo,
+		region:             region,
+		videoBaseURL:       videoBaseURL,
+		videoAPIKeySID:     videoAPIKeySID,
+		videoAPIKeySecret:  videoAPIKeySecret,
+		accountSID:         accountSID,
+		accountAuthToken:   accountAuthToken,
+		twilioClient:       twilio.NewClient(accountSID, accountAuthToken, httpClient),
+		callbackURL:        callbackURL,
+		smsNumber:          smsNumber,
+		sms:                sms,
+		BaseURL:            twilioWhatsappBaseURL,
+		WhatsappAccountSID: sid,
+		AccountAuthToken:   authToken,
+		Sender:             sender,
+		HTTPClient:         httpClient,
 	}
-	srv.checkPreconditions()
+	srv.CheckPreconditions()
 	return srv
 }
 
 // ServiceTwilioImpl organizes methods needed to interact with Twilio for video, voice
 // and text
 type ServiceTwilioImpl struct {
-	region            string
-	videoBaseURL      string
-	videoAPIKeySID    string
-	videoAPIKeySecret string
-	accountSID        string
-	accountAuthToken  string
-	httpClient        *http.Client
-	twilioClient      *twilio.Client
-	callbackURL       string
-	smsNumber         string
-	sms               sms.ServiceSMS
-	repository        database.Repository
+	region             string
+	videoBaseURL       string
+	videoAPIKeySID     string
+	videoAPIKeySecret  string
+	accountSID         string
+	accountAuthToken   string
+	twilioClient       *twilio.Client
+	callbackURL        string
+	smsNumber          string
+	sms                sms.ServiceSMS
+	BaseURL            string
+	WhatsappAccountSID string
+	AccountAuthToken   string
+	Sender             string
+	HTTPClient         *http.Client
+	Repository         database.Repository
 }
 
-func (s ServiceTwilioImpl) checkPreconditions() {
+// CheckPreconditions checks preconditions for the twilio service
+func (s ServiceTwilioImpl) CheckPreconditions() {
 	if s.region == "" {
 		log.Panicf("Twilio region not set")
 	}
@@ -138,16 +179,31 @@ func (s ServiceTwilioImpl) checkPreconditions() {
 		log.Panicf("Twilio Video account auth token not set")
 	}
 
-	if s.httpClient == nil {
-		log.Panicf("nil HTTP client in Twilio service")
-	}
-
 	if s.twilioClient == nil {
 		log.Panicf("nil Twilio client in Twilio service")
 	}
 
 	if s.callbackURL == "" {
 		log.Panicf("empty Twilio callback URL")
+	}
+	if s.HTTPClient == nil {
+		log.Panicf("nil http client in Twilio WhatsApp service")
+	}
+
+	if s.BaseURL == "" {
+		log.Panicf("blank base URL in Twilio WhatsApp service")
+	}
+
+	if s.WhatsappAccountSID == "" {
+		log.Panicf("blank accountSID in Twilio WhatsApp service")
+	}
+
+	if s.AccountAuthToken == "" {
+		log.Panicf("blank account auth token in Twilio WhatsApp service")
+	}
+
+	if s.Sender == "" {
+		log.Panicf("blank sender in Twilio WhatsApp service")
 	}
 }
 
@@ -158,7 +214,7 @@ func (s ServiceTwilioImpl) MakeTwilioRequest(
 	content url.Values,
 	target interface{},
 ) error {
-	s.checkPreconditions()
+	s.CheckPreconditions()
 	if serverutils.IsDebug() {
 		log.Printf("Twilio request data: \n%s\n", content)
 	}
@@ -172,7 +228,7 @@ func (s ServiceTwilioImpl) MakeTwilioRequest(
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(s.accountSID, s.accountAuthToken)
 
-	resp, err := s.httpClient.Do(req)
+	resp, err := s.HTTPClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("twilio API error: %w", err)
 	}
@@ -195,6 +251,60 @@ func (s ServiceTwilioImpl) MakeTwilioRequest(
 
 	command, _ := http2curl.GetCurlCommand(req)
 	fmt.Println(command)
+
+	return nil
+}
+
+// MakeWhatsappTwilioRequest makes a twilio request
+func (s ServiceTwilioImpl) MakeWhatsappTwilioRequest(
+	ctx context.Context,
+	method string,
+	urlPath string,
+	content url.Values,
+	target interface{},
+) error {
+	_, span := tracer.Start(ctx, "MakeTwilioRequest")
+	defer span.End()
+	s.CheckPreconditions()
+
+	if serverutils.IsDebug() {
+		log.Printf("Twilio request data: \n%s\n", content)
+	}
+
+	r := strings.NewReader(content.Encode())
+	req, err := http.NewRequest(method, s.BaseURL+urlPath, r)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(s.WhatsappAccountSID, s.AccountAuthToken)
+
+	resp, err := s.HTTPClient.Do(req)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("twilio API error: %w", err)
+	}
+
+	respBs, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("twilio room content error: %w", err)
+	}
+
+	if resp.StatusCode > 201 {
+		return fmt.Errorf("twilio API Error: %s", string(respBs))
+	}
+
+	if serverutils.IsDebug() {
+		log.Printf("Twilio response: \n%s\n", string(respBs))
+	}
+	err = json.Unmarshal(respBs, target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("unable to unmarshal Twilio resp: %w", err)
+	}
 
 	return nil
 }
@@ -231,7 +341,7 @@ func (s ServiceTwilioImpl) MakeTwilioRequest(
 func (s ServiceTwilioImpl) Room(ctx context.Context) (*dto.Room, error) {
 	_, span := tracer.Start(ctx, "Room")
 	defer span.End()
-	s.checkPreconditions()
+	s.CheckPreconditions()
 
 	roomReqData := url.Values{}
 	roomReqData.Set("Type", "peer-to-peer")
@@ -261,7 +371,7 @@ func (s ServiceTwilioImpl) Room(ctx context.Context) (*dto.Room, error) {
 func (s ServiceTwilioImpl) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	ctx, span := tracer.Start(ctx, "TwilioAccessToken")
 	defer span.End()
-	s.checkPreconditions()
+	s.CheckPreconditions()
 
 	uid, err := firebasetools.GetLoggedInUserUID(ctx)
 	if err != nil {
@@ -302,7 +412,7 @@ func (s ServiceTwilioImpl) TwilioAccessToken(ctx context.Context) (*dto.AccessTo
 func (s ServiceTwilioImpl) SendSMS(ctx context.Context, to string, msg string) error {
 	_, span := tracer.Start(ctx, "SendSMS")
 	defer span.End()
-	s.checkPreconditions()
+	s.CheckPreconditions()
 
 	t, err := s.twilioClient.Messages.SendMessage(s.smsNumber, to, msg, nil)
 	if err != nil {
@@ -323,5 +433,114 @@ func (s ServiceTwilioImpl) SaveTwilioVideoCallbackStatus(
 	ctx context.Context,
 	data dto.CallbackData,
 ) error {
-	return s.repository.SaveTwilioVideoCallbackStatus(ctx, data)
+	return s.Repository.SaveTwilioVideoCallbackStatus(ctx, data)
+}
+
+// PhoneNumberVerificationCode sends Phone Number verification codes via WhatsApp
+func (s ServiceTwilioImpl) PhoneNumberVerificationCode(
+	ctx context.Context,
+	to string,
+	code string,
+	marketingMessage string,
+) (bool, error) {
+	ctx, span := tracer.Start(ctx, "PhoneNumberVerificationCode")
+	defer span.End()
+	s.CheckPreconditions()
+
+	normalizedPhoneNo, err := converterandformatter.NormalizeMSISDN(to)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("%s is not a valid E164 phone number: %w", to, err)
+	}
+
+	msgFrom := fmt.Sprintf("whatsapp:%s", s.Sender)
+	msgTo := fmt.Sprintf("whatsapp:%s", *normalizedPhoneNo)
+	msg := fmt.Sprintf("Your phone number verification code is %s", code)
+
+	payload := url.Values{}
+	payload.Add("From", msgFrom)
+	payload.Add("Body", msg)
+	payload.Add("To", msgTo)
+
+	target := dto.Message{}
+	path := fmt.Sprintf("%s/Messages.json", s.WhatsappAccountSID)
+	err = s.MakeWhatsappTwilioRequest(
+		ctx,
+		http.MethodPost,
+		path,
+		payload,
+		&target,
+	)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("error from Twilio: %w", err)
+	}
+
+	// save Twilio response for audit purposes
+	_, _, err = firebasetools.CreateNode(ctx, &target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("unable to save Twilio response: %w", err)
+	}
+	// TODO Find out why /ide is not working (401s)
+	// TODO deploy UAT, deploy prod, tag (semver)
+	return true, nil
+}
+
+// SaveTwilioCallbackResponse saves the twilio callback response for future
+// analysis
+func (s ServiceTwilioImpl) SaveTwilioCallbackResponse(
+	ctx context.Context,
+	data dto.Message,
+) error {
+	return s.Repository.SaveTwilioResponse(ctx, data)
+}
+
+//TemporaryPIN send PIN via whatsapp to user
+func (s ServiceTwilioImpl) TemporaryPIN(
+	ctx context.Context,
+	to string,
+	message string,
+) (bool, error) {
+	ctx, span := tracer.Start(ctx, "TemporaryPIN")
+	defer span.End()
+
+	s.CheckPreconditions()
+
+	normalizedPhoneNo, err := converterandformatter.NormalizeMSISDN(to)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("%s is not a valid E164 phone number: %w", to, err)
+	}
+
+	msgFrom := fmt.Sprintf("whatsapp:%s", s.Sender)
+	msgTo := fmt.Sprintf("whatsapp:%s", *normalizedPhoneNo)
+
+	payload := url.Values{}
+	payload.Add("From", msgFrom)
+	payload.Add("Body", message)
+	payload.Add("To", msgTo)
+
+	target := dto.Message{}
+	path := fmt.Sprintf("%s/Messages.json", s.WhatsappAccountSID)
+
+	err = s.MakeWhatsappTwilioRequest(
+		ctx,
+		http.MethodPost,
+		path,
+		payload,
+		&target,
+	)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("error from Twilio: %w", err)
+	}
+
+	// save Twilio response for audit purposes
+	_, _, err = firebasetools.CreateNode(ctx, &target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("unable to save Twilio response: %w", err)
+	}
+	return true, nil
 }
