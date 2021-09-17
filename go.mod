@@ -31,7 +31,7 @@ require (
 	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
-	github.com/mitchellh/mapstructure v1.4.1 // indirect
+	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.3.0
@@ -55,7 +55,8 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.21.0
 	go.opentelemetry.io/otel v1.0.0-RC1
 	go.opentelemetry.io/otel/trace v1.0.0-RC1
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	golang.org/x/sys v0.0.0-20210915083310-ed5796bab164 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	google.golang.org/api v0.50.0
 	google.golang.org/genproto v0.0.0-20210714021259-044028024a4f // indirect

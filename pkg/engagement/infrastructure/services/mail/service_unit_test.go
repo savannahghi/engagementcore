@@ -60,6 +60,18 @@ func TestSendInBlue(t *testing.T) {
 			wantErr:    true,
 			wantStatus: "",
 		},
+
+		{
+			name: "sad case: invalid email",
+			args: args{
+				ctx:     ctx,
+				subject: "Test Email",
+				text:    "This is a test email",
+				to:      []string{"test.bewell.co.ke"},
+			},
+			wantStatus: "",
+			wantErr:    true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -139,6 +151,18 @@ func TestSendMailgun(t *testing.T) {
 				text:    "Test text",
 				body:    &testBody,
 				to:      []string{},
+			},
+			wantStatus: "",
+			wantErr:    true,
+		},
+		{
+			name: "sad case: invalid recipient",
+			args: args{
+				ctx:     ctx,
+				subject: "Test Email",
+				text:    "Test text",
+				body:    &testBody,
+				to:      []string{"test.bewell.co.ke"},
 			},
 			wantStatus: "",
 			wantErr:    true,
@@ -227,6 +251,18 @@ func TestSendEmail(t *testing.T) {
 			wantStatus: "",
 			wantErr:    true,
 		},
+		{
+			name: "sad case: invalid email",
+			args: args{
+				ctx:     ctx,
+				subject: "Test Email",
+				text:    "Test text",
+				body:    &testBody,
+				to:      []string{"test.bewell.co.ke"},
+			},
+			wantStatus: "",
+			wantErr:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -307,6 +343,18 @@ func TestSimpleEmail(t *testing.T) {
 				text:    "Test text",
 				body:    &testBody,
 				to:      []string{},
+			},
+			wantStatus: "",
+			wantErr:    true,
+		},
+		{
+			name: "sad case: invalid recipient",
+			args: args{
+				ctx:     ctx,
+				subject: "Test Email",
+				text:    "Test text",
+				body:    &testBody,
+				to:      []string{"test.bewell.co.ke"},
 			},
 			wantStatus: "",
 			wantErr:    true,

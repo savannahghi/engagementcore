@@ -186,6 +186,16 @@ func TestUnit_GetFaqsContent(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+
+		{
+			name: "invalid: bad flavor passed",
+			args: args{
+				ctx:     ctx,
+				flavour: "BAD FLAVOUR",
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

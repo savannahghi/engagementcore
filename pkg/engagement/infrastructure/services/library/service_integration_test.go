@@ -50,6 +50,25 @@ func TestService_GetFeedContent(t *testing.T) {
 			wantNonZero: true,
 			wantErr:     false,
 		},
+
+		{
+			name: "Bad flavour",
+			args: args{
+				flavour: "feedlib.FlavourConsumer",
+				ctx:     ctx,
+			},
+			wantNonZero: false,
+			wantErr:     true,
+		},
+
+		{
+			name: "nil flavour",
+			args: args{
+				ctx: ctx,
+			},
+			wantNonZero: false,
+			wantErr:     true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
