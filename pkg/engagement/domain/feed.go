@@ -37,8 +37,6 @@ type Feed struct {
 
 	// indicates whether the user is Anonymous or not
 	IsAnonymous *bool `json:"isAnonymous" firestore:"isAnonymous"`
-
-	FeatureImage string `json:"feature_image"`
 }
 
 // GetID return the feed ID

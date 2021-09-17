@@ -1435,6 +1435,7 @@ func feedItemFromCMSPost(post domain.GhostCMSPost) feedlib.Item {
 		Users:                []string{},
 		Groups:               []string{},
 		NotificationChannels: []feedlib.Channel{},
+		FeatureImage:         post.FeatureImage,
 	}
 }
 
