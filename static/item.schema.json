@@ -13,7 +13,7 @@
                 },
                 "sequenceNumber": {
                     "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
-                }, 
+                },
                 "persistent": {
                     "type": "boolean",
                     "description": "If a feed item is persistent, it also goes to the inbox AND triggers a push notification. Pinning a feed item makes it persistent."
@@ -123,6 +123,9 @@
                         "$ref": "https://schema.healthcloud.co.ke/channels.schema.json#/definitions/channel"
                     },
                     "uniqueItems": true
+                },
+                "feature_image": {
+                    "type": "string"
                 }
             },
             "required": [

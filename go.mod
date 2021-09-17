@@ -38,7 +38,7 @@ require (
 	github.com/savannahghi/converterandformatter v0.0.9
 	github.com/savannahghi/enumutils v0.0.2
 	github.com/savannahghi/errorcodeutil v0.0.1
-	github.com/savannahghi/feedlib v0.0.5
+	github.com/savannahghi/feedlib v0.0.6
 	github.com/savannahghi/firebasetools v0.0.13
 	github.com/savannahghi/interserviceclient v0.0.13
 	github.com/savannahghi/profileutils v0.0.7
