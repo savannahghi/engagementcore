@@ -44,6 +44,13 @@ type FakeServiceTwilio struct {
 		to string,
 		message string,
 	) (bool, error)
+	MakeWhatsappTwilioRequestFn func(
+		ctx context.Context,
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
 }
 
 // Room is a mock of the Room method
@@ -104,4 +111,21 @@ func (f *FakeServiceTwilio) TemporaryPIN(
 	message string,
 ) (bool, error) {
 	return f.TemporaryPINFn(ctx, to, message)
+}
+
+// MakeWhatsappTwilioRequest is a mock of the MakeWhatsappTwilioRequest method
+func (f *FakeServiceTwilio) MakeWhatsappTwilioRequest(
+	ctx context.Context,
+	method string,
+	urlPath string,
+	content url.Values,
+	target interface{},
+) error {
+	return f.MakeWhatsappTwilioRequestFn(
+		ctx,
+		method,
+		urlPath,
+		content,
+		target,
+	)
 }

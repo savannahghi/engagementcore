@@ -3,6 +3,7 @@ package twilio_test
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -15,6 +16,140 @@ import (
 var (
 	fakeTwilioService twilioMock.FakeServiceTwilio
 )
+
+func TestUnit_MakeTwilioRequest(t *testing.T) {
+	var s twilioService.ServiceTwilio = &fakeTwilioService
+
+	content := url.Values{
+		"test": []string{"data"},
+	}
+
+	type args struct {
+		method  string
+		urlPath string
+		content url.Values
+		target  interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid: correct params passed",
+			args: args{
+				method:  "GET",
+				urlPath: "/v1",
+				content: content,
+				target:  "target",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid: missing params",
+			args:    args{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "valid: correct params passed" {
+				fakeTwilioService.MakeTwilioRequestFn = func(
+					method string,
+					urlPath string,
+					content url.Values,
+					target interface{},
+				) error {
+					return nil
+				}
+			}
+			if tt.name == "invalid: missing params" {
+				fakeTwilioService.MakeTwilioRequestFn = func(
+					method string,
+					urlPath string,
+					content url.Values,
+					target interface{},
+				) error {
+					return fmt.Errorf("test error")
+				}
+			}
+
+			if err := s.MakeTwilioRequest(tt.args.method, tt.args.urlPath, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
+				t.Errorf("ImplTwilio.MakeTwilioRequest() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUnit_MakeWhatsappTwilioRequest(t *testing.T) {
+	ctx := context.Background()
+	var s twilioService.ServiceTwilio = &fakeTwilioService
+
+	content := url.Values{
+		"test": []string{"data"},
+	}
+
+	type args struct {
+		ctx     context.Context
+		method  string
+		urlPath string
+		content url.Values
+		target  interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid: correct params passed",
+			args: args{
+				ctx:     ctx,
+				method:  "GET",
+				urlPath: "/v1",
+				content: content,
+				target:  "target",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid: missing params",
+			args: args{
+				ctx: ctx,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "valid: correct params passed" {
+				fakeTwilioService.MakeWhatsappTwilioRequestFn = func(
+					ctx context.Context,
+					method string,
+					urlPath string,
+					content url.Values,
+					target interface{},
+				) error {
+					return nil
+				}
+			}
+			if tt.name == "invalid: missing params" {
+				fakeTwilioService.MakeWhatsappTwilioRequestFn = func(
+					ctx context.Context,
+					method string,
+					urlPath string,
+					content url.Values,
+					target interface{},
+				) error {
+					return fmt.Errorf("test error")
+				}
+			}
+			if err := s.MakeWhatsappTwilioRequest(tt.args.ctx, tt.args.method, tt.args.urlPath, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
+				t.Errorf("ImplTwilio.MakeWhatsappTwilioRequest() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
 
 func TestUnit_Room(t *testing.T) {
 	var s twilioService.ServiceTwilio = &fakeTwilioService

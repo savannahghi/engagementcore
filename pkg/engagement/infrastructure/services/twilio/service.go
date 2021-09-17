@@ -86,6 +86,21 @@ type ServiceTwilio interface {
 		to string,
 		message string,
 	) (bool, error)
+
+	MakeTwilioRequest(
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
+
+	MakeWhatsappTwilioRequest(
+		ctx context.Context,
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
 }
 
 // NewService initializes a service to interact with Twilio

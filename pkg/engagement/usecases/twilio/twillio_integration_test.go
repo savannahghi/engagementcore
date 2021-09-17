@@ -2,7 +2,9 @@ package twilio_test
 
 import (
 	"context"
+	"encoding/xml"
 	"fmt"
+	"net/url"
 	"os"
 	"reflect"
 	"testing"
@@ -88,6 +90,208 @@ func TestNewImplTwilio(t *testing.T) {
 				t.Errorf("NewImplTwilio() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestImplTwilio_MakeTwilioRequest(t *testing.T) {
+
+	// A Room Can't be set up with test creds so for this test we make twilio creds live
+	initialTwilioAuthToken, initialTwilioSID, err := setTwilioCredsToLive()
+	if err != nil {
+		t.Errorf("unable to set twilio credentials to live: %v", err)
+		return
+	}
+
+	ctx := context.Background()
+	f, _, err := InitializeTestNewTwilio(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize test mail interractor: %v", err)
+	}
+
+	content := &url.Values{
+		"test": []string{"data"},
+	}
+
+	type metadata struct {
+	}
+	type target struct {
+		meta     metadata
+		versions map[string]interface{}
+	}
+
+	targetData := target{
+		meta:     metadata{},
+		versions: map[string]interface{}{},
+	}
+
+	type args struct {
+		method  string
+		urlPath string
+		content url.Values
+		target  interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid: correct params passed",
+			args: args{
+				method:  "GET",
+				urlPath: "/v1",
+				content: *content,
+				target:  &targetData,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid: invalid target passed",
+			args: args{
+				method:  "GET",
+				urlPath: "/v1",
+				content: *content,
+				target:  "invalid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: invalid url path passed",
+			args: args{
+				method:  "GET",
+				urlPath: "invalid",
+				content: *content,
+				target:  &targetData,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: invalid method path passed",
+			args: args{
+				method:  "INVALID",
+				urlPath: "/v1",
+				content: *content,
+				target:  &targetData,
+			},
+			wantErr: true,
+		},
+		{
+			name:    "invalid: missing params",
+			args:    args{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := f.MakeTwilioRequest(tt.args.method, tt.args.urlPath, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
+				t.Errorf("ImplTwilio.MakeTwilioRequest() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+	// Restore envs after test
+	err = restoreTwilioCreds(initialTwilioAuthToken, initialTwilioSID)
+	if err != nil {
+		t.Errorf("unable to restore twilio credentials: %v", err)
+		return
+	}
+}
+
+func TestImplTwilio_MakeWhatsappTwilioRequest(t *testing.T) {
+	// A Room Can't be set up with test creds so for this test we make twilio creds live
+	initialTwilioAuthToken, initialTwilioSID, err := setTwilioCredsToLive()
+	if err != nil {
+		t.Errorf("unable to set twilio credentials to live: %v", err)
+		return
+	}
+	ctx := context.Background()
+	f, _, err := InitializeTestNewTwilio(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize test mail interractor: %v", err)
+	}
+
+	content := url.Values{
+		"test": []string{"data"},
+	}
+
+	type Accounts struct {
+	}
+	type TwilioResponse struct {
+		XMLName  xml.Name `xml:"TwilioResponse"`
+		Text     string   `xml:",chardata"`
+		Accounts Accounts `xml:"Accounts"`
+	}
+
+	targetData := TwilioResponse{
+		XMLName:  xml.Name{},
+		Text:     "",
+		Accounts: Accounts{},
+	}
+
+	type args struct {
+		ctx     context.Context
+		method  string
+		urlPath string
+		content url.Values
+		target  interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "invalid: invalid target passed",
+			args: args{
+				ctx:     ctx,
+				method:  "GET",
+				urlPath: "",
+				content: content,
+				target:  "invalid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: invalid url path passed",
+			args: args{
+				ctx:     ctx,
+				method:  "GET",
+				urlPath: "invalid",
+				content: content,
+				target:  &targetData,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: invalid method path passed",
+			args: args{
+				ctx:     ctx,
+				method:  "INVALID",
+				urlPath: "",
+				content: content,
+				target:  &targetData,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: missing params",
+			args: args{
+				ctx: ctx,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := f.MakeWhatsappTwilioRequest(tt.args.ctx, tt.args.method, tt.args.urlPath, tt.args.content, tt.args.target); (err != nil) != tt.wantErr {
+				t.Errorf("ImplTwilio.MakeWhatsappTwilioRequest() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+	// Restore envs after test
+	err = restoreTwilioCreds(initialTwilioAuthToken, initialTwilioSID)
+	if err != nil {
+		t.Errorf("unable to restore twilio credentials: %v", err)
+		return
 	}
 }
 

@@ -2,13 +2,42 @@ package twilio
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	"github.com/savannahghi/serverutils"
+)
+
+// TODO: check if this will be an alternative to inaccessible fields from the services
+var (
+	TwilioWhatsappSIDEnvVarName = "TWILIO_WHATSAPP_SID"
+
+	TwilioWhatsappSenderEnvVarName = "TWILIO_WHATSAPP_SENDER"
+)
+
+var (
+	sid    = serverutils.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
+	sender = serverutils.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
 )
 
 // UsecaseTwilio defines twilio service usecases interface
 type UsecaseTwilio interface {
+	MakeTwilioRequest(
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
+
+	MakeWhatsappTwilioRequest(
+		ctx context.Context,
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
+
 	Room(
 		ctx context.Context,
 	) (*dto.Room, error)
@@ -49,7 +78,9 @@ type UsecaseTwilio interface {
 
 // ImplTwilio is the twilio service implementation
 type ImplTwilio struct {
-	infrastructure infrastructure.Interactor
+	infrastructure     infrastructure.Interactor
+	WhatsappAccountSID string
+	Sender             string
 }
 
 // NewImplTwilio initializes a twilio service instance
@@ -58,6 +89,9 @@ func NewImplTwilio(
 ) *ImplTwilio {
 	return &ImplTwilio{
 		infrastructure: infrastructure,
+		// TODO: check if this will be an alternative to inaccessible fields from the services
+		WhatsappAccountSID: sid,
+		Sender:             sender,
 	}
 }
 
@@ -149,5 +183,39 @@ func (t *ImplTwilio) TemporaryPIN(
 		ctx,
 		to,
 		message,
+	)
+}
+
+// MakeTwilioRequest makes a twilio request
+func (t *ImplTwilio) MakeTwilioRequest(
+	method string,
+	urlPath string,
+	content url.Values,
+	target interface{},
+) error {
+	i := t.infrastructure.ServiceTwilioImpl
+	return i.MakeTwilioRequest(
+		method,
+		urlPath,
+		content,
+		target,
+	)
+}
+
+// MakeWhatsappTwilioRequest makes a twilio request
+func (t *ImplTwilio) MakeWhatsappTwilioRequest(
+	ctx context.Context,
+	method string,
+	urlPath string,
+	content url.Values,
+	target interface{},
+) error {
+	i := t.infrastructure.ServiceTwilioImpl
+	return i.MakeWhatsappTwilioRequest(
+		ctx,
+		method,
+		urlPath,
+		content,
+		target,
 	)
 }
