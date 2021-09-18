@@ -258,6 +258,83 @@ func TestServiceOTPImpl_SaveOTPToFirestore(t *testing.T) {
 	}
 }
 
+func TestImplOTP_VerifyOtp(t *testing.T) {
+	ctx := firebasetools.GetAuthenticatedContext(t)
+
+	s, _, err := InitializeTestNewOTP(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize new OTP: %v", err)
+	}
+
+	msisdn := interserviceclient.TestUserPhoneNumber
+	appID := ksuid.New().String()
+	retryStep := 1
+
+	verificationCode, err := s.GenerateRetryOTP(ctx, &msisdn, retryStep, &appID)
+	if err != nil {
+		t.Errorf("failed to generate retry OTP to phone: %v", err)
+	}
+
+	type args struct {
+		ctx              context.Context
+		msisdn           string
+		verificationCode *string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+		panics  bool
+	}{
+		{
+			name: "valid: correct params passed",
+			args: args{
+				ctx:              ctx,
+				msisdn:           msisdn,
+				verificationCode: &verificationCode,
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "invalid: missing  phone number",
+			args: args{
+				ctx:              ctx,
+				verificationCode: &verificationCode,
+			},
+			want:    false,
+			wantErr: true,
+		},
+		{
+			name: "invalid: missing verification code",
+			args: args{
+				ctx:    ctx,
+				msisdn: msisdn,
+			},
+			panics: true,
+		},
+	}
+	for _, tt := range tests {
+		if !tt.panics {
+			t.Run(tt.name, func(t *testing.T) {
+				got, err := s.VerifyOtp(tt.args.ctx, tt.args.msisdn, tt.args.verificationCode)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("ImplOTP.VerifyOtp() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if got != tt.want {
+					t.Errorf("ImplOTP.VerifyOtp() = %v, want %v", got, tt.want)
+				}
+			})
+		}
+		if tt.panics {
+			fcVerifyOtp := func() { _, _ = s.VerifyOtp(tt.args.ctx, tt.args.msisdn, tt.args.verificationCode) }
+			assert.Panics(t, fcVerifyOtp)
+		}
+	}
+}
+
 func TestServiceOTPImpl_VerifyEmailOtp(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 
