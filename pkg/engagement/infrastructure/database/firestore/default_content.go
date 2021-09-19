@@ -43,13 +43,15 @@ const (
 	mp4Link1                 = "https://a.bewell.co.ke/videos/what_you_can_do.mp4"
 	mp4Link2                 = "https://a.bewell.co.ke/videos/how_to_add_cover.mp4"
 	youtubeLink1             = "https://youtu.be/-mlr9rjRXmc"
-	youtubeLink2             = "https://a.bewell.co.ke/videos/how_to_add_cover.mp4"
+	youtubeLink2             = "https://youtu.be/-iSB8yrSIps"
 	defaultTaglineorSummary  = "See what you can do on your Be.Well app."
 	defaultText              = "How to add your health insurance cover to your Be.Well app."
 	addCovertaglineorSummary = "Learn how to add your cover in 3 easy steps"
 	addCovertext             = "View your health insurance cover benefits on your Be.Well app."
 	sladeTagline             = "Learn what is Be.Well and how you can benefit from using it"
 	sladeSummary             = "Be.Well is a virtual and physical healthcare community."
+	slade360MP4              = "https://a.bewell.co.ke/videos/healthcare_simplified.mp4"
+	slade360Youtube          = "https://youtu.be/mKnlXcS3_Z0"
 	sladeText                = "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
 )
 
@@ -727,7 +729,7 @@ func simpleConsumerWelcome(
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
-	links := getFeedWelcomeVideos(flavour)
+	links := getFeedWelcomeVideos(flavour, false)
 	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -774,7 +776,7 @@ func simpleProWelcome(
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
-	links := getFeedWelcomeVideos(flavour)
+	links := getFeedWelcomeVideos(flavour, false)
 	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1179,12 +1181,36 @@ func getProWelcomeThread(
 	}, nil
 }
 
-func getFeedWelcomeVideos(flavour feedlib.Flavour) []feedlib.Link {
+func getMP4FeedWelcomeVideos(videos []feedlib.Link) []feedlib.Link {
+	// mp4Videos for Consumer
+	consumerVideos := []feedlib.Link{
+		feedlib.GetMP4Link(
+			"https://a.bewell.co.ke/videos/what_you_can_do.mp4",
+			"Slade 360",
+			" View your health insurance cover benefits on your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+		feedlib.GetMP4Link(
+			"https://a.bewell.co.ke/videos/how_to_add_cover.mp4",
+			"Slade 360",
+			"How to add your health insurance cover to your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+	}
+	videos = append(videos, consumerVideos...)
+
+	return videos
+}
+
+func getFeedWelcomeVideos(flavour feedlib.Flavour, playMP4 bool) []feedlib.Link {
 	videos := []feedlib.Link{}
 
 	switch flavour {
 	case feedlib.FlavourConsumer:
-		// Videos for Consumer
+		if playMP4 {
+			return getMP4FeedWelcomeVideos(videos)
+		}
+		// Youtubevideos for Consumer
 		consumerVideos := []feedlib.Link{
 			feedlib.GetYoutubeVideoLink(
 				"https://youtu.be/-mlr9rjRXmc",
@@ -1209,9 +1235,43 @@ func getFeedWelcomeVideos(flavour feedlib.Flavour) []feedlib.Link {
 	return videos
 }
 
+func addSlade360Video(items []feedlib.Item, future time.Time, url string) []feedlib.Item {
+	// add the slade 360 video last
+	items = append(items, feedlib.Item{
+		ID:             ksuid.New().String(),
+		SequenceNumber: int(time.Now().Unix()),
+		Expiry:         future,
+		Persistent:     false,
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+		Author:         defaultAuthor,
+		Tagline:        sladeTagline,
+		Label:          common.DefaultLabel,
+		Summary:        sladeSummary,
+		Timestamp:      time.Now(),
+		Text:           sladeText,
+		TextType:       feedlib.TextTypeHTML,
+		Links: []feedlib.Link{
+			feedlib.GetMP4Link(
+				url,
+				"Slade 360",
+				"Slade 360. HealthCare. Simplified.",
+				common.StaticBase+"/items/videos/thumbs/04_slade.png",
+			),
+		},
+		Actions:              []feedlib.Action{},
+		Conversations:        []feedlib.Message{},
+		Users:                []string{},
+		Groups:               []string{},
+		NotificationChannels: []feedlib.Channel{},
+	})
+	return items
+}
 func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playMP4 bool) []feedlib.Item {
 	ctx, span := tracer.Start(ctx, "feedItemsFromCMSFeedTag")
 	defer span.End()
+
 	// Initialize ISC clients
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 
@@ -1224,31 +1284,29 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 	feedPosts, err := libraryService.GetFeedContent(ctx, flavour)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
-		//  non-fatal, intentionally
+		//  non-fatal,
 		log.Printf("ERROR: unable to fetch welcome feed posts from CMS: %s", err)
 	}
-
-	// retrieve video posts from datastore and extend to the list of posts
-	videosLinks := getFeedWelcomeVideos(flavour)
+	var videosLinks []feedlib.Link
 
 	future := time.Now().Add(time.Hour * futureHours)
-	for _, videoLink := range videosLinks {
-		tagline := ""
-		summary := ""
-		text := ""
-		sequenceNumber := int(time.Now().Unix())
-
-		if playMP4 {
+	if playMP4 {
+		videosLinks = getFeedWelcomeVideos(flavour, playMP4)
+		for _, videoLink := range videosLinks {
+			tagline := ""
+			summary := ""
+			text := ""
+			sequenceNumber := int(time.Now().Unix())
 			//Change urls MP4 videos
 			if videoLink.URL == mp4Link1 {
 				tagline = defaultTaglineorSummary
 				summary = defaultTaglineorSummary
-				text = defaultText
+				text = addCovertext
 			}
 			if videoLink.URL == mp4Link2 {
 				tagline = addCovertaglineorSummary
 				summary = addCovertaglineorSummary
-				text = addCovertext
+				text = defaultText
 				sequenceNumber = int(time.Now().Unix()) + 1
 			}
 			items = append(items, feedlib.Item{
@@ -1290,28 +1348,53 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 				items = append(items, feedItemFromCMSPost(*post))
 			}
 
-			// add the slade 360 video last
+		}
+
+		// add the slade 360 video last
+		items = addSlade360Video(items, future, slade360MP4)
+
+	} else {
+		// play youTube videos
+		videosLinks = getFeedWelcomeVideos(flavour, playMP4)
+		for _, videoLink := range videosLinks {
+			tagline := ""
+			summary := ""
+			text := ""
+			sequenceNumber := int(time.Now().Unix())
+			if videoLink.URL == youtubeLink1 {
+				tagline = defaultTaglineorSummary
+				summary = defaultTaglineorSummary
+				text = addCovertext
+			}
+			if videoLink.URL == youtubeLink2 {
+				tagline = addCovertaglineorSummary
+				summary = addCovertaglineorSummary
+				text = defaultText
+
+				sequenceNumber = int(time.Now().Unix()) + 1
+			}
+
 			items = append(items, feedlib.Item{
 				ID:             ksuid.New().String(),
-				SequenceNumber: int(time.Now().Unix()),
+				SequenceNumber: sequenceNumber,
 				Expiry:         future,
 				Persistent:     false,
 				Status:         feedlib.StatusPending,
 				Visibility:     feedlib.VisibilityShow,
 				Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
 				Author:         defaultAuthor,
-				Tagline:        sladeTagline,
+				Tagline:        tagline,
 				Label:          common.DefaultLabel,
-				Summary:        sladeSummary,
+				Summary:        summary,
 				Timestamp:      time.Now(),
-				Text:           sladeText,
+				Text:           text,
 				TextType:       feedlib.TextTypeHTML,
 				Links: []feedlib.Link{
-					feedlib.GetMP4Link(
-						"healthcare_simplified.mp4 ",
-						"Slade 360",
-						"Slade 360. HealthCare. Simplified.",
-						common.StaticBase+"/items/videos/thumbs/04_slade.png",
+					feedlib.GetYoutubeVideoLink(
+						videoLink.URL,
+						videoLink.Title,
+						videoLink.Description,
+						videoLink.Thumbnail,
 					),
 				},
 				Actions:              []feedlib.Action{},
@@ -1321,93 +1404,20 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 				NotificationChannels: []feedlib.Channel{},
 			})
 
-			return items
+			for _, post := range feedPosts {
+				if post == nil {
+					// non fatal, intentionally
+					log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
+					continue
+				}
+				items = append(items, feedItemFromCMSPost(*post))
+			}
 
 		}
+		// add the slade 360 video last
+		items = addSlade360Video(items, future, slade360Youtube)
 
-		// play youTube videos
-		if videoLink.URL == youtubeLink1 {
-			tagline = defaultTaglineorSummary
-			summary = defaultTaglineorSummary
-			text = defaultText
-		}
-		if videoLink.URL == youtubeLink2 {
-			tagline = addCovertaglineorSummary
-			summary = addCovertaglineorSummary
-			text = addCovertext
-			sequenceNumber = int(time.Now().Unix()) + 1
-		}
-
-		items = append(items, feedlib.Item{
-			ID:             ksuid.New().String(),
-			SequenceNumber: sequenceNumber,
-			Expiry:         future,
-			Persistent:     false,
-			Status:         feedlib.StatusPending,
-			Visibility:     feedlib.VisibilityShow,
-			Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
-			Author:         defaultAuthor,
-			Tagline:        tagline,
-			Label:          common.DefaultLabel,
-			Summary:        summary,
-			Timestamp:      time.Now(),
-			Text:           text,
-			TextType:       feedlib.TextTypeHTML,
-			Links: []feedlib.Link{
-				feedlib.GetYoutubeVideoLink(
-					videoLink.URL,
-					videoLink.Title,
-					videoLink.Description,
-					videoLink.Thumbnail,
-				),
-			},
-			Actions:              []feedlib.Action{},
-			Conversations:        []feedlib.Message{},
-			Users:                []string{},
-			Groups:               []string{},
-			NotificationChannels: []feedlib.Channel{},
-		})
 	}
-
-	for _, post := range feedPosts {
-		if post == nil {
-			// non fatal, intentionally
-			log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
-			continue
-		}
-		items = append(items, feedItemFromCMSPost(*post))
-	}
-
-	// add the slade 360 video last
-	items = append(items, feedlib.Item{
-		ID:             ksuid.New().String(),
-		SequenceNumber: int(time.Now().Unix()),
-		Expiry:         future,
-		Persistent:     false,
-		Status:         feedlib.StatusPending,
-		Visibility:     feedlib.VisibilityShow,
-		Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
-		Author:         defaultAuthor,
-		Tagline:        sladeTagline,
-		Label:          common.DefaultLabel,
-		Summary:        sladeSummary,
-		Timestamp:      time.Now(),
-		Text:           sladeText,
-		TextType:       feedlib.TextTypeHTML,
-		Links: []feedlib.Link{
-			feedlib.GetYoutubeVideoLink(
-				"https://youtu.be/mKnlXcS3_Z0",
-				"Slade 360",
-				"Slade 360. HealthCare. Simplified.",
-				common.StaticBase+"/items/videos/thumbs/04_slade.png",
-			),
-		},
-		Actions:              []feedlib.Action{},
-		Conversations:        []feedlib.Message{},
-		Users:                []string{},
-		Groups:               []string{},
-		NotificationChannels: []feedlib.Channel{},
-	})
 
 	return items
 }

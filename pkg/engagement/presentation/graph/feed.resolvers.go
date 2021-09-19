@@ -201,19 +201,22 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feedlib.Fla
 	return true, nil
 }
 
-func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
+func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 *bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
 	startTime := time.Now()
-
 	uid, err := r.getLoggedInUserUID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can't get logged in user UID")
+	}
+	var playmp4FeedVideos bool
+	if playMp4 != nil {
+		playmp4FeedVideos = true
 	}
 	feed, err := r.usecases.GetFeed(
 		ctx,
 		&uid,
 		&isAnonymous,
 		flavour,
-		playMp4,
+		playmp4FeedVideos,
 		persistent,
 		status,
 		visibility,

@@ -22,7 +22,7 @@ func TestGraphQLGetFeed(t *testing.T) {
 	headers := getGraphQLHeaders(t)
 	gql := map[string]interface{}{}
 	gql["query"] = `
-	query getFeed($flavour: Flavour!,$isAnonymous: Boolean!,$playMP4:Boolean!,
+	query getFeed($flavour: Flavour!,$isAnonymous: Boolean!,$playMP4:Boolean,
 		$persistent: BooleanFilter!,
 		$status: Status,
 		  $visibility: Visibility,

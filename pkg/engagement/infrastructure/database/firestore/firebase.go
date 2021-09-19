@@ -210,13 +210,12 @@ func (fr Repository) GetFeed(
 			filterParams,
 		)
 	}
-
 	feed := &domain.Feed{
 		UID:         *uid,
 		Flavour:     flavour,
 		Actions:     actions,
 		Nudges:      nudges,
-		Items:       feedItemsFromCMSFeedTag(ctx, flavour,playMP4),
+		Items:       feedItemsFromCMSFeedTag(ctx, flavour, playMP4),
 		IsAnonymous: isAnonymous,
 	}
 

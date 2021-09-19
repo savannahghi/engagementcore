@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
+	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
-
-	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 )
 
 func TestSetDefaultActions(t *testing.T) {

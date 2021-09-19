@@ -235,7 +235,6 @@ func TestRoutes(t *testing.T) {
 	messageID := ksuid.New().String()
 	title := url.QueryEscape(common.AddPrimaryEmailNudgeTitle)
 	badTitle := url.QueryEscape("not a default feed title")
-
 	type args struct {
 		routeName string
 		params    []string
@@ -661,6 +660,7 @@ func TestGetFeed(t *testing.T) {
 		httpMethod string
 		body       io.Reader
 	}
+
 	tests := []struct {
 		name                   string
 		args                   args
