@@ -340,7 +340,7 @@ type ComplexityRoot struct {
 		GenerateOtp           func(childComplexity int, msisdn string, appID *string) int
 		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int, appID *string) int
 		GetFaqsContent        func(childComplexity int, flavour feedlib.Flavour) int
-		GetFeed               func(childComplexity int, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) int
+		GetFeed               func(childComplexity int, flavour feedlib.Flavour, playMp4 *bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour feedlib.Flavour) int
 		ListNPSResponse       func(childComplexity int) int
@@ -416,7 +416,7 @@ type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
-	GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
+	GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 *bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour feedlib.Flavour) (int, error)
 	GenerateOtp(ctx context.Context, msisdn string, appID *string) (string, error)
@@ -2065,7 +2065,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feedlib.Flavour), args["playMP4"].(bool), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams)), true
+		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feedlib.Flavour), args["playMP4"].(*bool), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams)), true
 
 	case "Query.getLibraryContent":
 		if e.complexity.Query.GetLibraryContent == nil {
@@ -2682,7 +2682,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
-    playMP4: Boolean!
+    playMP4: Boolean
     isAnonymous: Boolean!
     persistent: BooleanFilter!
     status: Status
@@ -3732,10 +3732,10 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 		}
 	}
 	args["flavour"] = arg0
-	var arg1 bool
+	var arg1 *bool
 	if tmp, ok := rawArgs["playMP4"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playMP4"))
-		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		arg1, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -11248,7 +11248,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feedlib.Flavour), args["playMP4"].(bool), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams))
+		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feedlib.Flavour), args["playMP4"].(*bool), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -3,6 +3,7 @@ package fb
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/savannahghi/feedlib"
 	"github.com/stretchr/testify/assert"
@@ -364,4 +365,112 @@ func Test_getProWelcomeThread(t *testing.T) {
 	)
 	assert.Empty(t, message)
 	assert.NotNil(t, err)
+}
+
+func Test_addSlade360Video(t *testing.T) {
+	type args struct {
+		items  []feedlib.Item
+		future time.Time
+		url    string
+	}
+	future := time.Now().Add(time.Hour * futureHours)
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "happy case:slade video added successfully",
+			args: args{[]feedlib.Item{},
+				future,
+				slade360MP4,
+			},
+			want: 1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := addSlade360Video(tt.args.items, tt.args.future, tt.args.url)
+			if len(got) != tt.want {
+				t.Errorf("addSlade360Video() = %v, want %v", got, tt.want)
+				return
+
+			}
+
+			if got[0].Links[0].URL != slade360MP4 {
+				t.Errorf("wrong url returned:%v expected %v ", got[0].Links[0].URL, slade360MP4)
+				return
+			}
+
+		})
+	}
+}
+
+func Test_getMP4FeedWelcomeVideos(t *testing.T) {
+	type args struct {
+		videos []feedlib.Link
+	}
+	videos := []feedlib.Link{}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			"happy case:videos successfully fetched",
+			args{videos: videos},
+			2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getMP4FeedWelcomeVideos(tt.args.videos)
+
+			if len(got) != tt.want {
+				t.Errorf("expected the number of videos to be :%v", tt.want)
+				return
+
+			}
+		})
+	}
+}
+
+func Test_getFeedWelcomeVideos(t *testing.T) {
+	type args struct {
+		flavour feedlib.Flavour
+		playMP4 bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "happy case: successfully fetched welcome feed videos",
+			args: args{
+				flavour: "CONSUMER",
+				playMP4: false,
+			},
+			want: 2,
+		},
+		{
+			name: "happy case: successfully fetched welcome feed videos",
+			args: args{
+				flavour: "PRO",
+				playMP4: false,
+			},
+			want: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getFeedWelcomeVideos(tt.args.flavour,tt.args.playMP4)
+
+			if len(got) != tt.want {
+				t.Errorf("expected the number of videos to be :%v", tt.want)
+				return
+
+			}
+		})
+	}
 }
