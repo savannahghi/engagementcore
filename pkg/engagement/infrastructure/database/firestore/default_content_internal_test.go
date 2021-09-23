@@ -372,6 +372,7 @@ func Test_addSlade360Video(t *testing.T) {
 		items  []feedlib.Item
 		future time.Time
 		url    string
+		playMP4 bool
 	}
 	future := time.Now().Add(time.Hour * futureHours)
 	tests := []struct {
@@ -384,13 +385,14 @@ func Test_addSlade360Video(t *testing.T) {
 			args: args{[]feedlib.Item{},
 				future,
 				slade360MP4,
+				true,
 			},
 			want: 1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := addSlade360Video(tt.args.items, tt.args.future, tt.args.url)
+			got := addSlade360Video(tt.args.items, tt.args.future, tt.args.url, tt.args.playMP4)
 			if len(got) != tt.want {
 				t.Errorf("addSlade360Video() = %v, want %v", got, tt.want)
 				return

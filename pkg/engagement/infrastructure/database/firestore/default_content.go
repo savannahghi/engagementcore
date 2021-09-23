@@ -1234,8 +1234,29 @@ func getFeedWelcomeVideos(flavour feedlib.Flavour, playMP4 bool) []feedlib.Link 
 
 	return videos
 }
+func addSlade360Link(url string, playMP4 bool) feedlib.Link {
+	var feedData feedlib.Link
+	if playMP4 {
+		feedData = feedlib.GetMP4Link(
+			url,
+			"Slade 360",
+			"Slade 360. HealthCare. Simplified.",
+			common.StaticBase+"/items/videos/thumbs/04_slade.png",
+		)
+	} else {
+		feedData = feedlib.GetYoutubeVideoLink(
+			url,
+			"Slade 360",
+			"Slade 360. HealthCare. Simplified.",
+			common.StaticBase+"/items/videos/thumbs/04_slade.png",
+		)
 
-func addSlade360Video(items []feedlib.Item, future time.Time, url string) []feedlib.Item {
+	}
+	return feedData
+
+}
+
+func addSlade360Video(items []feedlib.Item, future time.Time, url string, playMP4 bool) []feedlib.Item {
 	// add the slade 360 video last
 	items = append(items, feedlib.Item{
 		ID:             ksuid.New().String(),
@@ -1253,12 +1274,7 @@ func addSlade360Video(items []feedlib.Item, future time.Time, url string) []feed
 		Text:           sladeText,
 		TextType:       feedlib.TextTypeHTML,
 		Links: []feedlib.Link{
-			feedlib.GetMP4Link(
-				url,
-				"Slade 360",
-				"Slade 360. HealthCare. Simplified.",
-				common.StaticBase+"/items/videos/thumbs/04_slade.png",
-			),
+			addSlade360Link(url, playMP4),
 		},
 		Actions:              []feedlib.Action{},
 		Conversations:        []feedlib.Message{},
@@ -1351,7 +1367,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 		}
 
 		// add the slade 360 video last
-		items = addSlade360Video(items, future, slade360MP4)
+		items = addSlade360Video(items, future, slade360MP4, playMP4)
 
 	} else {
 		// play youTube videos
@@ -1415,7 +1431,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 
 		}
 		// add the slade 360 video last
-		items = addSlade360Video(items, future, slade360Youtube)
+		items = addSlade360Video(items, future, slade360Youtube, playMP4)
 
 	}
 
