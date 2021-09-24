@@ -119,6 +119,6 @@ jobs:
 
       - name: Quality Gate - Test coverage shall be above threshold
         env:
-          TESTCOVERAGE_THRESHOLD: 72.8
+          TESTCOVERAGE_THRESHOLD: 73.2
         run: |
           bash scripts/coverage.sh
