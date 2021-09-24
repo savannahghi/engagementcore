@@ -28,6 +28,7 @@ type Usecases interface {
 		uid *string,
 		isAnonymous *bool,
 		flavour feedlib.Flavour,
+		playMP4 bool,
 		persistent feedlib.BooleanFilter,
 		status *feedlib.Status,
 		visibility *feedlib.Visibility,
