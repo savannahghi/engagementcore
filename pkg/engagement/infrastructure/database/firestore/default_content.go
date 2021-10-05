@@ -1354,16 +1354,15 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 				Groups:               []string{},
 				NotificationChannels: []feedlib.Channel{},
 			})
+		}
 
-			for _, post := range feedPosts {
-				if post == nil {
-					// non fatal, intentionally
-					log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
-					continue
-				}
-				items = append(items, feedItemFromCMSPost(*post))
+		for _, post := range feedPosts {
+			if post == nil {
+				// non fatal, intentionally
+				log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
+				continue
 			}
-
+			items = append(items, feedItemFromCMSPost(*post))
 		}
 
 		// add the slade 360 video last
@@ -1419,17 +1418,17 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 				Groups:               []string{},
 				NotificationChannels: []feedlib.Channel{},
 			})
-
-			for _, post := range feedPosts {
-				if post == nil {
-					// non fatal, intentionally
-					log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
-					continue
-				}
-				items = append(items, feedItemFromCMSPost(*post))
-			}
-
 		}
+
+		for _, post := range feedPosts {
+			if post == nil {
+				// non fatal, intentionally
+				log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
+				continue
+			}
+			items = append(items, feedItemFromCMSPost(*post))
+		}
+
 		// add the slade 360 video last
 		items = addSlade360Video(items, future, slade360Youtube, playMP4)
 
