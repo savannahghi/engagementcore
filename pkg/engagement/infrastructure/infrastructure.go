@@ -15,14 +15,13 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/surveys"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/uploads"
-	"github.com/savannahghi/engagementcore/pkg/engagement/repository"
 	"github.com/savannahghi/serverutils"
 )
 
 // Interactor is an implementation of the infrastructure interface
 // It combines each individual service implementation
 type Interactor struct {
-	repository.Repository
+	database.Repository
 	*fcm.ServiceFCMImpl
 	*library.ServiceLibraryImpl
 	*mail.ServiceMailImpl
