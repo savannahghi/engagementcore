@@ -369,9 +369,9 @@ func Test_getProWelcomeThread(t *testing.T) {
 
 func Test_addSlade360Video(t *testing.T) {
 	type args struct {
-		items  []feedlib.Item
-		future time.Time
-		url    string
+		items   []feedlib.Item
+		future  time.Time
+		url     string
 		playMP4 bool
 	}
 	future := time.Now().Add(time.Hour * futureHours)
@@ -409,24 +409,18 @@ func Test_addSlade360Video(t *testing.T) {
 }
 
 func Test_getMP4FeedWelcomeVideos(t *testing.T) {
-	type args struct {
-		videos []feedlib.Link
-	}
-	videos := []feedlib.Link{}
 	tests := []struct {
 		name string
-		args args
 		want int
 	}{
 		{
 			"happy case:videos successfully fetched",
-			args{videos: videos},
-			2,
+			3,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getMP4FeedWelcomeVideos(tt.args.videos)
+			got := getMP4FeedWelcomeVideos()
 
 			if len(got) != tt.want {
 				t.Errorf("expected the number of videos to be :%v", tt.want)
@@ -453,7 +447,7 @@ func Test_getFeedWelcomeVideos(t *testing.T) {
 				flavour: "CONSUMER",
 				playMP4: false,
 			},
-			want: 2,
+			want: 3,
 		},
 		{
 			name: "happy case: successfully fetched welcome feed videos",
@@ -466,10 +460,10 @@ func Test_getFeedWelcomeVideos(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getFeedWelcomeVideos(tt.args.flavour,tt.args.playMP4)
+			got := getFeedWelcomeVideos(tt.args.flavour, tt.args.playMP4)
 
 			if len(got) != tt.want {
-				t.Errorf("expected the number of videos to be :%v", tt.want)
+				t.Errorf("expected the number of videos to be : %v got %v", tt.want, len(got))
 				return
 
 			}
