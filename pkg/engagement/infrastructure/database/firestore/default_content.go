@@ -1181,9 +1181,9 @@ func getProWelcomeThread(
 	}, nil
 }
 
-func getMP4FeedWelcomeVideos(videos []feedlib.Link) []feedlib.Link {
+func getMP4FeedWelcomeVideos() []feedlib.Link {
 	// mp4Videos for Consumer
-	consumerVideos := []feedlib.Link{
+	return []feedlib.Link{
 		feedlib.GetMP4Link(
 			"https://a.bewell.co.ke/videos/what_you_can_do.mp4",
 			"Slade 360",
@@ -1196,42 +1196,54 @@ func getMP4FeedWelcomeVideos(videos []feedlib.Link) []feedlib.Link {
 			"How to add your health insurance cover to your Be.Well app.",
 			common.StaticBase+"/items/videos/thumbs/01_lead.png",
 		),
+		feedlib.GetMP4Link(
+			"https://a.bewell.co.ke/videos/how_to_choose_dependable_health_Insurance_for_your_parents.mp4",
+			"Slade 360",
+			"how to choose_dependable health Insurance for your parents.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
 	}
-	videos = append(videos, consumerVideos...)
+}
 
-	return videos
+func getYoutubeFeedWelcomeVideos() []feedlib.Link {
+	// youTube for Consumer
+	return []feedlib.Link{
+		feedlib.GetYoutubeVideoLink(
+			"https://youtu.be/-mlr9rjRXmc",
+			"Slade 360",
+			" View your health insurance cover benefits on your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+		feedlib.GetYoutubeVideoLink(
+			"https://youtu.be/-iSB8yrSIps",
+			"Slade 360",
+			"How to add your health insurance cover to your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+		feedlib.GetYoutubeVideoLink(
+			"https://youtu.be/iVpF-aPqhso",
+			"Slade 360",
+			"how to choose_dependable health Insurance for your parents.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+	}
 }
 
 func getFeedWelcomeVideos(flavour feedlib.Flavour, playMP4 bool) []feedlib.Link {
 	videos := []feedlib.Link{}
-
 	switch flavour {
 	case feedlib.FlavourConsumer:
 		if playMP4 {
-			return getMP4FeedWelcomeVideos(videos)
+			videos = append(videos, getMP4FeedWelcomeVideos()...)
+			return videos
 		}
 		// Youtubevideos for Consumer
-		consumerVideos := []feedlib.Link{
-			feedlib.GetYoutubeVideoLink(
-				"https://youtu.be/-mlr9rjRXmc",
-				"Slade 360",
-				" View your health insurance cover benefits on your Be.Well app.",
-				common.StaticBase+"/items/videos/thumbs/01_lead.png",
-			),
-			feedlib.GetYoutubeVideoLink(
-				"https://youtu.be/-iSB8yrSIps",
-				"Slade 360",
-				"How to add your health insurance cover to your Be.Well app.",
-				common.StaticBase+"/items/videos/thumbs/01_lead.png",
-			),
-		}
-		videos = append(videos, consumerVideos...)
+		videos = append(videos, getYoutubeFeedWelcomeVideos()...)
 
 	case feedlib.FlavourPro:
 		// Videos for PRO
 
 	}
-
 	return videos
 }
 func addSlade360Link(url string, playMP4 bool) feedlib.Link {
@@ -1367,7 +1379,6 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour, playM
 
 		// add the slade 360 video last
 		items = addSlade360Video(items, future, slade360MP4, playMP4)
-
 	} else {
 		// play youTube videos
 		videosLinks = getFeedWelcomeVideos(flavour, playMP4)
