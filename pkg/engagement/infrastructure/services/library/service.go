@@ -177,7 +177,6 @@ func (s ServiceLibraryImpl) getCMSPosts(ctx context.Context, requestType request
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to create action request with error; %v", err)
 	}
-
 	c := &http.Client{Timeout: time.Second * 300}
 	resp, err := c.Do(req)
 	if err != nil {
@@ -228,7 +227,6 @@ func (s ServiceLibraryImpl) GetFaqsContent(ctx context.Context, flavour feedlib.
 	}
 
 	profile, err := s.onboarding.GetUserProfile(ctx, user.UID)
-
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user profile: %w", err)

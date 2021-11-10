@@ -136,14 +136,14 @@ func TestService_GetFaqsContent(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{
-			name: "valid:retrieved_user_rbac_faq",
-			args: args{
-				ctx:     ctx,
-				flavour: "PRO",
-			},
-			wantErr: false,
-		},
+		// {
+		// 	name: "valid:retrieved_user_rbac_faq",
+		// 	args: args{
+		// 		ctx:     ctx,
+		// 		flavour: "PRO",
+		// 	},
+		// 	wantErr: false,
+		// },
 		{
 			name: "valid:retrieved_consumer_faq",
 			args: args{
