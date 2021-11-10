@@ -213,7 +213,7 @@ func (s ServiceLibraryImpl) GetFeedContent(ctx context.Context, flavour feedlib.
 func (s ServiceLibraryImpl) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	ctx, span := tracer.Start(ctx, "GetFaqsContent")
 	defer span.End()
-	if !feedlib.FlavourConsumer.IsValid() {
+	if !flavour.IsValid() {
 		return nil, fmt.Errorf("flavour `%s` is invalid", flavour)
 	}
 	if flavour == feedlib.FlavourConsumer {
