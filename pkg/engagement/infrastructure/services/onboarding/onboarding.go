@@ -48,8 +48,14 @@ type ProfileService interface {
 		ctx context.Context,
 		uid UserUIDs,
 	) (map[string][]string, error)
-	GetUserProfile(ctx context.Context, uid string) (*profileutils.UserProfile, error)
-	GetUserProfileByPhoneOrEmail(ctx context.Context, payload *dto.RetrieveUserProfileInput) (*profileutils.UserProfile, error)
+	GetUserProfile(
+		ctx context.Context,
+		uid string,
+	) (*profileutils.UserProfile, error)
+	GetUserProfileByPhoneOrEmail(
+		ctx context.Context,
+		payload *dto.RetrieveUserProfileInput,
+	) (*profileutils.UserProfile, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -167,18 +173,20 @@ func (rps RemoteProfileService) GetUserProfile(
 		return nil, fmt.Errorf("error calling profile service: %w", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(
-			"user profile not found. Error code: %v",
-			resp.StatusCode,
-		)
-	}
-
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error reading profile response body: %w", err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"failed to get user profile with status %v and data: %s",
+			resp.Status,
+			string(data),
+		)
+	}
+
 	user := profileutils.UserProfile{}
 	err = json.Unmarshal(data, &user)
 	if err != nil {
@@ -189,7 +197,10 @@ func (rps RemoteProfileService) GetUserProfile(
 }
 
 // GetUserProfileByPhoneOrEmail gets the specified users' profile from the onboarding service
-func (rps RemoteProfileService) GetUserProfileByPhoneOrEmail(ctx context.Context, payload *dto.RetrieveUserProfileInput) (*profileutils.UserProfile, error) {
+func (rps RemoteProfileService) GetUserProfileByPhoneOrEmail(
+	ctx context.Context,
+	payload *dto.RetrieveUserProfileInput,
+) (*profileutils.UserProfile, error) {
 	ctx, span := tracer.Start(ctx, "GetUserProfileByPhoneOrEmail")
 	defer span.End()
 	payload = &dto.RetrieveUserProfileInput{

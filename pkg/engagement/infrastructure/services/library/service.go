@@ -213,14 +213,13 @@ func (s ServiceLibraryImpl) GetFeedContent(ctx context.Context, flavour feedlib.
 func (s ServiceLibraryImpl) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	ctx, span := tracer.Start(ctx, "GetFaqsContent")
 	defer span.End()
-	if !feedlib.FlavourConsumer.IsValid() {
+	if !flavour.IsValid() {
 		return nil, fmt.Errorf("flavour `%s` is invalid", flavour)
 	}
 	if flavour == feedlib.FlavourConsumer {
 		return s.getCMSPosts(ctx, faqsRequestConsumer)
 	}
 
-	// get profile from onboarding service
 	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -228,7 +227,6 @@ func (s ServiceLibraryImpl) GetFaqsContent(ctx context.Context, flavour feedlib.
 	}
 
 	profile, err := s.onboarding.GetUserProfile(ctx, user.UID)
-
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user profile: %w", err)
@@ -237,11 +235,12 @@ func (s ServiceLibraryImpl) GetFaqsContent(ctx context.Context, flavour feedlib.
 	switch profile.Role {
 	case profileutils.RoleTypeEmployee:
 		return s.getCMSPosts(ctx, employeeHelpRequest)
+
 	case profileutils.RoleTypeAgent:
 		return s.getCMSPosts(ctx, agentHelpRequest)
+
 	default:
 		return s.getCMSPosts(ctx, faqsRequestPro)
-
 	}
 }
 
