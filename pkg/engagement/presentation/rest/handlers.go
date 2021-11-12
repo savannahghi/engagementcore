@@ -1290,8 +1290,8 @@ func (p PresentationHandlersImpl) SendEmail() http.HandlerFunc {
 		resp, _, err := p.infrastructure.SendEmail(
 			ctx,
 			payload.Subject,
-			payload.Text,
-			nil,
+			payload.Subject,
+			&payload.Text,
 			payload.To...,
 		)
 		if err != nil {

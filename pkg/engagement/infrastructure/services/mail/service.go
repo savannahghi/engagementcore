@@ -240,8 +240,6 @@ func (s ServiceMailImpl) SendMailgun(
 		message.SetHtml(text)
 	}
 
-	message.AddHeader("Content-Type", "text/html; charset=\"utf-8\";")
-
 	ctx, cancel := context.WithTimeout(ctx, time.Second*MailGunTimeoutSeconds)
 	defer cancel()
 
