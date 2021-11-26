@@ -32,7 +32,7 @@ const (
 	allowedProFeedTagFilter      = "&filter=tag:feed-pro&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
 	allowedPROFAQsTagFilter      = "&filter=tag:faqs-pro"
 	allowedConsumerFAQsTagFilter = "&filter=tag:faqs-consumer&filter=tag:how-to"
-	allowedLibraryTagFilter      = "&filter=tag:diet&filter=tag:health-tips"
+	allowedLibraryTagFilter      = "&filter=tag:diet&filter=tag:health-tips&filter=tag:health-insurance"
 	allowedAgentTagFilter        = "&filter=tag:agent-faqs"
 	allowedEmployeeTagFilter     = "&filter=tag:employee-faqs"
 )
