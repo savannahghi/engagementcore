@@ -93,6 +93,11 @@ type Msisdn struct {
 	AppID  *string `json:"appId"`
 }
 
+// Email is an input struct for a user's email
+type Email struct {
+	Email string `json:"email"`
+}
+
 // GenerateRetryOTP is an input struct for generating and
 // sending fallback otp
 type GenerateRetryOTP struct {

@@ -37,7 +37,7 @@ func newTestOtpSService(t *testing.T) (*otp.ServiceOTPImpl, error) {
 
 	if err != nil {
 		t.Errorf(
-			"can't instantiate notification service in resolver: %w",
+			"can't instantiate notification service in resolver: %v",
 			err,
 		)
 		return nil, err

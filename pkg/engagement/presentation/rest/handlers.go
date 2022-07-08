@@ -126,6 +126,8 @@ type PresentationHandlers interface {
 	GetTwilioVideoCallbackFunc() http.HandlerFunc
 
 	SendTemporaryPIN() http.HandlerFunc
+
+	SendEmailOTP() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1505,6 +1507,36 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			ctx,
 			payload.Msisdn,
 			payload.AppID,
+		)
+		if err != nil {
+			serverutils.WriteJSONResponse(
+				w,
+				errorcode.ErrorMap(
+					fmt.Errorf("unable to generate and send otp: %v", err),
+				),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		serverutils.WriteJSONResponse(w, code, http.StatusOK)
+	}
+}
+
+//SendEmailOTP generates and send an OTP to the email supplied
+func (p PresentationHandlersImpl) SendEmailOTP() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		payload, err := otp.ValidateSendEmailOTPPayload(w, r)
+		if err != nil {
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+
+		code, err := p.infrastructure.EmailVerificationOtp(
+			ctx,
+			&payload.Email,
 		)
 		if err != nil {
 			serverutils.WriteJSONResponse(

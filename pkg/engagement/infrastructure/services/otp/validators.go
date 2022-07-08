@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/errorcodeutil"
 	"github.com/savannahghi/serverutils"
@@ -18,6 +19,25 @@ func ValidateSendOTPPayload(w http.ResponseWriter, r *http.Request) (*dto.Msisdn
 		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 		return nil, err
 	}
+	return payload, nil
+}
+
+// ValidateSendEmailOTPPayload checks the validity of the request payload
+func ValidateSendEmailOTPPayload(w http.ResponseWriter, r *http.Request) (*dto.Email, error) {
+	payload := &dto.Email{}
+	serverutils.DecodeJSONToTargetStruct(w, r, payload)
+	if payload.Email == "" {
+		err := fmt.Errorf("invalid generate and send otp payload")
+		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
+		return nil, err
+	}
+	isEmail := govalidator.IsEmail(payload.Email)
+	if !isEmail {
+		err := fmt.Errorf("invalid email generated")
+		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
+		return nil, err
+	}
+
 	return payload, nil
 }
 
