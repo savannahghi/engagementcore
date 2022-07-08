@@ -280,6 +280,10 @@ func SharedAuthenticatedISCRoutes(ctx context.Context, r *mux.Router) {
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.VerifyRetryOTPHandler())
 
+	isc.Path("/send_email_otp").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.SendEmailOTP())
+
 	isc.Path("/verify_email_otp/").Methods(
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.VerifyRetryEmailOTPHandler())

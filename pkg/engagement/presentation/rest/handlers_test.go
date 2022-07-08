@@ -20,15 +20,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
-	"github.com/savannahghi/feedlib"
-	"github.com/savannahghi/firebasetools"
-	"github.com/savannahghi/profileutils"
-	"github.com/savannahghi/pubsubtools"
-	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/api/idtoken"
-
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
@@ -36,7 +27,15 @@ import (
 	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagementcore/pkg/engagement/presentation"
 	"github.com/savannahghi/engagementcore/pkg/engagement/presentation/rest"
+	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
+	"github.com/savannahghi/profileutils"
+	"github.com/savannahghi/pubsubtools"
+	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/api/idtoken"
 )
 
 const (
@@ -66,7 +65,7 @@ func startTestServer(ctx context.Context) (*http.Server, string, error) {
 	// the tests; backlogs will be sent to the listener
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to listen on port %d: %w", port, err)
+		return nil, "", fmt.Errorf("unable to listen on port %d: %v", port, err)
 	}
 	if l == nil {
 		return nil, "", fmt.Errorf("nil test server listener")
@@ -124,7 +123,7 @@ func RegisterPushToken(
 		payload,
 	)
 	if err != nil {
-		return false, fmt.Errorf("unable to make a request to register push token: %w", err)
+		return false, fmt.Errorf("unable to make a request to register push token: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -843,7 +842,7 @@ func TestGetFeed(t *testing.T) {
 				returnedFeed := &domain.Feed{}
 				err = json.Unmarshal(data, returnedFeed)
 				if err != nil {
-					t.Errorf("can't unmarshal feed from response JSON: %w", err)
+					t.Errorf("can't unmarshal feed from response JSON: %v", err)
 					return
 				}
 
@@ -4174,7 +4173,7 @@ func getTestMessage() feedlib.Message {
 func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 	testDataJSON, err := json.Marshal(data)
 	if err != nil {
-		return nil, fmt.Errorf("can't marshal JSON: %w", err)
+		return nil, fmt.Errorf("can't marshal JSON: %v", err)
 	}
 
 	pubsubURL := fmt.Sprintf("%s%s", baseURL, pubsubtools.PubSubHandlerPath)
@@ -4388,13 +4387,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 
 	invalidMessagePostRequest, err := GetPayloadRequest(invalidMessagePostTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	messagePostRequest, err := GetPayloadRequest(messagePostTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4421,12 +4420,12 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 
 	invalidMessageDeleteRequest, err := GetPayloadRequest(invalidMessageDeleteTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 	messageDeleteRequest, err := GetPayloadRequest(messageDeleteTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4453,12 +4452,12 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 
 	invalidIncomingEventRequest, err := GetPayloadRequest(invalidIncomingEventTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 	incomingEventRequest, err := GetPayloadRequest(incomingEventTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4551,13 +4550,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidItemUnresolveTopicRequest, err := GetPayloadRequest(invalidItemUnresolveTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	itemUnresolveTopicRequest, err := GetPayloadRequest(itemUnresolveTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4585,13 +4584,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidItemDeleteTopicRequest, err := GetPayloadRequest(invalidItemDeleteTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	itemDeleteTopicRequest, err := GetPayloadRequest(itemDeleteTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4619,13 +4618,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidItemHideTopicRequest, err := GetPayloadRequest(invalidItemHideTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	itemHideTopicRequest, err := GetPayloadRequest(itemHideTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4653,13 +4652,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidItemShowTopicRequest, err := GetPayloadRequest(invalidItemShowTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	itemShowTopicRequest, err := GetPayloadRequest(itemShowTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4687,13 +4686,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidItemPinTopicRequest, err := GetPayloadRequest(invalidItemPinTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	itemPinTopicRequest, err := GetPayloadRequest(itemPinTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4721,13 +4720,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidItemUnpinTopicRequest, err := GetPayloadRequest(invalidItemUnpinTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	itemUnpinTopicRequest, err := GetPayloadRequest(itemUnpinTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4755,13 +4754,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidNudgePublishTopicRequest, err := GetPayloadRequest(invalidNudgePublishTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	nudgePublishTopicRequest, err := GetPayloadRequest(nudgePublishTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4789,13 +4788,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidNudgeDeleteTopicRequest, err := GetPayloadRequest(invalidNudgeDeleteTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	nudgeDeleteTopicRequest, err := GetPayloadRequest(nudgeDeleteTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4823,13 +4822,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidNudgeResolveTopicRequest, err := GetPayloadRequest(invalidNudgeResolveTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	nudgeResolveTopicRequest, err := GetPayloadRequest(nudgeResolveTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4857,13 +4856,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidNudgeUnresolveTopicRequest, err := GetPayloadRequest(invalidNudgeUnresolveTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	nudgeUnresolveTopicRequest, err := GetPayloadRequest(nudgeUnresolveTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4891,13 +4890,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidNudgeHideTopicRequest, err := GetPayloadRequest(invalidNudgeHideTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	nudgeHideTopicRequest, err := GetPayloadRequest(nudgeHideTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -4925,13 +4924,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	}
 	invalidNudgeShowTopicRequest, err := GetPayloadRequest(invalidNudgeShowTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
 	nudgeShowTopicRequest, err := GetPayloadRequest(nudgeShowTopicPayload)
 	if err != nil {
-		t.Errorf("can't initialize request: %w", err)
+		t.Errorf("can't initialize request: %v", err)
 		return
 	}
 
@@ -5605,7 +5604,7 @@ func resolveTestNudge(
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 	_, err = fr.UpdateNudge(ctx, uid, fl, nudge)
 	if err != nil {
-		return fmt.Errorf("unable to resolve nudge: %w",
+		return fmt.Errorf("unable to resolve nudge: %v",
 			err,
 		)
 	}
@@ -5639,7 +5638,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 	if strnudge != "<nil>" {
 		err = fr.DeleteNudge(ctx, uid, fl, nudge.ID)
 		if err != nil {
-			t.Errorf("failed to delete nudge %w", err)
+			t.Errorf("failed to delete nudge %v", err)
 		}
 	}
 
@@ -5667,7 +5666,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 				&nudge,
 			)
 			if err != nil {
-				t.Errorf("unable to resolve nudge: %w", err)
+				t.Errorf("unable to resolve nudge: %v", err)
 				return
 			}
 		}
@@ -5944,7 +5943,7 @@ func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 
 	err = fr.SaveOutgoingEmails(ctx, emailLog)
 	if err != nil {
-		t.Errorf("unable to save outgoing email: %w",
+		t.Errorf("unable to save outgoing email: %v",
 			err,
 		)
 		return
@@ -5952,7 +5951,7 @@ func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 
 	_, err = fr.UpdateMailgunDeliveryStatus(ctx, &event)
 	if err != nil {
-		t.Errorf("unable to update email delivery status: %w",
+		t.Errorf("unable to update email delivery status: %v",
 			err,
 		)
 		return
@@ -5997,6 +5996,134 @@ func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 			},
 			wantStatus: http.StatusBadRequest,
 			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range tt.args.headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if resp.StatusCode != tt.wantStatus {
+				t.Errorf("expected status %d, got status %s", tt.wantStatus, resp.Status)
+				return
+			}
+		})
+	}
+}
+
+func TestPresentationHandlersImpl_SendEmailOTP(t *testing.T) {
+	ctx := context.Background()
+	headers := getDefaultHeaders(ctx, t, baseURL)
+
+	email := dto.Email{
+		Email: "test@bewell.co.ke",
+	}
+	bs, err := json.Marshal(email)
+	if err != nil {
+		t.Errorf("unable to marshal email input to JSON: %s", err)
+	}
+	payload := bytes.NewBuffer(bs)
+
+	noEmail := dto.Email{}
+	noBs, err := json.Marshal(noEmail)
+	if err != nil {
+		t.Errorf("unable to marshal email input to JSON: %s", err)
+	}
+	noEmailPayload := bytes.NewBuffer(noBs)
+
+	invalidEmail := dto.Email{}
+	invalidNs, err := json.Marshal(invalidEmail)
+	if err != nil {
+		t.Errorf("unable to marshal email input to JSON: %s", err)
+	}
+	invalidEmailPayload := bytes.NewBuffer(invalidNs)
+
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "happy case",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/send_email_otp", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "sad case no email",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/send_email_otp", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       noEmailPayload,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "sad case invalid email",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/send_email_otp", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       invalidEmailPayload,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {
