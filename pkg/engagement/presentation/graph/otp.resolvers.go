@@ -11,6 +11,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// VerifyOtp is the resolver for the verifyOTP field.
 func (r *mutationResolver) VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error) {
 	startTime := time.Now()
 
@@ -32,6 +33,7 @@ func (r *mutationResolver) VerifyOtp(ctx context.Context, msisdn string, otp str
 	return verifyOTP, nil
 }
 
+// VerifyEmailOtp is the resolver for the verifyEmailOTP field.
 func (r *mutationResolver) VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error) {
 	startTime := time.Now()
 
@@ -53,6 +55,7 @@ func (r *mutationResolver) VerifyEmailOtp(ctx context.Context, email string, otp
 	return verifyEmailOTP, nil
 }
 
+// GenerateOtp is the resolver for the generateOTP field.
 func (r *queryResolver) GenerateOtp(ctx context.Context, msisdn string, appID *string) (string, error) {
 	startTime := time.Now()
 
@@ -74,6 +77,7 @@ func (r *queryResolver) GenerateOtp(ctx context.Context, msisdn string, appID *s
 	return otp, nil
 }
 
+// GenerateAndEmailOtp is the resolver for the generateAndEmailOTP field.
 func (r *queryResolver) GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string, appID *string) (string, error) {
 	startTime := time.Now()
 
@@ -94,6 +98,7 @@ func (r *queryResolver) GenerateAndEmailOtp(ctx context.Context, msisdn string, 
 	return otp, nil
 }
 
+// GenerateRetryOtp is the resolver for the generateRetryOTP field.
 func (r *queryResolver) GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int, appID *string) (string, error) {
 	startTime := time.Now()
 
@@ -114,6 +119,7 @@ func (r *queryResolver) GenerateRetryOtp(ctx context.Context, msisdn string, ret
 	return otp, nil
 }
 
+// EmailVerificationOtp is the resolver for the emailVerificationOTP field.
 func (r *queryResolver) EmailVerificationOtp(ctx context.Context, email string) (string, error) {
 	startTime := time.Now()
 

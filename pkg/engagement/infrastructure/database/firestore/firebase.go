@@ -41,6 +41,8 @@ const (
 	// NPSResponseCollectionName firestore collection name where nps responses are stored
 	NPSResponseCollectionName = "nps_response"
 
+	PatientFeedbackCollectionName = "patient_feedback"
+
 	twilioCallbackCollectionName = "twilio_callbacks"
 
 	twilioVideoCallbackCollectionName = "twilio_video_callbacks"
@@ -105,9 +107,9 @@ func (fr Repository) checkPreconditions() error {
 //
 // Feed items are ordered by:
 //
-//   1. Timestamp
-//   2. Sequence number
-//   3. ID (a tie breaker, in the unlikely event that the first two tie)
+//  1. Timestamp
+//  2. Sequence number
+//  3. ID (a tie breaker, in the unlikely event that the first two tie)
 //
 // Having established this ordering, we will implement very lightweight
 // pagination using a start and end offset.
@@ -890,6 +892,11 @@ func (fr Repository) getNotificationCollectionName() string {
 
 func (fr Repository) getNPSResponseCollectionName() string {
 	suffixed := firebasetools.SuffixCollection(NPSResponseCollectionName)
+	return suffixed
+}
+
+func (fr Repository) getPatientFeedbackCollectionName() string {
+	suffixed := firebasetools.SuffixCollection(PatientFeedbackCollectionName)
 	return suffixed
 }
 
@@ -1698,6 +1705,22 @@ func (fr Repository) SaveNPSResponse(
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't save nps response: %w", err)
+	}
+	return nil
+}
+
+// create an actual implementation
+func (fr Repository) SavePatientFeedback(
+	ctx context.Context,
+	response *dto.PatientFeedbackResponse,
+) error {
+	ctx, span := tracer.Start(ctx, "SavePatientFeedback")
+	defer span.End()
+	collection := fr.getPatientFeedbackCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, response)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("can't save patient feedback response: %w", err)
 	}
 	return nil
 }

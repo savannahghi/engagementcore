@@ -13,6 +13,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// Send is the resolver for the send field.
 func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {
 	startTime := time.Now()
 
@@ -33,6 +34,7 @@ func (r *mutationResolver) Send(ctx context.Context, to string, message string) 
 	return smsResponse, nil
 }
 
+// SendToMany is the resolver for the sendToMany field.
 func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error) {
 	startTime := time.Now()
 

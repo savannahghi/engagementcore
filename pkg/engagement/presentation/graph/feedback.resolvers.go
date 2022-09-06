@@ -8,26 +8,27 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/serverutils"
 )
 
-// SimpleEmail is the resolver for the simpleEmail field.
-func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error) {
+// RecordPatientFeedback is the resolver for the recordPatientFeedback field.
+func (r *mutationResolver) RecordPatientFeedback(ctx context.Context, input dto.PatientFeedbackInput) (bool, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	status, err := r.infra.SimpleEmail(ctx, subject, text, nil, to...)
+
+	response, err := r.infra.RecordPatientFeedback(ctx, input)
 	if err != nil {
-		return "", fmt.Errorf("unable to send an email: %v", err)
+		return false, fmt.Errorf("failed to record patient's feedback")
 	}
 
 	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
-		"simpleEmail",
+		"RecordPatientFeedback",
 		err,
 	)
-
-	return status, nil
+	return response, nil
 }

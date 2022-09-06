@@ -1,0 +1,24 @@
+input PatientFeedbackInput {
+    question: String!
+    answer: String!
+}
+
+type PatientFeedback {
+    question: String!
+    answer: String!
+}
+
+input FeedbackResponseInput {
+    feedback: [PatientFeedbackInput!]
+    extraFeedback: String
+}
+
+type FeedbackResponse {
+    id: String!
+    feedback: [PatientFeedback!]
+    extraFeedback: String
+}
+
+extend type Mutation {
+    recordPatientFeedback(input: FeedbackResponseInput!): Boolean!
+}

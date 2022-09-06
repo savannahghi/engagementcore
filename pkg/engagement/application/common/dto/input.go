@@ -77,10 +77,20 @@ type RetrieveUserProfileInput struct {
 	EmailAddress *string `json:"email"`
 }
 
-//TemporaryPIN input used to send temporary PIN message
+// TemporaryPIN input used to send temporary PIN message
 type TemporaryPIN struct {
 	PhoneNumber string `json:"phoneNumber,omitempty"`
 	FirstName   string `json:"firstName,omitempty"`
 	PIN         string `json:"pin,omitempty"`
 	Channel     int    `json:"channel,omitempty"`
+}
+
+// type extraFeedback struct {
+// 	textAreaValue string `json:"extraFeedback" firestore:"extraFeedback"`
+// }
+
+// patient feedback
+type PatientFeedbackInput struct {
+	Feedback      []*FeedbackInput `json:"feedback"`
+	ExtraFeedback string           `json: "extraFeedback"`
 }

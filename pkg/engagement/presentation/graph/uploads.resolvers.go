@@ -12,6 +12,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// Upload is the resolver for the upload field.
 func (r *mutationResolver) Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error) {
 	startTime := time.Now()
 
@@ -31,6 +32,7 @@ func (r *mutationResolver) Upload(ctx context.Context, input profileutils.Upload
 	return upload, nil
 }
 
+// FindUploadByID is the resolver for the findUploadByID field.
 func (r *queryResolver) FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error) {
 	startTime := time.Now()
 

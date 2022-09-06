@@ -14,6 +14,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// GetLibraryContent is the resolver for the getLibraryContent field.
 func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error) {
 	startTime := time.Now()
 
@@ -27,6 +28,7 @@ func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*domain.GhostC
 	return ghostCMSPost, nil
 }
 
+// GetFaqsContent is the resolver for the getFaqsContent field.
 func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error) {
 	startTime := time.Now()
 

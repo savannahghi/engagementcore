@@ -14,6 +14,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// ResolveFeedItem is the resolver for the resolveFeedItem field.
 func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
@@ -31,6 +32,7 @@ func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feedlib.
 	return item, nil
 }
 
+// UnresolveFeedItem is the resolver for the unresolveFeedItem field.
 func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
@@ -48,6 +50,7 @@ func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour feedli
 	return item, nil
 }
 
+// PinFeedItem is the resolver for the pinFeedItem field.
 func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
@@ -65,6 +68,7 @@ func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour feedlib.Flav
 	return item, nil
 }
 
+// UnpinFeedItem is the resolver for the unpinFeedItem field.
 func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
@@ -82,6 +86,7 @@ func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour feedlib.Fl
 	return item, nil
 }
 
+// HideFeedItem is the resolver for the hideFeedItem field.
 func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
@@ -99,6 +104,7 @@ func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour feedlib.Fla
 	return item, nil
 }
 
+// ShowFeedItem is the resolver for the showFeedItem field.
 func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
@@ -116,6 +122,7 @@ func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour feedlib.Fla
 	return item, nil
 }
 
+// HideNudge is the resolver for the hideNudge field.
 func (r *mutationResolver) HideNudge(ctx context.Context, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error) {
 	startTime := time.Now()
 
@@ -133,6 +140,7 @@ func (r *mutationResolver) HideNudge(ctx context.Context, flavour feedlib.Flavou
 	return nudge, nil
 }
 
+// ShowNudge is the resolver for the showNudge field.
 func (r *mutationResolver) ShowNudge(ctx context.Context, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error) {
 	startTime := time.Now()
 
@@ -150,6 +158,7 @@ func (r *mutationResolver) ShowNudge(ctx context.Context, flavour feedlib.Flavou
 	return nudge, nil
 }
 
+// PostMessage is the resolver for the postMessage field.
 func (r *mutationResolver) PostMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, message feedlib.Message) (*feedlib.Message, error) {
 	startTime := time.Now()
 
@@ -167,6 +176,7 @@ func (r *mutationResolver) PostMessage(ctx context.Context, flavour feedlib.Flav
 	return msg, nil
 }
 
+// DeleteMessage is the resolver for the deleteMessage field.
 func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, messageID string) (bool, error) {
 	startTime := time.Now()
 
@@ -184,6 +194,7 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour feedlib.Fl
 	return true, nil
 }
 
+// ProcessEvent is the resolver for the processEvent field.
 func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feedlib.Flavour, event feedlib.Event) (bool, error) {
 	startTime := time.Now()
 
@@ -201,6 +212,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feedlib.Fla
 	return true, nil
 }
 
+// GetFeed is the resolver for the getFeed field.
 func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 *bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
 	startTime := time.Now()
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -232,6 +244,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, pl
 	return feed, nil
 }
 
+// Labels is the resolver for the labels field.
 func (r *queryResolver) Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error) {
 	startTime := time.Now()
 
@@ -249,6 +262,7 @@ func (r *queryResolver) Labels(ctx context.Context, flavour feedlib.Flavour) ([]
 	return labels, nil
 }
 
+// UnreadPersistentItems is the resolver for the unreadPersistentItems field.
 func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour feedlib.Flavour) (int, error) {
 	startTime := time.Now()
 

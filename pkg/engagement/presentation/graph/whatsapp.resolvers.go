@@ -11,6 +11,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// PhoneNumberVerificationCode is the resolver for the phoneNumberVerificationCode field.
 func (r *mutationResolver) PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error) {
 	startTime := time.Now()
 

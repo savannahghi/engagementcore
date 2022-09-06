@@ -245,6 +245,12 @@ type FakeInfrastructure struct {
 		response *dto.NPSResponse,
 	) error
 
+	// save Patients Feedback
+	SavePatientFeedbackFn func(
+		ctx context.Context,
+		response *dto.PatientFeedbackResponse,
+	) error
+
 	SaveTwilioVideoCallbackStatusFn func(
 		ctx context.Context,
 		data dto.CallbackData,
@@ -353,6 +359,8 @@ type FakeInfrastructure struct {
 	) (*dto.SendMessageResponse, error)
 
 	RecordNPSResponseFn func(ctx context.Context, input dto.NPSInput) (bool, error)
+
+	RecordPatientFeedbackFn func(ctx context.Context, input dto.PatientFeedbackInput) (bool, error)
 
 	RoomFn func(ctx context.Context) (*dto.Room, error)
 
@@ -771,6 +779,14 @@ func (f *FakeInfrastructure) SaveNPSResponse(
 	return f.SaveNPSResponseFn(ctx, response)
 }
 
+// SavePatientFeedback  --> TODO: Will work on this tomorrow
+// func (f *FakeInfrastructure) SavePatientFeedback(
+// 	ctx context.Context,
+// 	response *dto.PatientFeedbackResponse,
+// ) error {
+// 	return f.SavePatientFeedback(ctx, response)
+// }
+
 // SaveTwilioVideoCallbackStatus ..
 func (f *FakeInfrastructure) SaveTwilioVideoCallbackStatus(
 	ctx context.Context,
@@ -946,6 +962,11 @@ func (f *FakeInfrastructure) Send(
 // RecordNPSResponse ...
 func (f *FakeInfrastructure) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	return f.RecordNPSResponseFn(ctx, input)
+}
+
+// RecordPatientFeedback
+func (f *FakeInfrastructure) RecordPatientFeedback(ctx context.Context, input dto.PatientFeedbackInput) (bool, error) {
+	return f.RecordPatientFeedbackFn(ctx, input)
 }
 
 // Room ...

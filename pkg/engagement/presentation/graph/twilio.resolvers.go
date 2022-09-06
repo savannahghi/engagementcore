@@ -12,6 +12,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// TwilioAccessToken is the resolver for the twilioAccessToken field.
 func (r *queryResolver) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	startTime := time.Now()
 

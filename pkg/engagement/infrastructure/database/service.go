@@ -246,6 +246,12 @@ type Repository interface {
 		response *dto.NPSResponse,
 	) error
 
+	//create a new method here - to save patient's feedback
+	SavePatientFeedback(
+		ctx context.Context,
+		response *dto.PatientFeedbackResponse,
+	) error
+
 	SaveOutgoingEmails(
 		ctx context.Context,
 		payload *dto.OutgoingEmailsLog,
@@ -589,6 +595,14 @@ func (d *DbService) SaveNPSResponse(
 	response *dto.NPSResponse,
 ) error {
 	return d.firestore.SaveNPSResponse(ctx, response)
+}
+
+// SavePatientsFeedback
+func (d *DbService) SavePatientFeedback(
+	ctx context.Context,
+	response *dto.PatientFeedbackResponse,
+) error {
+	return d.firestore.SavePatientFeedback(ctx, response)
 }
 
 // SaveOutgoingEmails ...

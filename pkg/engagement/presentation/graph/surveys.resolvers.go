@@ -12,6 +12,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// RecordNPSResponse is the resolver for the recordNPSResponse field.
 func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	startTime := time.Now()
 
@@ -33,6 +34,7 @@ func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input dto.NPSI
 	return response, nil
 }
 
+// ListNPSResponse is the resolver for the listNPSResponse field.
 func (r *queryResolver) ListNPSResponse(ctx context.Context) ([]*dto.NPSResponse, error) {
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)

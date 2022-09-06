@@ -1,11 +1,11 @@
 input FeedbackInput {
-    question: String!
+    question: String! 
     answer: String!
 }
 
 type Feedback {
     question: String!
-    answer: String!
+    answer: String!  
 }
 
 input NPSInput {
@@ -13,7 +13,7 @@ input NPSInput {
     score: Int!
     sladeCode: String!
 
-    email: String
+    email: String 
     phoneNumber: String
     feedback: [FeedbackInput]
 }
@@ -35,3 +35,5 @@ extend type Mutation {
 extend type Query {
     listNPSResponse:[NPSResponse!]!
 }
+
+

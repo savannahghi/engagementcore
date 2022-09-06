@@ -233,6 +233,10 @@ func (e *NPSResponse) SetID(id string) {
 	e.ID = id
 }
 
+func (e *PatientFeedbackResponse) SetID(id string) {
+	e.ID = id
+}
+
 // OKResp is used to return OK responses in inter-service calls
 type OKResp struct {
 	Status   string      `json:"status,omitempty"`
@@ -258,4 +262,11 @@ type MailgunEventOutput struct {
 // CallbackData records data sent back from the Twilio API to our HTTP callback URL
 type CallbackData struct {
 	Values map[string][]string `json:"values,omitempty" firestore:"values,omitempty"`
+}
+
+type PatientFeedbackResponse struct {
+	ID            string     `json:"id" firestore:"id"`
+	Feedback      []Feedback `json:"feedback" firestore:"feedback"`
+	ExtraFeedback string     `json:"extraFeedback" firestore:"extraFeedback"`
+	Timestamp     time.Time  `json:"timestamp,omitempty" firestore:"timestamp,omitempty"`
 }

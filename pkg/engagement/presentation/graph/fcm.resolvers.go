@@ -15,6 +15,7 @@ import (
 	"github.com/savannahghi/serverutils"
 )
 
+// SendNotification is the resolver for the sendNotification field.
 func (r *mutationResolver) SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {
 	startTime := time.Now()
 
@@ -49,6 +50,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 	return sent, nil
 }
 
+// SendFCMByPhoneOrEmail is the resolver for the sendFCMByPhoneOrEmail field.
 func (r *mutationResolver) SendFCMByPhoneOrEmail(ctx context.Context, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {
 	startTime := time.Now()
 
@@ -79,6 +81,7 @@ func (r *mutationResolver) SendFCMByPhoneOrEmail(ctx context.Context, phoneNumbe
 	return sent, nil
 }
 
+// Notifications is the resolver for the notifications field.
 func (r *queryResolver) Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error) {
 	startTime := time.Now()
 
