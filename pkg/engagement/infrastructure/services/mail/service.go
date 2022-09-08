@@ -325,7 +325,7 @@ func (s ServiceMailImpl) UpdateMailgunDeliveryStatus(
 	return s.Repository.UpdateMailgunDeliveryStatus(ctx, payload)
 }
 
-//GenerateEmailTemplate generates custom emails to be sent to the users
+// GenerateEmailTemplate generates custom emails to be sent to the users
 func (s ServiceMailImpl) GenerateEmailTemplate(name string, templateName string) string {
 	t := template.Must(template.New("Be.WellEmailTemplate").Parse(templateName))
 	buf := new(bytes.Buffer)

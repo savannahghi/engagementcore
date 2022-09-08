@@ -4,6 +4,7 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/fcm"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/feed"
+	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/feedback"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/library"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/mail"
 	"github.com/savannahghi/engagementcore/pkg/engagement/usecases/messaging"
@@ -27,6 +28,7 @@ type Interactor struct {
 	*otp.ImplOTP
 	*sms.ImplSMS
 	*surveys.ImplSurveys
+	*feedback.ImplFeedback
 	*uploads.ImpUploads
 	*twilio.ImplTwilio
 }
@@ -44,6 +46,7 @@ func NewUsecasesInteractor(infrastructure infrastructure.Interactor) Interactor 
 	otp := otp.NewOTP(infrastructure)
 	sms := sms.NewSMS(infrastructure)
 	surveys := surveys.NewSurveys(infrastructure)
+	feedback := feedback.NewFeedback(infrastructure)
 	uploads := uploads.NewUploads(infrastructure)
 	twilio := twilio.NewImplTwilio(infrastructure)
 
@@ -58,6 +61,7 @@ func NewUsecasesInteractor(infrastructure infrastructure.Interactor) Interactor 
 		otp,
 		sms,
 		surveys,
+		feedback,
 		uploads,
 		twilio,
 	}

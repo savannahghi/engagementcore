@@ -41,6 +41,9 @@ const (
 	// NPSResponseCollectionName firestore collection name where nps responses are stored
 	NPSResponseCollectionName = "nps_response"
 
+	//RecordSurveyFeedbackResponseCollectionName firestore collection name where survey responses are stored
+	RecordSurveyFeedbackResponseCollectionName = "patient_feedback_response"
+
 	twilioCallbackCollectionName = "twilio_callbacks"
 
 	twilioVideoCallbackCollectionName = "twilio_video_callbacks"
@@ -105,9 +108,9 @@ func (fr Repository) checkPreconditions() error {
 //
 // Feed items are ordered by:
 //
-//   1. Timestamp
-//   2. Sequence number
-//   3. ID (a tie breaker, in the unlikely event that the first two tie)
+//  1. Timestamp
+//  2. Sequence number
+//  3. ID (a tie breaker, in the unlikely event that the first two tie)
 //
 // Having established this ordering, we will implement very lightweight
 // pagination using a start and end offset.
@@ -890,6 +893,11 @@ func (fr Repository) getNotificationCollectionName() string {
 
 func (fr Repository) getNPSResponseCollectionName() string {
 	suffixed := firebasetools.SuffixCollection(NPSResponseCollectionName)
+	return suffixed
+}
+
+func (fr Repository) getRecordSurveyFeedbackResponseCollectionName() string {
+	suffixed := firebasetools.SuffixCollection(RecordSurveyFeedbackResponseCollectionName)
 	return suffixed
 }
 
@@ -1698,6 +1706,21 @@ func (fr Repository) SaveNPSResponse(
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't save nps response: %w", err)
+	}
+	return nil
+}
+
+// RecordSurveyFeedbackResponse stores the feedback responses
+func (fr Repository) RecordSurveyFeedbackResponse(
+	ctx context.Context,
+	response *domain.SurveyFeedbackResponse,
+) error {
+	ctx, span := tracer.Start(ctx, "SaveSurveyFeedback")
+	collection := fr.getRecordSurveyFeedbackResponseCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, response)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("can't save survey feedback response: %w", err)
 	}
 	return nil
 }

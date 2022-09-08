@@ -12,7 +12,7 @@ require (
 	cloud.google.com/go/storage v1.23.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.11 // indirect
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/99designs/gqlgen v0.17.12
+	github.com/99designs/gqlgen v0.13.0
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go v1.44.50 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
@@ -48,14 +48,13 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
-	github.com/vektah/gqlparser/v2 v2.4.6
+	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib v1.7.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.32.0
 	go.opentelemetry.io/otel v1.7.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.7.0 // indirect
-	go.opentelemetry.io/otel/metric v0.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.7.0
 	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60 // indirect
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0 // indirect

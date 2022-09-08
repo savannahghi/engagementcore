@@ -59,13 +59,13 @@ func (n *ImplNotification) Notify(
 	return i.Notify(ctx, topicID, uid, flavour, payload, metadata)
 }
 
-//TopicIDs Ask the notification service about the topics that it knows about
+// TopicIDs Ask the notification service about the topics that it knows about
 func (n *ImplNotification) TopicIDs() []string {
 	i := n.infrastructure.NotificationService
 	return i.TopicIDs()
 }
 
-//SubscriptionIDs gets subscription IDs for the notification service
+// SubscriptionIDs gets subscription IDs for the notification service
 func (n *ImplNotification) SubscriptionIDs() map[string]string {
 	i := n.infrastructure.NotificationService
 	return i.SubscriptionIDs()

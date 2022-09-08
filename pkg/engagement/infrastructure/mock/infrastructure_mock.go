@@ -245,6 +245,11 @@ type FakeInfrastructure struct {
 		response *dto.NPSResponse,
 	) error
 
+	SaveSurveyFeedbackResponseFn func(
+		ctx context.Context,
+		response *domain.SurveyFeedbackResponse,
+	) error
+
 	SaveTwilioVideoCallbackStatusFn func(
 		ctx context.Context,
 		data dto.CallbackData,
@@ -353,6 +358,8 @@ type FakeInfrastructure struct {
 	) (*dto.SendMessageResponse, error)
 
 	RecordNPSResponseFn func(ctx context.Context, input dto.NPSInput) (bool, error)
+
+	RecordSurveyFeedbackResponseFn func(ctx context.Context, input domain.SurveyInput) (bool, error)
 
 	RoomFn func(ctx context.Context) (*dto.Room, error)
 
@@ -769,6 +776,14 @@ func (f *FakeInfrastructure) SaveNPSResponse(
 	response *dto.NPSResponse,
 ) error {
 	return f.SaveNPSResponseFn(ctx, response)
+}
+
+// SaveSurveyFeedbackResponse saves survey's feedback responses
+func (f *FakeInfrastructure) SaveSurveyFeedbackResponse(
+	ctx context.Context,
+	response *domain.SurveyFeedbackResponse,
+) error {
+	return f.SaveSurveyFeedbackResponseFn(ctx, response)
 }
 
 // SaveTwilioVideoCallbackStatus ..

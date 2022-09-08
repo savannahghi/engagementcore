@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/feedback"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/messaging"
@@ -30,6 +31,7 @@ type Interactor struct {
 	*otp.ServiceOTPImpl
 	*sms.ServiceSMSImpl
 	*surveys.ServiceSurveyImpl
+	*feedback.ServiceFeedbackImpl
 	*twilio.ServiceTwilioImpl
 	*uploads.ServiceUploadImpl
 }
@@ -67,6 +69,8 @@ func NewInteractor() Interactor {
 
 	surveys := surveys.NewService(db)
 
+	feedback := feedback.NewService(db)
+
 	return Interactor{
 		db,
 		fcmOne,
@@ -77,6 +81,7 @@ func NewInteractor() Interactor {
 		otp,
 		sms,
 		surveys,
+		feedback,
 		twilio,
 		uploads,
 	}

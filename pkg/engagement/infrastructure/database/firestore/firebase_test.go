@@ -11,6 +11,7 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagementcore/pkg/engagement/domain"
 	db "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/database/firestore"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/feedlib"
@@ -2650,6 +2651,61 @@ func TestRepository_SaveNPSResponse(t *testing.T) {
 			err := fr.SaveNPSResponse(tt.args.ctx, tt.args.response)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Repository.SaveNPSResponse() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// test feedback saving logic
+func TestRepository_RecordSurveyFeedbackResponse(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	assert.Nil(t, err)
+	assert.NotNil(t, fr)
+
+	type args struct {
+		ctx      context.Context
+		response *domain.SurveyFeedbackResponse
+	}
+
+	feedback := &domain.SurveyFeedback{
+		Question: "Is Golang testing easier ?",
+		Answer:   "YES",
+	}
+
+	response := &domain.SurveyFeedbackResponse{
+		Feedback:      []domain.SurveyFeedback{*feedback},
+		ExtraFeedback: "Testing extra feedback",
+		Timestamp:     time.Now(),
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy path",
+			args: args{
+				ctx:      ctx,
+				response: response,
+			},
+			wantErr: false,
+		}, {
+			name: "sad case - nil response",
+			args: args{
+				ctx:      ctx,
+				response: nil,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := fr.RecordSurveyFeedbackResponse(tt.args.ctx, tt.args.response)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.RecordSurveyFeedbackResponse() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

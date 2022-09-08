@@ -1,6 +1,7 @@
 *env.sh
 *env*sh
 .vscode/
+.idea/
 docs/build/
 
 Makefile

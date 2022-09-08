@@ -93,7 +93,7 @@ func PrepareServer(
 	return srv
 }
 
-//HealthStatusCheck endpoint to check if the server is working.
+// HealthStatusCheck endpoint to check if the server is working.
 func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(true)
 	if err != nil {

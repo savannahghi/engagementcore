@@ -66,8 +66,6 @@ func TestGraphQLSimpleEmail(t *testing.T) {
 			wantStatus: http.StatusUnprocessableEntity,
 			wantErr:    true,
 		},
-
-		
 	}
 
 	for _, tt := range tests {
@@ -125,7 +123,7 @@ func TestGraphQLSimpleEmail(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				errMsg, ok := data["errors"]
+				errMsg, ok := data["github.com/pkg/errors"]
 				if !ok {
 					t.Errorf("GraphQL error: %s", errMsg)
 					return
@@ -133,7 +131,7 @@ func TestGraphQLSimpleEmail(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				_, ok := data["errors"]
+				_, ok := data["github.com/pkg/errors"]
 				if ok {
 					t.Errorf("error not expected")
 					return

@@ -1,0 +1,24 @@
+type SurveyFeedback {
+    question: String!
+    answer: String!
+}
+
+input SurveyFeedbackInput {
+    question: String!
+    answer: String!
+} 
+
+input SurveyInput {
+    feedback: [SurveyFeedbackInput]
+    extraFeedback: String
+}
+
+type SurveyFeedbackResponse {
+    feedback: [SurveyFeedback]
+    extraFeedback: String
+    timestamp: Time
+}
+
+extend type Mutation {
+    recordSurveyFeedbackResponse(input: SurveyInput): Boolean!
+}

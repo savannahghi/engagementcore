@@ -3,8 +3,8 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
 

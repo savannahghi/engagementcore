@@ -77,7 +77,7 @@ type RetrieveUserProfileInput struct {
 	EmailAddress *string `json:"email"`
 }
 
-//TemporaryPIN input used to send temporary PIN message
+// TemporaryPIN input used to send temporary PIN message
 type TemporaryPIN struct {
 	PhoneNumber string `json:"phoneNumber,omitempty"`
 	FirstName   string `json:"firstName,omitempty"`

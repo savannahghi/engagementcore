@@ -511,7 +511,7 @@ func (s ServiceTwilioImpl) SaveTwilioCallbackResponse(
 	return s.Repository.SaveTwilioResponse(ctx, data)
 }
 
-//TemporaryPIN send PIN via whatsapp to user
+// TemporaryPIN send PIN via whatsapp to user
 func (s ServiceTwilioImpl) TemporaryPIN(
 	ctx context.Context,
 	to string,

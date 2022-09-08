@@ -1726,7 +1726,7 @@ func TestGraphQLUpload(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				errMsg, ok := data["errors"]
+				errMsg, ok := data["github.com/pkg/errors"]
 				if !ok {
 					t.Errorf("GraphQL error: %s", errMsg)
 					return
@@ -1734,7 +1734,7 @@ func TestGraphQLUpload(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				_, ok := data["errors"]
+				_, ok := data["github.com/pkg/errors"]
 				if ok {
 					t.Errorf("error not expected")
 					return
@@ -1867,7 +1867,7 @@ func TestGraphQlGetLibraryContent(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				errMsg, ok := data["errors"]
+				errMsg, ok := data["github.com/pkg/errors"]
 				if !ok {
 					t.Errorf("GraphQL error: %s", errMsg)
 					return
@@ -1875,7 +1875,7 @@ func TestGraphQlGetLibraryContent(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				_, ok := data["errors"]
+				_, ok := data["github.com/pkg/errors"]
 				if ok {
 					t.Errorf("error not expected")
 					return
@@ -2025,7 +2025,7 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				errMsg, ok := data["errors"]
+				errMsg, ok := data["github.com/pkg/errors"]
 				if !ok {
 					t.Errorf("GraphQL error: %s", errMsg)
 					return
@@ -2033,7 +2033,7 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				_, ok := data["errors"]
+				_, ok := data["github.com/pkg/errors"]
 				if ok {
 					t.Errorf("error not expected")
 					return
@@ -2163,7 +2163,7 @@ func TestGraphQlGetLabels(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				errMsg, ok := data["errors"]
+				errMsg, ok := data["github.com/pkg/errors"]
 				if !ok {
 					t.Errorf("GraphQL error: %s", errMsg)
 					return
@@ -2171,7 +2171,7 @@ func TestGraphQlGetLabels(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				_, ok := data["errors"]
+				_, ok := data["github.com/pkg/errors"]
 				if ok {
 					t.Errorf("error not expected")
 					return
@@ -2353,7 +2353,7 @@ func TestGraphQLSendFCMByPhoneOrEmail(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				errMsg, ok := data["errors"]
+				errMsg, ok := data["github.com/pkg/errors"]
 				if !ok {
 					t.Errorf("GraphQL error: %s", errMsg)
 					return
@@ -2361,7 +2361,7 @@ func TestGraphQLSendFCMByPhoneOrEmail(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				_, ok := data["errors"]
+				_, ok := data["github.com/pkg/errors"]
 				if ok {
 					t.Errorf("error not expected")
 					return

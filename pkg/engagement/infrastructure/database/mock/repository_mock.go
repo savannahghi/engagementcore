@@ -241,6 +241,12 @@ type FakeEngagementRepository struct {
 		response *dto.NPSResponse,
 	) error
 
+	//response feedback saving
+	RecordSurveyFeedbackResponseFn func(
+		ctx context.Context,
+		response *domain.SurveyFeedbackResponse,
+	) error
+
 	SaveOutgoingEmailsFn          func(ctx context.Context, payload *dto.OutgoingEmailsLog) error
 	UpdateMailgunDeliveryStatusFn func(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
 
@@ -263,7 +269,7 @@ func (f *FakeEngagementRepository) GetFeed(
 	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
-	return f.GetFeedFn(ctx, uid, isAnonymous, flavour,playMP4, persistent, status, visibility, expired, filterParams)
+	return f.GetFeedFn(ctx, uid, isAnonymous, flavour, playMP4, persistent, status, visibility, expired, filterParams)
 }
 
 // GetFeedItem ...
@@ -551,6 +557,14 @@ func (f *FakeEngagementRepository) SaveNPSResponse(
 	response *dto.NPSResponse,
 ) error {
 	return f.SaveNPSResponseFn(ctx, response)
+}
+
+// RecordSurveyFeedbackResponse saves feedback response
+func (f *FakeEngagementRepository) RecordSurveyFeedbackResponse(
+	ctx context.Context,
+	response *domain.SurveyFeedbackResponse,
+) error {
+	return f.RecordSurveyFeedbackResponseFn(ctx, response)
 }
 
 // SaveOutgoingEmails ...
