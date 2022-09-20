@@ -271,27 +271,28 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		DeleteMessage               func(childComplexity int, flavour feedlib.Flavour, itemID string, messageID string) int
-		HideFeedItem                func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		HideNudge                   func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
-		PhoneNumberVerificationCode func(childComplexity int, to string, code string, marketingMessage string) int
-		PinFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		PostMessage                 func(childComplexity int, flavour feedlib.Flavour, itemID string, message feedlib.Message) int
-		ProcessEvent                func(childComplexity int, flavour feedlib.Flavour, event feedlib.Event) int
-		RecordNPSResponse           func(childComplexity int, input dto.NPSInput) int
-		ResolveFeedItem             func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		Send                        func(childComplexity int, to string, message string) int
-		SendFCMByPhoneOrEmail       func(childComplexity int, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
-		SendNotification            func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
-		SendToMany                  func(childComplexity int, message string, to []string) int
-		ShowFeedItem                func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		ShowNudge                   func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
-		SimpleEmail                 func(childComplexity int, subject string, text string, to []string) int
-		UnpinFeedItem               func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		UnresolveFeedItem           func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		Upload                      func(childComplexity int, input profileutils.UploadInput) int
-		VerifyEmailOtp              func(childComplexity int, email string, otp string) int
-		VerifyOtp                   func(childComplexity int, msisdn string, otp string) int
+		DeleteMessage                func(childComplexity int, flavour feedlib.Flavour, itemID string, messageID string) int
+		HideFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		HideNudge                    func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
+		PhoneNumberVerificationCode  func(childComplexity int, to string, code string, marketingMessage string) int
+		PinFeedItem                  func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		PostMessage                  func(childComplexity int, flavour feedlib.Flavour, itemID string, message feedlib.Message) int
+		ProcessEvent                 func(childComplexity int, flavour feedlib.Flavour, event feedlib.Event) int
+		RecordNPSResponse            func(childComplexity int, input dto.NPSInput) int
+		RecordSurveyFeedbackResponse func(childComplexity int, input *domain.SurveyInput) int
+		ResolveFeedItem              func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		Send                         func(childComplexity int, to string, message string) int
+		SendFCMByPhoneOrEmail        func(childComplexity int, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
+		SendNotification             func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
+		SendToMany                   func(childComplexity int, message string, to []string) int
+		ShowFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		ShowNudge                    func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
+		SimpleEmail                  func(childComplexity int, subject string, text string, to []string) int
+		UnpinFeedItem                func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		UnresolveFeedItem            func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		Upload                       func(childComplexity int, input profileutils.UploadInput) int
+		VerifyEmailOtp               func(childComplexity int, email string, otp string) int
+		VerifyOtp                    func(childComplexity int, msisdn string, otp string) int
 	}
 
 	NPSResponse struct {
@@ -376,6 +377,17 @@ type ComplexityRoot struct {
 		SMSMessageData func(childComplexity int) int
 	}
 
+	SurveyFeedback struct {
+		Answer   func(childComplexity int) int
+		Question func(childComplexity int) int
+	}
+
+	SurveyFeedbackResponse struct {
+		ExtraFeedback func(childComplexity int) int
+		Feedback      func(childComplexity int) int
+		Timestamp     func(childComplexity int) int
+	}
+
 	Upload struct {
 		Base64data  func(childComplexity int) int
 		ContentType func(childComplexity int) int
@@ -403,6 +415,7 @@ type MutationResolver interface {
 	PostMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, message feedlib.Message) (*feedlib.Message, error)
 	DeleteMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour feedlib.Flavour, event feedlib.Event) (bool, error)
+	RecordSurveyFeedbackResponse(ctx context.Context, input *domain.SurveyInput) (bool, error)
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
@@ -1638,6 +1651,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RecordNPSResponse(childComplexity, args["input"].(dto.NPSInput)), true
 
+	case "Mutation.recordSurveyFeedbackResponse":
+		if e.complexity.Mutation.RecordSurveyFeedbackResponse == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_recordSurveyFeedbackResponse_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RecordSurveyFeedbackResponse(childComplexity, args["input"].(*domain.SurveyInput)), true
+
 	case "Mutation.resolveFeedItem":
 		if e.complexity.Mutation.ResolveFeedItem == nil {
 			break
@@ -2229,6 +2254,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SendMessageResponse.SMSMessageData(childComplexity), true
 
+	case "SurveyFeedback.answer":
+		if e.complexity.SurveyFeedback.Answer == nil {
+			break
+		}
+
+		return e.complexity.SurveyFeedback.Answer(childComplexity), true
+
+	case "SurveyFeedback.question":
+		if e.complexity.SurveyFeedback.Question == nil {
+			break
+		}
+
+		return e.complexity.SurveyFeedback.Question(childComplexity), true
+
+	case "SurveyFeedbackResponse.extraFeedback":
+		if e.complexity.SurveyFeedbackResponse.ExtraFeedback == nil {
+			break
+		}
+
+		return e.complexity.SurveyFeedbackResponse.ExtraFeedback(childComplexity), true
+
+	case "SurveyFeedbackResponse.feedback":
+		if e.complexity.SurveyFeedbackResponse.Feedback == nil {
+			break
+		}
+
+		return e.complexity.SurveyFeedbackResponse.Feedback(childComplexity), true
+
+	case "SurveyFeedbackResponse.timestamp":
+		if e.complexity.SurveyFeedbackResponse.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.SurveyFeedbackResponse.Timestamp(childComplexity), true
+
 	case "Upload.base64data":
 		if e.complexity.Upload.Base64data == nil {
 			break
@@ -2521,7 +2581,7 @@ enum Channel {
   WHATSAPP
 }
 
-enum LinkType {
+extend enum LinkType {
   YOUTUBE_VIDEO
   PNG_IMAGE
   PDF_DOCUMENT
@@ -2714,6 +2774,30 @@ extend type Mutation {
   processEvent(flavour: Flavour!, event: EventInput!): Boolean!
 }
 `, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/feedback.graphql", Input: `type SurveyFeedback {
+    question: String!
+    answer: String!
+}
+
+input SurveyFeedbackInput {
+    question: String!
+    answer: String!
+} 
+
+input SurveyInput {
+    feedback: [SurveyFeedbackInput]
+    extraFeedback: String
+}
+
+type SurveyFeedbackResponse {
+    feedback: [SurveyFeedback]
+    extraFeedback: String
+    timestamp: Time
+}
+
+extend type Mutation {
+    recordSurveyFeedbackResponse(input: SurveyInput): Boolean!
+}`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/inputs.graphql", Input: `
 input FirebaseSimpleNotificationInput {
     title: String!
@@ -3170,6 +3254,21 @@ func (ec *executionContext) field_Mutation_recordNPSResponse_args(ctx context.Co
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNPSInput2githubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_recordSurveyFeedbackResponse_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *domain.SurveyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOSurveyInput2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -9854,6 +9953,48 @@ func (ec *executionContext) _Mutation_processEvent(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_recordSurveyFeedbackResponse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_recordSurveyFeedbackResponse_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RecordSurveyFeedbackResponse(rctx, args["input"].(*domain.SurveyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_simpleEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12211,6 +12352,172 @@ func (ec *executionContext) _SendMessageResponse_SMSMessageData(ctx context.Cont
 	return ec.marshalNSMS2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSMS(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _SurveyFeedback_question(ctx context.Context, field graphql.CollectedField, obj *domain.SurveyFeedback) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SurveyFeedback",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Question, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SurveyFeedback_answer(ctx context.Context, field graphql.CollectedField, obj *domain.SurveyFeedback) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SurveyFeedback",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SurveyFeedbackResponse_feedback(ctx context.Context, field graphql.CollectedField, obj *domain.SurveyFeedbackResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SurveyFeedbackResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Feedback, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]domain.SurveyFeedback)
+	fc.Result = res
+	return ec.marshalOSurveyFeedback2ᚕgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedback(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SurveyFeedbackResponse_extraFeedback(ctx context.Context, field graphql.CollectedField, obj *domain.SurveyFeedbackResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SurveyFeedbackResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ExtraFeedback, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SurveyFeedbackResponse_timestamp(ctx context.Context, field graphql.CollectedField, obj *domain.SurveyFeedbackResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SurveyFeedbackResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14025,6 +14332,62 @@ func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSurveyFeedbackInput(ctx context.Context, obj interface{}) (domain.SurveyFeedbackInput, error) {
+	var it domain.SurveyFeedbackInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "question":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("question"))
+			it.Question, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "answer":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answer"))
+			it.Answer, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSurveyInput(ctx context.Context, obj interface{}) (domain.SurveyInput, error) {
+	var it domain.SurveyInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "feedback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("feedback"))
+			it.Feedback, err = ec.unmarshalOSurveyFeedbackInput2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedbackInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "extraFeedback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("extraFeedback"))
+			it.ExtraFeedback, err = ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj interface{}) (profileutils.UploadInput, error) {
 	var it profileutils.UploadInput
 	var asMap = obj.(map[string]interface{})
@@ -15325,6 +15688,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "recordSurveyFeedbackResponse":
+			out.Values[i] = ec._Mutation_recordSurveyFeedbackResponse(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "simpleEmail":
 			out.Values[i] = ec._Mutation_simpleEmail(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -15918,6 +16286,66 @@ func (ec *executionContext) _SendMessageResponse(ctx context.Context, sel ast.Se
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var surveyFeedbackImplementors = []string{"SurveyFeedback"}
+
+func (ec *executionContext) _SurveyFeedback(ctx context.Context, sel ast.SelectionSet, obj *domain.SurveyFeedback) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, surveyFeedbackImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SurveyFeedback")
+		case "question":
+			out.Values[i] = ec._SurveyFeedback_question(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "answer":
+			out.Values[i] = ec._SurveyFeedback_answer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var surveyFeedbackResponseImplementors = []string{"SurveyFeedbackResponse"}
+
+func (ec *executionContext) _SurveyFeedbackResponse(ctx context.Context, sel ast.SelectionSet, obj *domain.SurveyFeedbackResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, surveyFeedbackResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SurveyFeedbackResponse")
+		case "feedback":
+			out.Values[i] = ec._SurveyFeedbackResponse_feedback(ctx, field, obj)
+		case "extraFeedback":
+			out.Values[i] = ec._SurveyFeedbackResponse_extraFeedback(ctx, field, obj)
+		case "timestamp":
+			out.Values[i] = ec._SurveyFeedbackResponse_timestamp(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -17817,6 +18245,90 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalOSurveyFeedback2githubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedback(ctx context.Context, sel ast.SelectionSet, v domain.SurveyFeedback) graphql.Marshaler {
+	return ec._SurveyFeedback(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOSurveyFeedback2ᚕgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedback(ctx context.Context, sel ast.SelectionSet, v []domain.SurveyFeedback) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSurveyFeedback2githubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedback(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalOSurveyFeedbackInput2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedbackInput(ctx context.Context, v interface{}) ([]*domain.SurveyFeedbackInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*domain.SurveyFeedbackInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOSurveyFeedbackInput2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedbackInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOSurveyFeedbackInput2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyFeedbackInput(ctx context.Context, v interface{}) (*domain.SurveyFeedbackInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSurveyFeedbackInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOSurveyInput2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋdomainᚐSurveyInput(ctx context.Context, v interface{}) (*domain.SurveyInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSurveyInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {

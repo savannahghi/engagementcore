@@ -1365,7 +1365,7 @@ func (fe UseCaseImpl) DeleteMessage(
 //
 // The results of processing an event include but are not limited to:
 //
-// 	1. Marking feed items as done and notifying their subscribers
+//  1. Marking feed items as done and notifying their subscribers
 //  2. Marking nudges as done and notifying their subscribers
 //  3. Updating an audit trail
 //  4. Updating (streaming) analytics

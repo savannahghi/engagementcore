@@ -79,8 +79,8 @@ func (f *ImplOTP) GenerateAndSendOTP(
 	)
 }
 
-//SendOTPToEmail is a companion to GenerateAndSendOTP function
-//It will send the generated OTP to the provided email address
+// SendOTPToEmail is a companion to GenerateAndSendOTP function
+// It will send the generated OTP to the provided email address
 func (f *ImplOTP) SendOTPToEmail(
 	ctx context.Context,
 	msisdn string,
@@ -161,7 +161,7 @@ func (f *ImplOTP) EmailVerificationOtp(
 	)
 }
 
-//GenerateOTP generates an OTP
+// GenerateOTP generates an OTP
 func (f *ImplOTP) GenerateOTP(
 	ctx context.Context,
 ) (string, error) {

@@ -246,6 +246,11 @@ type Repository interface {
 		response *dto.NPSResponse,
 	) error
 
+	RecordSurveyFeedbackResponse(
+		ctx context.Context,
+		response *domain.SurveyFeedbackResponse,
+	) error
+
 	SaveOutgoingEmails(
 		ctx context.Context,
 		payload *dto.OutgoingEmailsLog,
@@ -589,6 +594,14 @@ func (d *DbService) SaveNPSResponse(
 	response *dto.NPSResponse,
 ) error {
 	return d.firestore.SaveNPSResponse(ctx, response)
+}
+
+// RecordSurveyFeedbackResponse saves a Feedback Response
+func (d *DbService) RecordSurveyFeedbackResponse(
+	ctx context.Context,
+	response *domain.SurveyFeedbackResponse,
+) error {
+	return d.firestore.RecordSurveyFeedbackResponse(ctx, response)
 }
 
 // SaveOutgoingEmails ...

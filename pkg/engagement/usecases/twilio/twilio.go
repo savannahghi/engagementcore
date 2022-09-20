@@ -172,7 +172,7 @@ func (t *ImplTwilio) SaveTwilioCallbackResponse(
 	)
 }
 
-//TemporaryPIN send PIN via whatsapp to user
+// TemporaryPIN send PIN via whatsapp to user
 func (t *ImplTwilio) TemporaryPIN(
 	ctx context.Context,
 	to string,

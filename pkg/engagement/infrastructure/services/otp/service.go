@@ -224,8 +224,8 @@ func (s ServiceOTPImpl) GenerateAndSendOTP(ctx context.Context, msisdn string, a
 	return code, nil
 }
 
-//SendOTPToEmail is a companion to GenerateAndSendOTP function
-//It will send the generated OTP to the provided email address
+// SendOTPToEmail is a companion to GenerateAndSendOTP function
+// It will send the generated OTP to the provided email address
 func (s ServiceOTPImpl) SendOTPToEmail(ctx context.Context, msisdn, email *string, appID *string) (string, error) {
 	_, span := tracer.Start(ctx, "SendOTPToEmail")
 	defer span.End()
@@ -509,7 +509,7 @@ func (s ServiceOTPImpl) EmailVerificationOtp(ctx context.Context, email *string)
 	return code, nil
 }
 
-//GenerateOTP generates an OTP
+// GenerateOTP generates an OTP
 func (s ServiceOTPImpl) GenerateOTP(ctx context.Context) (string, error) {
 	_, span := tracer.Start(ctx, "GenerateOTP")
 	defer span.End()

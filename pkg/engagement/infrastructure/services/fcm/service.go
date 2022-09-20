@@ -126,15 +126,15 @@ func (s ServiceFCMImpl) checkPreconditions() {
 //
 // It returns:
 //
-//  - a list of registration tokens for which message sending failed
-//  - an error, if no message sending occurred
+//   - a list of registration tokens for which message sending failed
+//   - an error, if no message sending occurred
 //
 // Notification messages can also be accompanied by custom `data`.
 //
 // For data messages, the following keys should be avoided:
 //
-//  - reserved words: "from", "notification" and "message_type"
-//  - any word starting with "gcm" or "google"
+//   - reserved words: "from", "notification" and "message_type"
+//   - any word starting with "gcm" or "google"
 //
 // Messages that are time sensitive (e.g video calls) should be sent with
 // `HIGH_PRIORITY`. Their time to live should also be limited (or the expiry)

@@ -3,8 +3,8 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -141,7 +141,7 @@ func NewPresentationHandlers(infrastructure infrastructure.Interactor, usecases 
 	return &PresentationHandlersImpl{infrastructure: infrastructure, usecases: usecases}
 }
 
-//GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
+// GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
 func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1523,7 +1523,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 	}
 }
 
-//SendEmailOTP generates and send an OTP to the email supplied
+// SendEmailOTP generates and send an OTP to the email supplied
 func (p PresentationHandlersImpl) SendEmailOTP() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

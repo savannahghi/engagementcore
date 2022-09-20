@@ -2,7 +2,7 @@ package fcm_test
 
 import (
 	"context"
-	"errors"
+	"github.com/pkg/errors"
 	"reflect"
 	"testing"
 	"time"
