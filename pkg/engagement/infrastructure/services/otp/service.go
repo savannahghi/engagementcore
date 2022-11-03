@@ -16,7 +16,6 @@ import (
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
@@ -152,7 +151,7 @@ func (s ServiceOTPImpl) SendOTP(
 	msg := fmt.Sprintf(otpMsg, code, *appID)
 
 	if interserviceclient.IsKenyanNumber(normalizedPhoneNumber) {
-		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, enumutils.SenderIDBewell)
+		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return "", fmt.Errorf("failed to send OTP verification message to recipient")

@@ -81,7 +81,7 @@ func TestSendToMany(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.SendToMany(ctx, tt.args.message, tt.args.to, enumutils.SenderIDBewell)
+			got, err := service.SendToMany(ctx, tt.args.to, tt.args.message)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SendToMany() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -159,7 +159,7 @@ func TestSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.Send(ctx, tt.args.to, tt.args.message, tt.args.sender)
+			got, err := service.Send(ctx, tt.args.to, tt.args.message)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Send error = %v, wantErr %v", err, tt.wantErr)
 				return

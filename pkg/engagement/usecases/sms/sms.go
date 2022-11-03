@@ -3,24 +3,22 @@ package sms
 import (
 	"context"
 
-	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/silcomms"
 )
 
 // UsecaseSMS defines SMS service usecases interface
 type UsecaseSMS interface {
 	SendToMany(
 		ctx context.Context,
-		message string,
 		to []string,
-		from enumutils.SenderID,
-	) (*dto.SendMessageResponse, error)
+		message string,
+	) (*silcomms.BulkSMSResponse, error)
 	Send(
 		ctx context.Context,
 		to, message string,
-		from enumutils.SenderID,
-	) (*dto.SendMessageResponse, error)
+	) (*silcomms.BulkSMSResponse, error)
 }
 
 // ImplSMS is the SMS service implementation
@@ -41,13 +39,12 @@ func (s *ImplSMS) SendToMany(
 	message string,
 	to []string,
 	from enumutils.SenderID,
-) (*dto.SendMessageResponse, error) {
+) (*silcomms.BulkSMSResponse, error) {
 	i := s.infrastructure.ServiceSMSImpl
 	return i.SendToMany(
 		ctx,
-		message,
 		to,
-		from,
+		message,
 	)
 }
 
@@ -56,12 +53,11 @@ func (s *ImplSMS) Send(
 	ctx context.Context,
 	to, message string,
 	from enumutils.SenderID,
-) (*dto.SendMessageResponse, error) {
+) (*silcomms.BulkSMSResponse, error) {
 	i := s.infrastructure.ServiceSMSImpl
 	return i.Send(
 		ctx,
-		message,
 		to,
-		from,
+		message,
 	)
 }

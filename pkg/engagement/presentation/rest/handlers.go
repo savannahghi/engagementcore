@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/fcm"
@@ -1338,9 +1339,8 @@ func (p PresentationHandlersImpl) SendToMany() http.HandlerFunc {
 
 		resp, err := p.infrastructure.SendToMany(
 			ctx,
-			payload.Message,
 			payload.To,
-			payload.Sender,
+			payload.Message,
 		)
 		if err != nil {
 			err := fmt.Errorf("sms not sent: %s", err)

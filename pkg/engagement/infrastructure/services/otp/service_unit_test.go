@@ -17,8 +17,8 @@ import (
 	smsMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms/mock"
 	"github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio"
 	twilioMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio/mock"
+	"github.com/savannahghi/silcomms"
 
-	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
 )
@@ -143,9 +143,8 @@ func TestService_GenerateAndSendOTP(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, nil
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 			}
 
@@ -161,8 +160,7 @@ func TestService_GenerateAndSendOTP(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
+				) (*silcomms.BulkSMSResponse, error) {
 					return nil, fmt.Errorf("failed to send OTP")
 				}
 			}
@@ -242,9 +240,8 @@ func TestService_SendOTPToEmail(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, nil
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 
 				fakeMail.SendEmailFn = func(
@@ -269,9 +266,8 @@ func TestService_SendOTPToEmail(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, nil
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 
 				fakeMail.SendEmailFn = func(
@@ -296,8 +292,7 @@ func TestService_SendOTPToEmail(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
+				) (*silcomms.BulkSMSResponse, error) {
 					return nil, fmt.Errorf("failed to generate and send OTP")
 				}
 			}
@@ -873,9 +868,8 @@ func Test_sendOtp(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, nil
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 			}
 
@@ -883,9 +877,8 @@ func Test_sendOtp(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, fmt.Errorf("failed to send OTP")
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, fmt.Errorf("failed to send OTP")
 				}
 			}
 

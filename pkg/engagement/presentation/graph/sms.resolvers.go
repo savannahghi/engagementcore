@@ -8,17 +8,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
+	"github.com/savannahghi/silcomms"
 )
 
-func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {
+func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*silcomms.BulkSMSResponse, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	smsResponse, err := r.infra.Send(ctx, to, message, enumutils.SenderIDBewell)
+	smsResponse, err := r.infra.Send(ctx, to, message)
 	if err != nil {
 		return nil, fmt.Errorf("unable send SMS: %v", err)
 	}
@@ -33,12 +32,12 @@ func (r *mutationResolver) Send(ctx context.Context, to string, message string) 
 	return smsResponse, nil
 }
 
-func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error) {
+func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []string) (*silcomms.BulkSMSResponse, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	smsResponse, err := r.infra.SendToMany(ctx, message, to, enumutils.SenderIDBewell)
+	smsResponse, err := r.infra.SendToMany(ctx, to, message)
 	if err != nil {
 		return nil, fmt.Errorf("unable to send SMS to many: %v", err)
 	}

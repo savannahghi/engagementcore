@@ -14,6 +14,7 @@ import (
 	smsMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/sms/mock"
 	twilioMock "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure/services/twilio/mock"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/silcomms"
 )
 
 var fakeInfrastructure repositoryMock.FakeEngagementRepository
@@ -78,30 +79,27 @@ func TestServiceSMSImpl_SendToMany(t *testing.T) {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, nil
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 			}
 			if tt.name == "valid:successfully send to many using Slade360" {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, nil
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 			}
 			if tt.name == "invalid: send to many using unknown sender" {
 				fakeSMS.SendFn = func(
 					ctx context.Context,
 					to, message string,
-					from enumutils.SenderID,
-				) (*dto.SendMessageResponse, error) {
-					return &dto.SendMessageResponse{}, fmt.Errorf("unknown AIT sender")
+				) (*silcomms.BulkSMSResponse, error) {
+					return &silcomms.BulkSMSResponse{}, nil
 				}
 			}
-			got, err := e.SendToMany(tt.args.ctx, tt.args.message, tt.args.to, tt.args.from)
+			got, err := e.SendToMany(tt.args.ctx, tt.args.to, tt.args.message)
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("error expected got %v", err)
@@ -171,7 +169,7 @@ func TestServiceSMSImpl_Send(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := e.Send(tt.args.ctx, tt.args.to, tt.args.message, tt.args.sender)
+			got, err := e.Send(tt.args.ctx, tt.args.to, tt.args.message)
 			if tt.name == "valid:successfully send" {
 				fakeTwilio.SendSMSFn = func(ctx context.Context, to string, msg string) error {
 					return nil

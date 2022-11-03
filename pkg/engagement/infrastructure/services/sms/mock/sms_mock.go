@@ -3,41 +3,36 @@ package mock
 import (
 	"context"
 
-	"github.com/savannahghi/engagementcore/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/silcomms"
 )
 
 // FakeServiceSMS defines the interactions with the mock sms service
 type FakeServiceSMS struct {
 	SendToManyFn func(
 		ctx context.Context,
-		message string,
 		to []string,
-		from enumutils.SenderID,
-	) (*dto.SendMessageResponse, error)
+		message string,
+	) (*silcomms.BulkSMSResponse, error)
 
 	SendFn func(
 		ctx context.Context,
 		to, message string,
-		from enumutils.SenderID,
-	) (*dto.SendMessageResponse, error)
+	) (*silcomms.BulkSMSResponse, error)
 }
 
 // SendToMany ...
 func (f *FakeServiceSMS) SendToMany(
 	ctx context.Context,
-	message string,
 	to []string,
-	from enumutils.SenderID,
-) (*dto.SendMessageResponse, error) {
-	return f.SendToManyFn(ctx, message, to, from)
+	message string,
+) (*silcomms.BulkSMSResponse, error) {
+	return f.SendToManyFn(ctx, to, message)
 }
 
 // Send ...
 func (f *FakeServiceSMS) Send(
 	ctx context.Context,
 	to, message string,
-	from enumutils.SenderID,
-) (*dto.SendMessageResponse, error) {
-	return f.SendFn(ctx, to, message, from)
+) (*silcomms.BulkSMSResponse, error) {
+	return f.SendFn(ctx, to, message)
 }
