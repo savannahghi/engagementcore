@@ -31,7 +31,6 @@ require (
 	github.com/labstack/gommon v0.3.1
 	github.com/mailgun/mailgun-go/v4 v4.8.1
 	github.com/markbates/pkger v0.17.1
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.4.0
@@ -43,10 +42,11 @@ require (
 	github.com/savannahghi/interserviceclient v0.0.18
 	github.com/savannahghi/profileutils v0.0.27
 	github.com/savannahghi/pubsubtools v0.0.3
-	github.com/savannahghi/serverutils v0.0.6
+	github.com/savannahghi/serverutils v0.0.7
+	github.com/savannahghi/silcomms v0.0.3
 	github.com/segmentio/ksuid v1.0.4
 	github.com/shopspring/decimal v1.3.1 // indirect
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.0
 	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
@@ -58,7 +58,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.7.0
 	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60 // indirect
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0 // indirect
-	golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d // indirect
 	golang.org/x/tools v0.1.11 // indirect
 	google.golang.org/api v0.86.0
 	google.golang.org/genproto v0.0.0-20220707150051-590a5ac7bee1 // indirect

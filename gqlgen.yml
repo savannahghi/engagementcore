@@ -31,6 +31,7 @@ autobind:
   - "github.com/savannahghi/firebasetools"
   - "github.com/savannahghi/interserviceclient"
   - "google.golang.org/api/calendar/v3"
+  - "github.com/savannahghi/silcomms"
 
 models:
   ID:
@@ -65,3 +66,6 @@ models:
   CalendarEvent:
     model:
       - "google.golang.org/api/calendar/v3.Event"
+  BulkSMSResponse:
+    model:
+      - "github.com/savannahghi/silcomms.BulkSMSResponse"

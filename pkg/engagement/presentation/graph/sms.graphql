@@ -1,7 +1,7 @@
 extend type Mutation {
-  send(to: String!, message: String!): SendMessageResponse!
+  send(to: String!, message: String!): BulkSMSResponse!
 
-  sendToMany(message: String!, to: [String!]!): SendMessageResponse!
+  sendToMany(message: String!, to: [String!]!): BulkSMSResponse!
 }
 
 type Recipient {
@@ -22,4 +22,15 @@ type SendMessageResponse {
 enum SenderID {
   SLADE360
   BEWELL
+}
+
+type BulkSMSResponse {
+	guid: String
+	sender: String
+	message: String
+	recipients: [String!]
+	state: String!
+	sms: [String]
+	created: String
+	updated: String
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
+	"github.com/savannahghi/silcomms"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	calendar "google.golang.org/api/calendar/v3"
@@ -69,6 +70,17 @@ type ComplexityRoot struct {
 		Icon           func(childComplexity int) int
 		Name           func(childComplexity int) int
 		SequenceNumber func(childComplexity int) int
+	}
+
+	BulkSMSResponse struct {
+		Created    func(childComplexity int) int
+		GUID       func(childComplexity int) int
+		Message    func(childComplexity int) int
+		Recipients func(childComplexity int) int
+		SMS        func(childComplexity int) int
+		Sender     func(childComplexity int) int
+		State      func(childComplexity int) int
+		Updated    func(childComplexity int) int
 	}
 
 	CalendarEvent struct {
@@ -419,8 +431,8 @@ type MutationResolver interface {
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
-	Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error)
-	SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error)
+	Send(ctx context.Context, to string, message string) (*silcomms.BulkSMSResponse, error)
+	SendToMany(ctx context.Context, message string, to []string) (*silcomms.BulkSMSResponse, error)
 	RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error)
 	Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error)
 	PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error)
@@ -560,6 +572,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Action.SequenceNumber(childComplexity), true
+
+	case "BulkSMSResponse.created":
+		if e.complexity.BulkSMSResponse.Created == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.Created(childComplexity), true
+
+	case "BulkSMSResponse.guid":
+		if e.complexity.BulkSMSResponse.GUID == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.GUID(childComplexity), true
+
+	case "BulkSMSResponse.message":
+		if e.complexity.BulkSMSResponse.Message == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.Message(childComplexity), true
+
+	case "BulkSMSResponse.recipients":
+		if e.complexity.BulkSMSResponse.Recipients == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.Recipients(childComplexity), true
+
+	case "BulkSMSResponse.sms":
+		if e.complexity.BulkSMSResponse.SMS == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.SMS(childComplexity), true
+
+	case "BulkSMSResponse.sender":
+		if e.complexity.BulkSMSResponse.Sender == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.Sender(childComplexity), true
+
+	case "BulkSMSResponse.state":
+		if e.complexity.BulkSMSResponse.State == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.State(childComplexity), true
+
+	case "BulkSMSResponse.updated":
+		if e.complexity.BulkSMSResponse.Updated == nil {
+			break
+		}
+
+		return e.complexity.BulkSMSResponse.Updated(childComplexity), true
 
 	case "CalendarEvent.anyoneCanAddSelf":
 		if e.complexity.CalendarEvent.AnyoneCanAddSelf == nil {
@@ -2884,9 +2952,9 @@ extend type Mutation {
 }
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/sms.graphql", Input: `extend type Mutation {
-  send(to: String!, message: String!): SendMessageResponse!
+  send(to: String!, message: String!): BulkSMSResponse!
 
-  sendToMany(message: String!, to: [String!]!): SendMessageResponse!
+  sendToMany(message: String!, to: [String!]!): BulkSMSResponse!
 }
 
 type Recipient {
@@ -2908,7 +2976,17 @@ enum SenderID {
   SLADE360
   BEWELL
 }
-`, BuiltIn: false},
+
+type BulkSMSResponse {
+	guid: String
+	sender: String
+	message: String
+	recipients: [String!]
+	state: String!
+	sms: [String]
+	created: String
+	updated: String
+}`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/surveys.graphql", Input: `input FeedbackInput {
     question: String!
     answer: String!
@@ -4519,6 +4597,265 @@ func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field gr
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_guid(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_sender(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sender, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_message(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_recipients(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Recipients, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_state(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.State, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_sms(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SMS, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_created(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Created, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BulkSMSResponse_updated(ctx context.Context, field graphql.CollectedField, obj *silcomms.BulkSMSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BulkSMSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Updated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CalendarEvent_id(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
@@ -10158,9 +10495,9 @@ func (ec *executionContext) _Mutation_send(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*dto.SendMessageResponse)
+	res := resTmp.(*silcomms.BulkSMSResponse)
 	fc.Result = res
-	return ec.marshalNSendMessageResponse2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx, field.Selections, res)
+	return ec.marshalNBulkSMSResponse2ᚖgithubᚗcomᚋsavannahghiᚋsilcommsᚐBulkSMSResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_sendToMany(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10200,9 +10537,9 @@ func (ec *executionContext) _Mutation_sendToMany(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*dto.SendMessageResponse)
+	res := resTmp.(*silcomms.BulkSMSResponse)
 	fc.Result = res
-	return ec.marshalNSendMessageResponse2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx, field.Selections, res)
+	return ec.marshalNBulkSMSResponse2ᚖgithubᚗcomᚋsavannahghiᚋsilcommsᚐBulkSMSResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_recordNPSResponse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -14564,6 +14901,47 @@ func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var bulkSMSResponseImplementors = []string{"BulkSMSResponse"}
+
+func (ec *executionContext) _BulkSMSResponse(ctx context.Context, sel ast.SelectionSet, obj *silcomms.BulkSMSResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bulkSMSResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BulkSMSResponse")
+		case "guid":
+			out.Values[i] = ec._BulkSMSResponse_guid(ctx, field, obj)
+		case "sender":
+			out.Values[i] = ec._BulkSMSResponse_sender(ctx, field, obj)
+		case "message":
+			out.Values[i] = ec._BulkSMSResponse_message(ctx, field, obj)
+		case "recipients":
+			out.Values[i] = ec._BulkSMSResponse_recipients(ctx, field, obj)
+		case "state":
+			out.Values[i] = ec._BulkSMSResponse_state(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sms":
+			out.Values[i] = ec._BulkSMSResponse_sms(ctx, field, obj)
+		case "created":
+			out.Values[i] = ec._BulkSMSResponse_created(ctx, field, obj)
+		case "updated":
+			out.Values[i] = ec._BulkSMSResponse_updated(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var calendarEventImplementors = []string{"CalendarEvent"}
 
 func (ec *executionContext) _CalendarEvent(ctx context.Context, sel ast.SelectionSet, obj *calendar.Event) graphql.Marshaler {
@@ -16780,6 +17158,20 @@ func (ec *executionContext) marshalNBooleanFilter2githubᚗcomᚋsavannahghiᚋf
 	return v
 }
 
+func (ec *executionContext) marshalNBulkSMSResponse2githubᚗcomᚋsavannahghiᚋsilcommsᚐBulkSMSResponse(ctx context.Context, sel ast.SelectionSet, v silcomms.BulkSMSResponse) graphql.Marshaler {
+	return ec._BulkSMSResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBulkSMSResponse2ᚖgithubᚗcomᚋsavannahghiᚋsilcommsᚐBulkSMSResponse(ctx context.Context, sel ast.SelectionSet, v *silcomms.BulkSMSResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BulkSMSResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNContextInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐContext(ctx context.Context, v interface{}) (feedlib.Context, error) {
 	res, err := ec.unmarshalInputContextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -17365,20 +17757,6 @@ func (ec *executionContext) marshalNSavedNotification2ᚖgithubᚗcomᚋsavannah
 		return graphql.Null
 	}
 	return ec._SavedNotification(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNSendMessageResponse2githubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v dto.SendMessageResponse) graphql.Marshaler {
-	return ec._SendMessageResponse(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNSendMessageResponse2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v *dto.SendMessageResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._SendMessageResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNStatus2githubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx context.Context, v interface{}) (feedlib.Status, error) {
@@ -18227,6 +18605,42 @@ func (ec *executionContext) marshalOString2ᚕstring(ctx context.Context, sel as
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalOString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
 	}
 
 	return ret
